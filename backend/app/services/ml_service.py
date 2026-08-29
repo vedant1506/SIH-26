@@ -345,12 +345,13 @@ def predict(project_data: Dict[str, Any], models_path: str) -> Dict[str, Any]:
             f"• Ministry & Sector: {min_name} | {sec_name} ({st_name})\n"
             f"• Risk Classification: {tier.upper()} RISK TIER (Composite Index: {composite * 100:.1f}%)\n"
             f"• Primary Risk Driver: '{top_label}' with financial burn gap of {burn_progress_gap:+.1f}%\n"
-            f"• Forecasted Impact: Projected schedule lag of ~{projected_months} months with an estimated cost exposure of ₹{est_overrun_cr:.2f} Crore.\n\n"
+            f"• Forecasted Impact: Projected schedule lag of ~{projected_months} months with an estimated cost exposure of Rs. {est_overrun_cr:.2f} Crore.\n\n"
             f"Recommended Action Plan:\n"
             f"1. {strategy}\n"
             f"2. Enforce bi-weekly physical work verification against billing claims.\n"
             f"3. Expedite pending site clearances and deploy additional contractor shifts."
         )
+
 
 
 
