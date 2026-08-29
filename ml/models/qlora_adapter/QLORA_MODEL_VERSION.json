@@ -1,0 +1,20 @@
+{
+  "model_type": "4-Bit NF4 QLoRA Adapter",
+  "base_model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "quantization": "4bit_nf4",
+  "r": 16,
+  "lora_alpha": 32,
+  "target_modules": [
+    "q_proj",
+    "v_proj",
+    "k_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "dataset": "ml/data/processed/train_lora_dataset.jsonl",
+  "dataset_rows": 1200,
+  "train_status": "SUCCESSFUL",
+  "adapter_version": "qlora-tinyllama-v1.0"
+}

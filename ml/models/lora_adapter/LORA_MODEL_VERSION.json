@@ -1,0 +1,10 @@
+{
+  "model_type": "LoRA Parameter-Efficient Adapter",
+  "base_model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "r": 8,
+  "lora_alpha": 16,
+  "dataset": "ml/data/processed/train_lora_dataset.jsonl",
+  "dataset_rows": 1200,
+  "train_status": "SUCCESSFUL",
+  "adapter_version": "prism-lora-v1.0"
+}

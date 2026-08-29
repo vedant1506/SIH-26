@@ -1,0 +1,25 @@
+{
+  "project": "SIH26103",
+  "package": "SIH26103_ML_FINAL",
+  "primary_model": "Multi-Model AI Engine (XGBoost + Qwen-2.5 4-Bit NF4 QLoRA)",
+  "llm_model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "llm_adapter_version": "qwen2.5-advanced-qlora-v2.0",
+  "peft_lora_config": {
+    "quantization": "4bit_nf4_double_quant",
+    "rank_r": 32,
+    "alpha": 64,
+    "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+  },
+  "approved_feature_count": 27,
+  "total_paimana_projects": 1981,
+  "final_test_metrics": {
+    "XGBoost_MAE": 0.6,
+    "XGBoost_Accuracy": 0.948,
+    "XGBoost_R2": 0.9889,
+    "LLM_ROUGE_L": 0.898,
+    "LLM_BERTScore_F1": 0.954,
+    "LLM_Perplexity": 2.94
+  },
+  "model_version": "sih26103-baseline-xgboost-v1+qwen2.5-advanced-qlora-v2.0",
+  "status": "PROJECT_READY"
+}

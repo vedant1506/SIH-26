@@ -1,0 +1,142 @@
+// =============================================
+// API Client — SIH26103
+// ALL API calls go through this file.
+// Never call Supabase directly from pages.
+// =============================================
+
+import { getToken } from "./auth";
+import type {
+  Project, ProjectListItem, RiskPrediction, Alert,
+  PortfolioSummary, User, PredictRequest
+} from "./types";
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API = `${BASE_URL}/api/v1`;
+
+async function request<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const token = getToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string>),
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${API}${path}`, { ...options, headers });
+
+  if (res.status === 401) {
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+    throw new Error("Unauthorized");
+  }
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || "API error");
+  }
+
+  if (res.status === 204) return undefined as T;
+  return res.json();
+}
+
+// ── Auth ──────────────────────────────────────
+export async function login(email: string, password: string) {
+  const res = await fetch(`${API}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Login failed" }));
+    throw new Error(err.detail);
+  }
+  return res.json();
+}
+
+export async function getMe(): Promise<User> {
+  return request<User>("/auth/me");
+}
+
+// ── Projects ──────────────────────────────────
+export interface ProjectFilters {
+  ministry?: string;
+  sector?: string;
+  state?: string;
+  risk_tier?: string;
+  project_scale?: string;
+  skip?: number;
+  limit?: number;
+}
+
+export async function listProjects(filters: ProjectFilters = {}): Promise<ProjectListItem[]> {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([k, v]) => {
+    if (v !== undefined && v !== "") params.set(k, String(v));
+  });
+  return request<ProjectListItem[]>(`/projects?${params}`);
+}
+
+export async function getProject(id: string): Promise<Project> {
+  return request<Project>(`/projects/${id}`);
+}
+
+// ── Predictions ───────────────────────────────
+export async function predictProject(
+  projectId: string,
+  payload?: PredictRequest
+): Promise<RiskPrediction> {
+  return request<RiskPrediction>(`/projects/${projectId}/predict`, {
+    method: "POST",
+    body: JSON.stringify(payload || {}),
+  });
+}
+
+export async function getProjectPredictions(
+  projectId: string,
+  limit = 10
+): Promise<RiskPrediction[]> {
+  return request<RiskPrediction[]>(`/projects/${projectId}/predictions?limit=${limit}`);
+}
+
+export async function getPortfolioSummary(filters: ProjectFilters = {}): Promise<PortfolioSummary> {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([k, v]) => {
+    if (v !== undefined && v !== "") params.set(k, String(v));
+  });
+  return request<PortfolioSummary>(`/projects/analytics/portfolio?${params}`);
+}
+
+// ── Alerts ────────────────────────────────────
+export async function listAlerts(unacknowledgedOnly = false, limit = 50): Promise<Alert[]> {
+  return request<Alert[]>(
+    `/alerts?unacknowledged_only=${unacknowledgedOnly}&limit=${limit}`
+  );
+}
+
+export async function acknowledgeAlert(alertId: string): Promise<void> {
+  return request<void>(`/alerts/${alertId}/acknowledge`, { method: "POST" });
+}
+
+export async function parseOutsideFile(file: File): Promise<any> {
+  const token = getToken();
+  const formData = new FormData();
+  formData.append("file", file);
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${API}/parse-document`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || "Upload error");
+  }
+  return res.json();
+}
+

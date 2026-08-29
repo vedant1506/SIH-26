@@ -1,0 +1,16 @@
+{
+  "model_name": "SIH26103 Project Risk Prediction Model",
+  "primary_model": "Baseline XGBoost",
+  "model_source": "CELL41",
+  "test_metrics": {
+    "MAE": 2.1752645674546565,
+    "RMSE": 3.8222997955931706,
+    "R2": 0.9889902863873599
+  },
+  "selected_candidate_4_test_metrics": {
+    "MAE": 2.244601860163609,
+    "RMSE": 3.8523778557593067,
+    "R2": 0.988816331556101
+  },
+  "final_model_status": "BASELINE_BETTER"
+}

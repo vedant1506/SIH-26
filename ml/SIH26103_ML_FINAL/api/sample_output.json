@@ -1,0 +1,8 @@
+{
+  "project_id": "PROJECT_ID",
+  "report_date": "YYYY-MM-DD",
+  "predicted_next_physical_progress": null,
+  "model_version": "sih26103-baseline-xgboost-v1",
+  "model_source": "CELL41_BASELINE_XGBOOST",
+  "preprocessor_source": "CELL40_FROZEN_PREPROCESSOR"
+}

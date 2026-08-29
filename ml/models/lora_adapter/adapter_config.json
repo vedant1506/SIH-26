@@ -1,0 +1,18 @@
+{
+  "peft_type": "LORA",
+  "task_type": "CAUSAL_LM",
+  "r": 8,
+  "lora_alpha": 16,
+  "lora_dropout": 0.05,
+  "target_modules": [
+    "q_proj",
+    "v_proj",
+    "k_proj",
+    "o_proj"
+  ],
+  "base_model_name_or_path": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "bias": "none",
+  "fan_in_fan_out": false,
+  "modules_to_save": null,
+  "init_lora_weights": true
+}

@@ -1,0 +1,10 @@
+{
+  "project": "SIH26103",
+  "model_version": "sih26103-baseline-xgboost-v1+qwen2.5-advanced-qlora-v2.0",
+  "model_type": "XGBRegressor + Fine-Tuned PEFT QLoRA Transformer",
+  "model_source": "CELL41_AND_ADVANCED_QWEN_V2",
+  "preprocessor_version": "cell40-frozen-v1",
+  "feature_version": "cell37-v1",
+  "llm_version": "qwen2.5-advanced-qlora-v2.0",
+  "target_version": "cell32-frozen-v1"
+}

@@ -1,0 +1,29 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Python / FastAPI
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
+ENV/
+env/
+*.db
+*.sqlite3
+
+# Scratch / Temp
+scratch/git/
+scratch/mingit.zip
+
+# System & IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

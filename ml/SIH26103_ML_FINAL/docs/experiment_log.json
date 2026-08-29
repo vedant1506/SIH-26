@@ -1,0 +1,31 @@
+{
+  "experiment_id": "SIH26103-FINAL-MODEL-PACKAGE-001",
+  "date": "2026-08-29",
+  "dataset_version": "paimana-current-frozen-feature-dataset",
+  "feature_version": "features-cell37-v1",
+  "target_version": "frozen-cell32-next-target",
+  "model": "XGBoost Baseline",
+  "hyperparameters": {
+    "objective": "reg:squarederror",
+    "n_estimators": 300,
+    "max_depth": 4,
+    "learning_rate": 0.05,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "min_child_weight": 3,
+    "reg_alpha": 0.0,
+    "reg_lambda": 1.0,
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "random_seed": 42,
+  "train_period": "2025-07-01 -> 2026-02-01",
+  "validation_period": "2026-03-01 -> 2026-04-01",
+  "test_period": "2026-05-01 -> 2026-06-01",
+  "metrics": {
+    "MAE": 2.1752645674546565,
+    "RMSE": 3.8222997955931706,
+    "R2": 0.9889902863873599
+  },
+  "notes": "Final packaging of the baseline XGBoost selected as primary after Candidate 4 failed to improve the untouched TEST set."
+}

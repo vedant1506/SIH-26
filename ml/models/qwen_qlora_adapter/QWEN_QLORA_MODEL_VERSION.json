@@ -1,0 +1,21 @@
+{
+  "model_type": "Hugging Face Qwen-2.5 4-Bit NF4 QLoRA Adapter",
+  "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "huggingface_hub_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "quantization": "4bit_nf4",
+  "r": 16,
+  "lora_alpha": 32,
+  "target_modules": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "dataset": "ml/data/processed/train_lora_dataset.jsonl",
+  "dataset_rows": 1200,
+  "train_status": "SUCCESSFUL",
+  "adapter_version": "qwen2.5-qlora-v1.0"
+}

@@ -1,0 +1,23 @@
+{
+  "peft_type": "LORA",
+  "task_type": "CAUSAL_LM",
+  "base_model_name_or_path": "Qwen/Qwen2.5-1.5B-Instruct",
+  "quantization": "4bit_nf4",
+  "r": 16,
+  "lora_alpha": 32,
+  "lora_dropout": 0.05,
+  "target_modules": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "bnb_4bit_compute_dtype": "float16",
+  "bnb_4bit_quant_type": "nf4",
+  "bnb_4bit_use_double_quant": true,
+  "bias": "none",
+  "init_lora_weights": true
+}

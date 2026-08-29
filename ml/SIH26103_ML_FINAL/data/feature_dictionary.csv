@@ -1,0 +1,28 @@
+feature_name,formula_or_definition,source_columns,meaning,data_type,allowed_at_prediction_time,leakage_risk
+physical_progress_num,Current physical progress (%) at report time.,physical_progress_num,Current project completion status,numeric,True,LOW
+project_history_days,Days elapsed between first and current project observation.,"report_date, project_code_str",Project history duration,numeric,True,LOW
+project_history_months,Approximate months elapsed between first and current observation.,"report_date, project_code_str",Project history duration in months,numeric,True,LOW
+observation_number,Chronological observation number for the project.,"project_code_str, report_date",Number of observations available up to current time,numeric,True,LOW
+previous_progress,Physical progress at the immediately previous observation.,"physical_progress_num, project_code_str, report_date",Previous observed project progress,numeric,True,LOW
+previous_progress_change,Progress change from the observation before the current one.,"physical_progress_num, project_code_str, report_date",Recent historical progress trend,numeric,True,LOW
+progress_change_2,Progress change over the preceding historical interval.,"physical_progress_num, project_code_str, report_date",Short-term historical progress movement,numeric,True,LOW
+historical_progress_mean,Mean physical progress across historical observations available before/current time.,"physical_progress_num, project_code_str, report_date",Historical average progress,numeric,True,LOW
+historical_progress_max,Maximum historical physical progress available up to current time.,"physical_progress_num, project_code_str, report_date",Historical maximum progress,numeric,True,LOW
+historical_progress_min,Minimum historical physical progress available up to current time.,"physical_progress_num, project_code_str, report_date",Historical minimum progress,numeric,True,LOW
+progress_change_rolling_mean_3,Rolling mean of recent historical progress changes.,"previous_progress_change, project_code_str, report_date",Recent progress velocity/trend,numeric,True,LOW
+progress_change_rolling_std_3,Rolling standard deviation of recent historical progress changes.,"previous_progress_change, project_code_str, report_date",Recent progress volatility,numeric,True,LOW
+days_since_previous_report,Days since the previous project observation.,"report_date, project_code_str",Historical observation interval,numeric,True,LOW
+original_cost_num,Original project cost in numeric form.,original_cost_num,Original approved project cost,numeric,True,LOW
+revised_cost_num,Current revised project cost available at report time.,revised_cost_num,Current revised project cost,numeric,True,LOW
+expenditure_num,Cumulative expenditure available at report time.,expenditure_num,Current cumulative expenditure,numeric,True,LOW
+expenditure_revision_ratio,Current expenditure relative to current revised/original cost basis used during feature engineering.,"expenditure_num, revised_cost_num/original_cost_num",Current expenditure intensity,numeric,True,LOW
+previous_revised_cost,Revised cost at the previous project observation.,"revised_cost_num, project_code_str, report_date",Historical revised-cost state,numeric,True,LOW
+revised_cost_change,Change in revised cost from the previous observation.,"revised_cost_num, project_code_str, report_date",Historical cost revision movement,numeric,True,LOW
+revised_cost_growth_pct,Percentage change in revised cost from the previous observation.,"revised_cost_num, project_code_str, report_date",Historical cost growth,numeric,True,LOW
+report_year,Calendar year of the current report.,report_date,Current report year,numeric,True,LOW
+report_month,Calendar month of the current report.,report_date,Current report month,numeric,True,LOW
+report_quarter,Calendar quarter of the current report.,report_date,Current report quarter,numeric,True,LOW
+current_completion_flag,Indicator that current physical progress equals 100%.,physical_progress_num,Current completion state,numeric,True,LOW
+remaining_progress,100 minus current physical progress.,physical_progress_num,Current remaining project progress,numeric,True,LOW
+state,Project state from the current observation.,state,Current project geography,categorical,True,LOW
+sector,Project sector from the current observation.,sector,Current project sector,categorical,True,LOW

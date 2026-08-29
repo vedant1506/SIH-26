@@ -1,0 +1,22 @@
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+pydantic-settings==2.7.0
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.20
+httpx==0.27.2
+supabase==2.10.0
+python-dotenv==1.0.1
+
+# ML serving
+xgboost==2.1.3
+scikit-learn==1.5.2
+shap
+numpy
+pandas==2.2.3
+joblib==1.4.2
+email-validator
+resend

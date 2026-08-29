@@ -1,0 +1,19 @@
+{
+  "MODEL_VERSION.json": "c79f177127d5c647c5d6d699dcc7754c254a9812853e77bbe0b91b3cdd8c0147",
+  "PACKAGE_MANIFEST.json": "ef8edfe86e431e34455e00f6501784958fea2bfb375dc4711f179046bc8dfd76",
+  "models/baseline_xgboost.pkl": "895e7dbb476428770cd8338d04d1b2ed54d7d7552d59c05b2d9ae4b005391d51",
+  "models/baseline_xgboost_parameters.json": "a3be84360365b29549c6d8da6fa0ac8fd267fdba25d058e73c3a58205d617fe5",
+  "preprocessors/frozen_preprocessor.pkl": "691b11887e703e1681da04dd617ff491f8d40ab0ad5382b663a3415b5eb495ac",
+  "data/feature_definition.json": "f37590ea60e87b45da0c4c23e72d6654a353d4e9af49bc544727d4a9d52d9e35",
+  "data/feature_dictionary.csv": "6e620b76f236d47306cd5882423a4b9a2293cd5b3b76bf70b2a685c4082415e2",
+  "metrics/baseline.json": "ff1c5381fd7cf35906eeb8d4acd46c0824b35ebeced3f9d1f133eca5bb1bfef7",
+  "risk_engine/risk_thresholds.json": "607a1fa9044e69c2de03625d3b2dc4d77e90d03979592f3d31bfa95ded09fb84",
+  "docs/experiment_log.json": "6733301ee0b1ad41a163cb8aa8f603ce212611c934877934fbc0a1b4e19ad13b",
+  "docs/limitations.md": "ec8d565ff6943e94aba6d4305eeccc47cb5bba97aae7f832f7ace37d8218f337",
+  "docs/ml_audit.md": "ddcd6dc3e793a7c77e846b6a11abae8a59ea7a8fa384cdf8564348655aac32ee",
+  "docs/model_card.md": "95546d5c8ac23556543a00c7f53be9ecdb3cc7a75128ceea68c08e5d79fef999",
+  "docs/training_report.md": "f3ac1d26349219e37e480309c045993a6106a7e3729443ac4156efd68e3d3dd6",
+  "api/prediction.py": "3f5ce0e69960592a9382b5e7ce8e3fafee9931d0ab6d15a9e2c3ec8403b7d9cd",
+  "api/sample_input.json": "47e50aa5748cf2c4bf6475bf45aed8f2728680c23d157dc1b96c8b878369bc77",
+  "api/sample_output.json": "7520016434ffa5e7ef2203a960218161372cb0a62e5cfbc7223181b4e641bb4c"
+}
