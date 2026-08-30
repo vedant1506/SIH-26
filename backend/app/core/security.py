@@ -153,3 +153,16 @@ def require_role(minimum_role: str):
         return current_user
 
     return role_checker
+
+
+def get_optional_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+    db: Session = Depends(get_db),
+) -> Optional[Profile]:
+    """Optional auth dependency — returns Profile if valid bearer token present, else None."""
+    if credentials is None or not credentials.credentials:
+        return None
+    try:
+        return get_current_user(credentials, db)
+    except Exception:
+        return None

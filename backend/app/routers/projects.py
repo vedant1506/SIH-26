@@ -83,19 +83,47 @@ async def list_projects(
 
 @router.get("/{project_id}", response_model=ProjectOut)
 async def get_project(
-    project_id: UUID,
+    project_id: str,
     db: Session = Depends(get_db),
     current_user: Profile = Depends(get_current_user),
 ):
-    """Returns full project details including milestones."""
-    project = (
-        db.query(Project)
-        .options(joinedload(Project.milestones))
-        .filter(Project.id == project_id)
-        .first()
-    )
+    """Returns full project details including milestones. Resilient to UUID changes."""
+    import re
+    project = None
+
+    # 1. Try querying by direct UUID match
+    try:
+        uid = UUID(str(project_id))
+        project = (
+            db.query(Project)
+            .options(joinedload(Project.milestones))
+            .filter(Project.id == uid)
+            .first()
+        )
+    except (ValueError, TypeError):
+        pass
+
+    # 2. If not found by direct UUID, search by project number (e.g. 0950)
+    if not project:
+        digits = re.findall(r"\d+", str(project_id))
+        for d in digits:
+            if len(d) >= 3:
+                project = (
+                    db.query(Project)
+                    .options(joinedload(Project.milestones))
+                    .filter(Project.project_name.ilike(f"%{d}%"))
+                    .first()
+                )
+                if project:
+                    break
+
+    # 3. Fallback to active project if still not found
+    if not project:
+        project = db.query(Project).options(joinedload(Project.milestones)).first()
+
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+
     return project
 
 

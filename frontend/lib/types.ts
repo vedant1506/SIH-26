@@ -68,6 +68,9 @@ export interface ProjectListItem {
   ministry: string;
   sector: string;
   state: string;
+  district?: string | null;
+  place?: string | null;
+  category?: string | null;
   latitude: number | null;
   longitude: number | null;
   original_cost_cr: number;

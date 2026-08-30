@@ -33,7 +33,7 @@ def main():
     try:
         sys.path.insert(0, BACKEND_DIR)
         from app.seed import seed_database
-        seed_database()
+        seed_database(force=False)
     except Exception as se:
         print(f"Database seed note: {se}")
 

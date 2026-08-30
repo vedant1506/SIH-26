@@ -1,5 +1,6 @@
 "use client";
 import type { Project, RiskPrediction } from "@/lib/types";
+import { PRISM_LOGO_BASE64 } from "@/lib/logoBase64";
 
 interface Props {
   project: Project;
@@ -20,24 +21,8 @@ const DRIVER_SOLUTIONS: Record<string, string> = {
 };
 
 export default function PdfExportButton({ project: p, prediction: pred }: Props) {
-  // Helper to fetch PRISM logo image as Base64 Data URL
-  async function getLogoBase64(): Promise<string | null> {
-    try {
-      const res = await fetch("/logo.jpg");
-      const blob = await res.blob();
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = () => resolve(null);
-        reader.readAsDataURL(blob);
-      });
-    } catch (e) {
-      return null;
-    }
-  }
-
   async function handleExport() {
-    const logoBase64 = await getLogoBase64();
+    const logoBase64 = PRISM_LOGO_BASE64;
     const { jsPDF } = await import("jspdf");
     const doc = new jsPDF({ unit: "mm", format: "a4" });
 

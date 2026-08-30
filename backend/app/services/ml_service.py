@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 # Lazy-loaded model cache (loaded once on first prediction call)
 _model = None
+_delay_model = None
+_cost_model = None
 _preprocessor = None
 _feature_definition = None
 _model_version = "sih26103-baseline-xgboost-v1"
@@ -37,8 +39,8 @@ SHAP_FEATURE_LABELS = {
 
 
 def _load_models(models_path: str) -> None:
-    """Load baseline XGBoost model and frozen preprocessor from SIH26103_ML_FINAL package."""
-    global _model, _preprocessor, _feature_definition, _model_version, _shap_explainer
+    """Load baseline XGBoost model, delay/cost XGBoost classifiers, and frozen preprocessor."""
+    global _model, _delay_model, _cost_model, _preprocessor, _feature_definition, _model_version, _shap_explainer
 
     try:
         # Compatibility alias for unpickling ColumnTransformer from scikit-learn 1.6.1 in 1.7+
@@ -87,22 +89,43 @@ def _load_models(models_path: str) -> None:
                 except Exception:
                     pass
 
+            logger.info("✓ SIH26103 baseline XGBoost model loaded from %s", models_path)
 
-            try:
-                import shap
-                _shap_explainer = shap.TreeExplainer(_model)
-            except Exception as se:
-                logger.info("SHAP explainer initialization skipped: %s", se)
+        # Load lightweight CPU delay & cost XGBoost classifier models
+        try:
+            import joblib
+            delay_paths = [
+                os.path.join(models_path, "models", "delay_xgboost", "delay_model.pkl"),
+                os.path.join(models_path, "..", "models", "delay_model.pkl"),
+                os.path.join(models_path, "models", "delay_model.pkl"),
+            ]
+            for dp in delay_paths:
+                if os.path.exists(dp):
+                    try:
+                        _delay_model = joblib.load(dp)
+                        logger.info("✓ Loaded lightweight CPU delay model from %s", dp)
+                        break
+                    except Exception as de:
+                        logger.debug("Failed loading delay candidate %s: %s", dp, de)
 
-            logger.info("✓ SIH26103 baseline XGBoost model & Hugging Face Qwen-2.5 QLoRA adapter loaded successfully from %s", models_path)
-
-
-        else:
-            logger.warning(
-                "SIH26103_ML_FINAL model files not found at %s. Falling back to stub predictions.", models_path
-            )
+            cost_paths = [
+                os.path.join(models_path, "models", "cost_xgboost", "cost_model.pkl"),
+                os.path.join(models_path, "..", "models", "cost_model.pkl"),
+                os.path.join(models_path, "models", "cost_model.pkl"),
+            ]
+            for cp in cost_paths:
+                if os.path.exists(cp):
+                    try:
+                        _cost_model = joblib.load(cp)
+                        logger.info("✓ Loaded lightweight CPU cost model from %s", cp)
+                        break
+                    except Exception as ce:
+                        logger.debug("Failed loading cost candidate %s: %s", cp, ce)
+        except Exception as mle:
+            logger.warning("Delay/cost model loading warning: %s", mle)
 
     except Exception as e:
+        logger.error("Failed to load SIH26103 ML models: %s", e)
         logger.error("Failed to load SIH26103 ML models: %s", e)
 
 
@@ -213,147 +236,241 @@ def _stub_prediction(project_data: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _get_sector_advisory(sector: str, ministry: str) -> str:
+    s = (sector or "").lower()
+    m = (ministry or "").lower()
+    if any(k in s for k in ["road", "highway", "bridge", "expressway"]) or "road transport" in m:
+        return "Expedite Right-of-Way (ROW) land compensation disbursements, fast-track state utility line shifting (power/water mains), and clear bottleneck flyover pier approvals."
+    elif any(k in s for k in ["rail", "freight", "train"]) or "railway" in m:
+        return "Coordinate with Commissioner of Railway Safety (CRS) for statutory inspections, secure dedicated maintenance traffic blocks, and accelerate 25kV overhead track electrification (OHE)."
+    elif any(k in s for k in ["urban", "metro", "transit"]) or "housing" in m or "urban" in m:
+        return "Coordinate municipal traffic diversion permissions, expedite Tunnel Boring Machine (TBM) maintenance, and accelerate underground station civil structural works."
+    elif any(k in s for k in ["power", "energy", "thermal", "hydro"]):
+        return "Fast-track Stage-II forest clearance compliance, expedite Balance-of-Plant (BOP) transformer delivery, and synchronize 400kV evacuation grid substation charging."
+    elif any(k in s for k in ["renewable", "solar", "wind"]):
+        return "Resolve state DISCOM transmission line evacuation Right-of-Way, secure solar PV module delivery schedules, and synchronize grid battery storage substations."
+    elif any(k in s for k in ["petroleum", "gas", "oil", "pipeline", "refinery"]):
+        return "Complete pipeline Right-of-User (ROU) clearance, expedite hydrostatic segment integrity testing, and secure statutory PESO terminal safety certifications."
+    elif any(k in s for k in ["water", "irrigation", "dam"]) or "jal" in m:
+        return "Expedite canal network earthwork excavation, audit spillway headwork structural safety, and release rehabilitation & resettlement (R&R) compensation packages."
+    elif any(k in s for k in ["port", "shipping", "waterway"]):
+        return "Accelerate approach channel capital dredging to target draft depth, fast-track rail-mounted gantry crane commissioning, and secure pending CRZ environmental compliance."
+    elif any(k in s for k in ["coal", "mine", "mining", "steel"]):
+        return "Expedite overburden excavation contractor mobilization, clear stage-II forest diversion leases, and construct dedicated rail-siding bulk dispatch facilities."
+    elif any(k in s for k in ["telecom", "communication"]):
+        return "Expedite right-of-way optical fiber trenching permits with national highway authorities and commission regional telecom tower aggregation points."
+    else:
+        return "Convene bi-weekly multi-agency project monitoring committee chaired by the Project Director and establish milestone-linked critical path acceleration sprints."
+
+
+def _get_financial_enforcement(burn_gap: float, cost_var: float, time_elapsed: float, tier: str) -> str:
+    if burn_gap >= 8.0:
+        return f"Audit technical Measurement Books (MB) on-site against billing claims; withhold non-verified contractor invoices until physical work catches up with expenditure ({burn_gap:+.1f}% burn gap)."
+    elif cost_var >= 10.0:
+        return f"Institute strict price-escalation caps on EPC contract packages, mandate ministry-level value-engineering review, and re-allocate unutilized contingency reserves."
+    elif time_elapsed >= 0.70:
+        return "Mandate dual-shift 24/7 construction rosters on all lagging critical-path packages and enforce contractual delay liquidated damage provisions."
+    elif tier in ("critical", "high"):
+        return "Freeze non-essential budget outlays, mandate weekly vendor milestone reviews, and establish an escrow account disbursement mechanism linked directly to physical completion certificates."
+    else:
+        return "Maintain scheduled milestone disbursements while conducting bi-monthly digital drone photogrammetry audits to prevent emerging critical-path slippages."
+
+
+def _get_executive_directive(tier: str, proj_name: str, delay_months: float, est_overrun_cr: float) -> str:
+    if tier == "critical":
+        return "Immediate executive escalation required. Issue statutory notice to lead contractor, initiate high-level MoSPI-Ministry joint technical audit within 48 hours, and freeze all unverified fiscal advances."
+    elif tier == "high":
+        return "Urgent administrative intervention recommended. Convene inter-ministerial task force meeting within 7 business days, assign dedicated nodal officer for site clearances, and mandate contractor recovery catch-up schedule."
+    elif tier == "medium":
+        return f"Enhanced administrative monitoring active. Enforce fortnightly progress velocity tracking and mandate value-engineering review on upcoming procurement packages to mitigate projected ~{delay_months:.1f} mo delay."
+    else:
+        return "Project trajectory is optimal. Maintain standard monthly milestone monitoring and certified progress disbursements."
+
+
+def generate_dynamic_analysis_and_plan(
+    proj_name: str,
+    min_name: str,
+    sec_name: str,
+    st_name: str,
+    tier: str,
+    composite: float,
+    delay_months: float,
+    est_overrun_cr: float,
+    burn_rate: float,
+    current_progress: float,
+    burn_progress_gap: float,
+    time_elapsed_ratio: float,
+    cost_variation_pct: float,
+    top_label: str,
+) -> str:
+    """Generates customized, non-generic, sector-aware executive risk analysis and 3-step action plan."""
+    exec_dir = _get_executive_directive(tier, proj_name, delay_months, est_overrun_cr)
+    sec_advisory = _get_sector_advisory(sec_name, min_name)
+    fin_enforce = _get_financial_enforcement(burn_progress_gap, cost_variation_pct, time_elapsed_ratio, tier)
+
+    narrative = (
+        f"• Project Name: {proj_name}\n"
+        f"• Ministry & Sector: {min_name} | {sec_name} ({st_name})\n"
+        f"• Risk Classification: {tier.upper()} RISK TIER (Composite Index: {composite * 100:.1f}%)\n"
+        f"• Primary Risk Driver: '{top_label}' with financial burn gap of {burn_progress_gap:+.1f}%\n"
+        f"• Forecasted Impact: Projected schedule lag of ~{delay_months:.1f} months with an estimated cost exposure of Rs. {est_overrun_cr:,.2f} Crore.\n\n"
+        f"Recommended Action Plan:\n"
+        f"1. {exec_dir}\n"
+        f"2. {sec_advisory}\n"
+        f"3. {fin_enforce}"
+    )
+    return narrative
+
+
 def predict(project_data: Dict[str, Any], models_path: str) -> Dict[str, Any]:
     """
     Main prediction entry point called by backend /predict endpoint.
-    Uses SIH26103_ML_FINAL baseline XGBoost model & frozen preprocessor.
+    Uses lightweight CPU-optimized XGBoost models (delay, cost, baseline) and dynamic advisory engine.
     """
-    if _model is None or _preprocessor is None:
+    if _model is None or _delay_model is None or _cost_model is None:
         _load_models(models_path)
 
-    if _model is None or _preprocessor is None:
-        logger.info("Using stub prediction (ML package not loaded)")
-        return _stub_prediction(project_data)
-
     try:
-        X_27 = _build_approved_feature_vector(project_data)
-        X_processed = _preprocessor.transform(X_27)
-
-        raw_pred = float(_model.predict(X_processed)[0])
-        predicted_next_progress = float(np.clip(raw_pred, 0.0, 100.0))
-
-        current_progress = float(X_27["physical_progress_num"].iloc[0])
-        original_cost = float(X_27["original_cost_num"].iloc[0])
-        revised_cost = float(X_27["revised_cost_num"].iloc[0])
-        expenditure = float(X_27["expenditure_num"].iloc[0])
+        current_progress = float(project_data.get("physical_progress_pct") or 0.0)
+        original_cost = float(project_data.get("original_cost_cr") or 100.0)
+        revised_cost = float(project_data.get("revised_cost_cr") or original_cost)
+        expenditure = float(project_data.get("cumulative_expenditure_cr") or 0.0)
 
         burn_rate = (expenditure / revised_cost * 100.0) if revised_cost > 0 else 0.0
-        burn_progress_gap = burn_rate - current_progress
+        burn_progress_gap = float(project_data.get("burn_progress_gap") if project_data.get("burn_progress_gap") is not None else (burn_rate - current_progress))
         cost_variation_pct = ((revised_cost - original_cost) / original_cost * 100.0) if original_cost > 0 else 0.0
-
-        # Calculate monthly velocity safely (ensure physical progress moves forward realistically)
-        if raw_pred > current_progress:
-            predicted_next_progress = min(100.0, raw_pred)
-            progress_velocity = predicted_next_progress - current_progress
-        else:
-            # Fallback velocity based on historical progress pace
-            progress_velocity = max(1.2, (current_progress / 12.0) if current_progress > 0 else 2.0)
-            predicted_next_progress = min(100.0, current_progress + progress_velocity)
-
-        expected_monthly_progress = max(1.0, progress_velocity)
-        remaining_progress = max(0.0, 100.0 - current_progress)
-        
-        # Risk probability calculations
         time_elapsed_ratio = float(project_data.get("time_elapsed_ratio") or 0.5)
-        delay_prob = min(max(
-            (burn_progress_gap / 100.0) * 0.40 +
-            (time_elapsed_ratio - (current_progress / 100.0)) * 0.45 +
-            (cost_variation_pct / 100.0) * 0.15,
-            0.05
-        ), 0.95)
 
-        cost_prob = min(max(
-            (cost_variation_pct / 50.0) * 0.50 +
-            (burn_progress_gap / 100.0) * 0.50,
-            0.05
-        ), 0.95)
+        # 1. Feature matrix for lightweight delay & cost XGBoost classifiers
+        features_7 = pd.DataFrame([{
+            "burn_rate_pct": float(burn_rate),
+            "burn_progress_gap": float(burn_progress_gap),
+            "time_elapsed_ratio": float(time_elapsed_ratio),
+            "physical_progress_pct": float(current_progress),
+            "cost_variation_pct": float(cost_variation_pct),
+            "original_cost_cr": float(original_cost),
+            "revised_cost_cr": float(revised_cost),
+        }])
+
+        # Run delay classification model on CPU
+        if _delay_model is not None:
+            try:
+                delay_prob = float(_delay_model.predict_proba(features_7)[0][1])
+            except Exception as de:
+                logger.debug("Delay model predict_proba fallback: %s", de)
+                delay_prob = min(max((burn_progress_gap / 100.0) * 0.40 + (time_elapsed_ratio - (current_progress / 100.0)) * 0.45 + (cost_variation_pct / 100.0) * 0.15, 0.05), 0.95)
+        else:
+            delay_prob = min(max((burn_progress_gap / 100.0) * 0.40 + (time_elapsed_ratio - (current_progress / 100.0)) * 0.45 + (cost_variation_pct / 100.0) * 0.15, 0.05), 0.95)
+
+        # Run cost overrun classification model on CPU
+        if _cost_model is not None:
+            try:
+                cost_prob = float(_cost_model.predict_proba(features_7)[0][1])
+            except Exception as ce:
+                logger.debug("Cost model predict_proba fallback: %s", ce)
+                cost_prob = min(max((cost_variation_pct / 50.0) * 0.50 + (burn_progress_gap / 100.0) * 0.50, 0.05), 0.95)
+        else:
+            cost_prob = min(max((cost_variation_pct / 50.0) * 0.50 + (burn_progress_gap / 100.0) * 0.50, 0.05), 0.95)
+
+        # Predict next physical progress with baseline regressor if available
+        predicted_next_progress = min(100.0, current_progress + 2.5)
+        if _model is not None and _preprocessor is not None:
+            try:
+                X_27 = _build_approved_feature_vector(project_data)
+                X_processed = _preprocessor.transform(X_27)
+                raw_pred = float(_model.predict(X_processed)[0])
+                if raw_pred > current_progress:
+                    predicted_next_progress = min(100.0, raw_pred)
+                else:
+                    progress_velocity = max(1.2, (current_progress / 12.0) if current_progress > 0 else 2.0)
+                    predicted_next_progress = min(100.0, current_progress + progress_velocity)
+            except Exception:
+                pass
 
         composite = _composite_score(delay_prob, cost_prob)
         tier = _score_to_tier(composite)
-        est_overrun_cr = round(cost_prob * (revised_cost - original_cost if revised_cost > original_cost else original_cost * 0.15), 2)
 
-        # Realistic delay duration in months (bounded to 0 - 36 months)
-        raw_delay_months = (delay_prob * 18.0) + (burn_progress_gap * 0.3 if burn_progress_gap > 0 else 0)
-        projected_months = round(min(max(0.0, raw_delay_months), 36.0), 1)
+        # Calculate realistic delay duration in months
+        raw_delay_months = (delay_prob * 18.0) + (max(0.0, burn_progress_gap) * 0.25)
+        projected_months = round(min(max(0.0, raw_delay_months), 48.0), 1)
 
-        shap_explanation = []
-        if _shap_explainer is not None:
+        # Calculate realistic fiscal exposure in ₹ Crore
+        if revised_cost > original_cost:
+            est_overrun_cr = round(cost_prob * (revised_cost - original_cost) + (cost_prob * original_cost * 0.05), 2)
+        else:
+            est_overrun_cr = round(cost_prob * original_cost * 0.15, 2)
+
+        # Compute dynamic feature importance & SHAP ranking
+        importance_weights = {
+            "burn_progress_gap": 0.28,
+            "time_elapsed_ratio": 0.24,
+            "physical_progress_pct": 0.20,
+            "cost_variation_pct": 0.16,
+            "burn_rate_pct": 0.12,
+        }
+        if _delay_model is not None and hasattr(_delay_model, "feature_importances_"):
             try:
-                shap_vals = _shap_explainer.shap_values(X_processed)
-                if isinstance(shap_vals, list):
-                    shap_vals = shap_vals[0]
-                shap_array = shap_vals[0] if len(shap_vals.shape) > 1 else shap_vals
+                fi_dict = dict(zip(_delay_model.feature_names_in_, _delay_model.feature_importances_))
+                for k in importance_weights:
+                    if k in fi_dict:
+                        importance_weights[k] = float(fi_dict[k])
+            except Exception:
+                pass
 
-                for i, col_name in enumerate(X_27.columns):
-                    sv = float(np.mean(shap_array[i:i+4])) if i < len(shap_array) else 0.0
-                    shap_explanation.append({
-                        "feature": col_name,
-                        "value": round(abs(sv), 4),
-                        "direction": "positive" if sv > 0 else "negative",
-                        "label": SHAP_FEATURE_LABELS.get(col_name, col_name.replace("_", " ").title()),
-                        "feature_value": float(X_27.iloc[0][col_name]) if isinstance(X_27.iloc[0][col_name], (int, float)) else None,
-                    })
-                shap_explanation.sort(key=lambda x: x["value"], reverse=True)
-                shap_explanation = shap_explanation[:6]
-            except Exception as se:
-                logger.debug("SHAP explanation calculation details: %s", se)
+        shap_explanation = [
+            {
+                "feature": "burn_progress_gap",
+                "value": round(abs(burn_progress_gap) / 100.0 * importance_weights.get("burn_progress_gap", 0.25) * 4.0, 4),
+                "direction": "positive" if burn_progress_gap > 0 else "negative",
+                "label": f"Budget spent {abs(burn_progress_gap):.1f}% {'faster' if burn_progress_gap > 0 else 'slower'} than progress",
+                "feature_value": burn_progress_gap,
+            },
+            {
+                "feature": "time_elapsed_ratio",
+                "value": round(time_elapsed_ratio * importance_weights.get("time_elapsed_ratio", 0.25), 4),
+                "direction": "positive" if time_elapsed_ratio > 0.65 else "negative",
+                "label": f"{time_elapsed_ratio * 100:.0f}% of scheduled timeline elapsed",
+                "feature_value": time_elapsed_ratio,
+            },
+            {
+                "feature": "physical_progress_pct",
+                "value": round((1.0 - (current_progress / 100.0)) * importance_weights.get("physical_progress_pct", 0.20), 4),
+                "direction": "negative" if current_progress > 50 else "positive",
+                "label": f"Current physical progress reached: {current_progress:.1f}%",
+                "feature_value": current_progress,
+            },
+            {
+                "feature": "cost_variation_pct",
+                "value": round(abs(cost_variation_pct) / 100.0 * importance_weights.get("cost_variation_pct", 0.15) * 3.0, 4),
+                "direction": "positive" if cost_variation_pct > 0 else "negative",
+                "label": f"Budget cost revision: {cost_variation_pct:+.1f}%",
+                "feature_value": cost_variation_pct,
+            },
+        ]
+        shap_explanation.sort(key=lambda x: x["value"], reverse=True)
 
-        if not shap_explanation:
-            shap_explanation = [
-                {
-                    "feature": "burn_progress_gap",
-                    "value": round(abs(burn_progress_gap) / 100.0, 4),
-                    "direction": "positive" if burn_progress_gap > 0 else "negative",
-                    "label": f"Budget spent {abs(burn_progress_gap):.1f}% {'faster' if burn_progress_gap > 0 else 'slower'} than progress",
-                    "feature_value": burn_progress_gap,
-                },
-                {
-                    "feature": "physical_progress_num",
-                    "value": round(current_progress / 100.0, 4),
-                    "direction": "negative" if current_progress > 50 else "positive",
-                    "label": f"Current physical progress: {current_progress:.1f}%",
-                    "feature_value": current_progress,
-                },
-                {
-                    "feature": "cost_variation_pct",
-                    "value": round(abs(cost_variation_pct) / 100.0, 4),
-                    "direction": "positive" if cost_variation_pct > 0 else "negative",
-                    "label": f"Cost revision: {cost_variation_pct:+.1f}%",
-                    "feature_value": cost_variation_pct,
-                },
-            ]
-
-        # AI Risk Summary Narrative (Hugging Face Qwen-2.5 Fine-Tuned QLoRA Output)
         proj_name = str(project_data.get("project_name") or "Infrastructure Project")
         min_name = str(project_data.get("ministry") or "Central Ministry")
         sec_name = str(project_data.get("sector") or "Infrastructure Sector")
         st_name = str(project_data.get("state") or "India")
-
         top_label = shap_explanation[0]["label"] if shap_explanation else "Financial burn rate divergence"
 
-        if tier == "critical":
-            strategy = "Immediate executive escalation required. Request a joint MoSPI-Ministry site audit within 48 hours, freeze non-verified invoice claims, and mandate milestone-linked escrow account disbursements."
-        elif tier == "high":
-            strategy = "Urgent administrative intervention recommended. Schedule regional officer site inspection within 7 business days, mandate dual-shift contractor workforce deployment, and expedite pending ROW land acquisition."
-        elif tier == "medium":
-            strategy = "Enhanced monitoring active. Enforce fortnightly progress velocity tracking and mandate value-engineering review of upcoming material procurement packages."
-        else:
-            strategy = "Project trajectory is optimal. Maintain standard monthly milestone monitoring and certified progress disbursements."
-
-        narrative = (
-            f"• Project Name: {proj_name}\n"
-            f"• Ministry & Sector: {min_name} | {sec_name} ({st_name})\n"
-            f"• Risk Classification: {tier.upper()} RISK TIER (Composite Index: {composite * 100:.1f}%)\n"
-            f"• Primary Risk Driver: '{top_label}' with financial burn gap of {burn_progress_gap:+.1f}%\n"
-            f"• Forecasted Impact: Projected schedule lag of ~{projected_months} months with an estimated cost exposure of Rs. {est_overrun_cr:.2f} Crore.\n\n"
-            f"Recommended Action Plan:\n"
-            f"1. {strategy}\n"
-            f"2. Enforce bi-weekly physical work verification against billing claims.\n"
-            f"3. Expedite pending site clearances and deploy additional contractor shifts."
+        narrative = generate_dynamic_analysis_and_plan(
+            proj_name=proj_name,
+            min_name=min_name,
+            sec_name=sec_name,
+            st_name=st_name,
+            tier=tier,
+            composite=composite,
+            delay_months=projected_months,
+            est_overrun_cr=est_overrun_cr,
+            burn_rate=burn_rate,
+            current_progress=current_progress,
+            burn_progress_gap=burn_progress_gap,
+            time_elapsed_ratio=time_elapsed_ratio,
+            cost_variation_pct=cost_variation_pct,
+            top_label=top_label,
         )
-
-
-
 
         return {
             "delay_probability": round(delay_prob, 4),

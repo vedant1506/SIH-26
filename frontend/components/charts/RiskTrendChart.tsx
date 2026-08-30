@@ -15,14 +15,16 @@ export default function RiskTrendChart({ predictions }: { predictions: RiskPredi
   return (
     <ResponsiveContainer width="100%" height={180}>
       <LineChart data={data} margin={{ left: 0, right: 8, top: 4, bottom: 0 }}>
-        <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" />
-        <XAxis dataKey="date" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
-        <YAxis domain={[0, 100]} tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
+        <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
+        <XAxis dataKey="date" tick={{ fill: "var(--text-muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
+        <YAxis domain={[0, 100]} tick={{ fill: "var(--text-muted)", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
         <Tooltip
           formatter={(val) => [`${val}%`, "Risk Score"]}
-          contentStyle={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8, fontSize: 12 }}
+          contentStyle={{ background: "var(--surface)", border: "1px solid var(--border-2)", borderRadius: 8, fontSize: 12, color: "var(--text)", boxShadow: "var(--shadow)" }}
+          itemStyle={{ color: "var(--text)" }}
+          labelStyle={{ color: "var(--text-muted)" }}
         />
-        <Line type="monotone" dataKey="score" stroke="#06b6d4" strokeWidth={2} dot={{ fill: "#06b6d4", r: 3 }} />
+        <Line type="monotone" dataKey="score" stroke="var(--accent)" strokeWidth={2} dot={{ fill: "var(--accent)", r: 3 }} />
       </LineChart>
     </ResponsiveContainer>
   );

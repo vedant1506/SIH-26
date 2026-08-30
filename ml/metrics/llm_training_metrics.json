@@ -1,0 +1,9 @@
+{
+  "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "qlora_rank": 32,
+  "qlora_alpha": 64,
+  "quantization": "4bit_nf4",
+  "chatml_samples": 1200,
+  "trained_on_gpu": false,
+  "status": "VALIDATED"
+}

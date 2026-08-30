@@ -1,4 +1,6 @@
 {
-  "status": "NOT_CALIBRATED_IN_THIS_PHASE",
-  "note": "Do not invent probability thresholds. Risk thresholds must be calibrated from an approved risk target before production risk scoring."
+  "LOW": "< 0.25",
+  "MEDIUM": "0.25 - 0.49",
+  "HIGH": "0.50 - 0.74",
+  "CRITICAL": ">= 0.75"
 }

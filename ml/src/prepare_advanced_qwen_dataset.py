@@ -41,7 +41,7 @@ def prepare_dataset():
         is_delayed = int(row.get("is_delayed") or 0)
         is_cost_overrun = int(row.get("is_cost_overrun") or 0)
 
-        # Risk classification
+        # Risk classification engine calculation
         composite = min(max((burn_gap / 100.0) * 0.45 + (time_elapsed - 0.5) * 0.45, 0.05), 0.95)
         tier = "CRITICAL" if composite >= 0.75 else ("HIGH" if composite >= 0.50 else ("MEDIUM" if composite >= 0.25 else "LOW"))
 
@@ -63,10 +63,11 @@ def prepare_dataset():
             f"• Financial Divergence: Budget expenditure leads physical progress by {burn_gap:+.1f} percentage points. "
             f"Revised cost stands at ₹{rev_cost:,.2f} Cr against original budget of ₹{orig_cost:,.2f} Cr.\n"
             f"• Schedule Outlook: {time_elapsed * 100:.1f}% of allotted timeline has elapsed with an estimated schedule delay of {delay_months:.1f} months.\n"
+            f"• Key Risk Drivers: Primary driver is financial progress divergence gap ({burn_gap:+.1f}%).\n"
             f"• Recommended Action: {'Immediate high-level ministry intervention and contractor performance audit required.' if tier in ('CRITICAL', 'HIGH') else 'Maintain standard milestone progress monitoring.'}"
         )
 
-        # ChatML format structure for Hugging Face Qwen-2.5 Instruct
+        # ChatML format structure for Hugging Face Qwen-2.5 / Llama-3 Instruct
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_input},
@@ -76,11 +77,37 @@ def prepare_dataset():
         records.append({"id": f"qwen-advanced-{idx+1:04d}", "messages": messages, "composite_risk_score": composite, "risk_tier": tier})
 
     os.makedirs(os.path.dirname(OUTPUT_JSONL_PATH), exist_ok=True)
-    with open(OUTPUT_JSONL_PATH, "w", encoding="utf-8") as f:
-        for rec in records:
-            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    
+    # Chronological dataset splitting (70% train, 15% val, 15% test) for LLM fine-tuning evaluation
+    n_total = len(records)
+    n_train = int(n_total * 0.70)
+    n_val = int(n_total * 0.15)
 
-    print(f"[OK] Saved {len(records)} advanced ChatML prompt-response pairs to {OUTPUT_JSONL_PATH}")
+    train_recs = records[:n_train]
+    val_recs = records[n_train:n_train + n_val]
+    test_recs = records[n_train + n_val:]
+
+    processed_dir = os.path.dirname(OUTPUT_JSONL_PATH)
+    llm_train_path = os.path.join(processed_dir, "llm_train.jsonl")
+    llm_val_path = os.path.join(processed_dir, "llm_validation.jsonl")
+    llm_test_path = os.path.join(processed_dir, "llm_test.jsonl")
+
+    for path, data in [
+        (OUTPUT_JSONL_PATH, records),
+        (llm_train_path, train_recs),
+        (llm_val_path, val_recs),
+        (llm_test_path, test_recs),
+    ]:
+        with open(path, "w", encoding="utf-8") as f:
+            for rec in data:
+                f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
+    print(f"[OK] Saved {len(records)} advanced ChatML prompt-response pairs:")
+    print(f"  - Combined:   {OUTPUT_JSONL_PATH}")
+    print(f"  - LLM Train:  {llm_train_path} ({len(train_recs)} records)")
+    print(f"  - LLM Val:    {llm_val_path} ({len(val_recs)} records)")
+    print(f"  - LLM Test:   {llm_test_path} ({len(test_recs)} records)")
 
 if __name__ == "__main__":
     prepare_dataset()
+

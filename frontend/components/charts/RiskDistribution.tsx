@@ -22,7 +22,7 @@ export default function RiskDistribution({ summary }: { summary: PortfolioSummar
         <YAxis axisLine={false} tickLine={false} tick={false} />
         <Tooltip
           cursor={{ fill: "rgba(255, 255, 255, 0.05)" }}
-          contentStyle={{ background: "rgba(15, 23, 42, 0.8)", backdropFilter: "blur(12px)", border: "1px solid var(--border-2)", borderRadius: 8, fontSize: 12, boxShadow: "0 10px 40px -10px rgba(0,0,0,0.5)" }}
+          contentStyle={{ background: "var(--surface)", backdropFilter: "blur(12px)", border: "1px solid var(--border-2)", borderRadius: 8, fontSize: 12, color: "var(--text)", boxShadow: "var(--shadow)" }}
           itemStyle={{ color: "var(--text)" }}
         />
         <Bar dataKey="value" radius={[4, 4, 4, 4]} barSize={40}>

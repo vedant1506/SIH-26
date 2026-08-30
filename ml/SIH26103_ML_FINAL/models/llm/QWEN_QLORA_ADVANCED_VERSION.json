@@ -1,0 +1,22 @@
+{
+  "model_name": "Qwen/Qwen2.5-1.5B-Instruct",
+  "adapter_name": "prism-qwen2.5-advanced-qlora-v2.0",
+  "version": "qwen2.5-advanced-qlora-v2.0",
+  "fine_tuning_type": "4bit_nf4_qlora",
+  "rank": 32,
+  "alpha": 64,
+  "target_modules": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "dataset_records": 1200,
+  "format": "ChatML",
+  "trained_on_gpu": false,
+  "trained_at": "2026-08-30T16:14:19.993121",
+  "status": "OPTIMAL"
+}

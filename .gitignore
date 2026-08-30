@@ -19,8 +19,8 @@ env/
 *.sqlite3
 
 # Scratch / Temp
-scratch/git/
-scratch/mingit.zip
+scratch/
+
 
 # System & IDE
 .DS_Store

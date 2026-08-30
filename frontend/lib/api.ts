@@ -140,3 +140,11 @@ export async function parseOutsideFile(file: File): Promise<any> {
   return res.json();
 }
 
+export async function generateLlmBriefing(payload: Record<string, any> = {}): Promise<any> {
+  return request<any>("/projects/llm-briefing", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+

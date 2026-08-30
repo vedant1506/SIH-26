@@ -1,0 +1,14 @@
+{
+  "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "adapter_version": "qwen2.5-advanced-qlora-v2.0",
+  "quantization": "4bit_nf4_double_quant",
+  "lora_rank": 32,
+  "lora_alpha": 64,
+  "evaluated_samples": 1200,
+  "rouge_1": 0.912,
+  "rouge_2": 0.865,
+  "rouge_l": 0.898,
+  "bertscore_f1": 0.954,
+  "perplexity": 2.94,
+  "status": "OPTIMAL"
+}

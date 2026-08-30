@@ -31,14 +31,15 @@ export default function ShapWaterfall({ values }: Props) {
       </div>
       <ResponsiveContainer width="100%" height={Math.max(180, data.length * 42)}>
         <BarChart data={data} layout="vertical" margin={{ left: 0, right: 20, top: 4, bottom: 4 }}>
-          <XAxis type="number" tickFormatter={v => `${Math.abs(v * 100).toFixed(0)}%`} tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis type="category" dataKey="label" width={260} tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
+          <XAxis type="number" tickFormatter={v => `${Math.abs(v * 100).toFixed(0)}%`} tick={{ fill: "var(--text-muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
+          <YAxis type="category" dataKey="label" width={260} tick={{ fill: "var(--text-sub)", fontSize: 12 }} axisLine={false} tickLine={false} />
           <Tooltip
             formatter={(val) => [`${Math.abs(Number(val) * 100).toFixed(1)}% risk impact`, ""]}
-            contentStyle={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8, fontSize: 12 }}
-            labelStyle={{ color: "#f1f5f9", fontSize: 12, marginBottom: 4 }}
+            contentStyle={{ background: "var(--surface)", border: "1px solid var(--border-2)", borderRadius: 8, fontSize: 12, color: "var(--text)", boxShadow: "var(--shadow)" }}
+            labelStyle={{ color: "var(--text)", fontSize: 12, marginBottom: 4 }}
+            itemStyle={{ color: "var(--text)" }}
           />
-          <ReferenceLine x={0} stroke="#334155" />
+          <ReferenceLine x={0} stroke="var(--border-2)" />
           <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={22}>
             {data.map((entry, i) => (
               <Cell key={i} fill={entry.direction === "positive" ? "#f43f5e" : "#10b981"} />

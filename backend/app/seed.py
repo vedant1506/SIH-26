@@ -77,12 +77,15 @@ def seed_database(force: bool = True):
     db = SessionLocal()
     try:
         project_count = db.query(Project).count()
-        if force or project_count < 1500:
-            print(f"Clearing old table records (existing: {project_count})...")
-            db.query(Alert).delete()
-            db.query(RiskPrediction).delete()
-            db.query(Project).delete()
-            db.commit()
+        if not force and project_count >= 1500:
+            print(f"Database already seeded with {project_count} projects. Skipping re-seed.")
+            return
+
+        print(f"Clearing old table records (existing: {project_count})...")
+        db.query(Alert).delete()
+        db.query(RiskPrediction).delete()
+        db.query(Project).delete()
+        db.commit()
 
         print(f"Loading base dataset from {PROCESSED_CSV_PATH}...")
         if not os.path.exists(PROCESSED_CSV_PATH):
@@ -115,10 +118,10 @@ def seed_database(force: bool = True):
             burn_gap = float(row.get("burn_progress_gap") or 0.0)
             time_elapsed = float(row.get("time_elapsed_ratio") or 0.5)
 
-            # Assign state and coordinates evenly across all 23 states
+            # Assign state and coordinates evenly across all 23 states (safe inland bounds)
             st_name, st_lat, st_lng = STATE_COORDS[idx % len(STATE_COORDS)]
-            lat = st_lat + (random.random() - 0.5) * 1.6
-            lng = st_lng + (random.random() - 0.5) * 1.6
+            lat = st_lat + (random.random() - 0.5) * 0.08
+            lng = st_lng + (random.random() - 0.5) * 0.08
 
             # Assign sector and ministry across 22 sectors / 17 ministries
             sec_name, min_name, prefix = SECTOR_MINISTRIES[idx % len(SECTOR_MINISTRIES)]
@@ -173,10 +176,17 @@ def seed_database(force: bool = True):
             else:
                 strat = "Project trajectory is optimal. Maintain standard monthly milestone monitoring and certified progress disbursements."
 
+            if delay_months < 0:
+                schedule_phrase = f"operating {abs(delay_months):.1f} months ahead of schedule"
+            elif delay_months == 0:
+                schedule_phrase = "milestone execution strictly on schedule"
+            else:
+                schedule_phrase = f"projected schedule lag of {delay_months:.1f} months"
+
             narrative = (
-                f"[Qwen-2.5 QLoRA Executive Briefing] {proj_name} ({sec_name}, {st_name}) under {min_name} is evaluated under the {tier.upper()} risk tier "
+                f"{proj_name} ({sec_name}) under {min_name} is evaluated under the {tier.upper()} risk tier "
                 f"with a composite risk index of {composite * 100:.1f}%. Primary risk driver: 'Expenditure lead over progress ({abs(burn_gap):.1f}%)' "
-                f"with a projected schedule delay of {delay_months} months and estimated cost exposure of ₹{overrun_amount:.2f} Crore. "
+                f"with {schedule_phrase} and estimated fiscal exposure of ₹{overrun_amount:.2f} Crore. "
                 f"Recommended Resolution: {strat}"
             )
 
