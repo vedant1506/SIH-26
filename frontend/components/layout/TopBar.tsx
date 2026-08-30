@@ -35,11 +35,12 @@ const MoonIcon = () => (
 
 export default function TopBar({ title, subtitle, status }: TopBarProps) {
   const [unread, setUnread] = useState(0);
-  const [time, setTime] = useState(new Date());
+  const [time, setTime] = useState<Date | null>(null);
   const [totalProjects, setTotalProjects] = useState<number | null>(null);
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
+    setTime(new Date());
     listAlerts(true, 100).then((a) => setUnread(a.length)).catch(() => {});
     getPortfolioSummary().then((s) => setTotalProjects(s?.total_projects ?? null)).catch(() => {});
     setTheme(getStoredTheme());
@@ -52,8 +53,9 @@ export default function TopBar({ title, subtitle, status }: TopBarProps) {
     setTheme(next);
   };
 
-  const timeStr = time.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-  const dateStr = time.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  const timeStr = time ? time.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }) : "";
+  const dateStr = time ? time.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "";
+
 
   return (
     <header

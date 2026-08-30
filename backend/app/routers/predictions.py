@@ -15,7 +15,7 @@ settings = get_settings()
 
 
 @router.post("/{project_id}/predict", response_model=RiskPredictionOut)
-async def predict_project_risk(
+def predict_project_risk(
     project_id: str,
     payload: PredictRequest = None,
     db: Session = Depends(get_db),
@@ -107,7 +107,7 @@ async def predict_project_risk(
 
 
 @router.get("/{project_id}/predictions", response_model=list[RiskPredictionOut])
-async def get_project_predictions(
+def get_project_predictions(
     project_id: str,
     limit: int = 10,
     db: Session = Depends(get_db),
@@ -147,7 +147,7 @@ async def get_project_predictions(
 
 
 @router.get("/analytics/portfolio", response_model=PortfolioSummary)
-async def get_portfolio_summary(
+def get_portfolio_summary(
     db: Session = Depends(get_db),
     current_user: Profile = Depends(get_current_user),
 ):
@@ -226,7 +226,7 @@ class BriefingRequest(BaseModel):
 
 
 @router.post("/llm-briefing")
-async def generate_llm_briefing(
+def generate_llm_briefing(
     payload: BriefingRequest = None,
     db: Session = Depends(get_db),
     current_user: Profile | None = Depends(get_optional_user),

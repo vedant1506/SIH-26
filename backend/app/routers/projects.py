@@ -13,7 +13,7 @@ router = APIRouter(prefix="/projects", tags=["Projects"])
 
 
 @router.get("", response_model=List[ProjectListItem])
-async def list_projects(
+def list_projects(
     ministry: Optional[str] = Query(None, description="Filter by ministry name"),
     sector: Optional[str] = Query(None, description="Filter by sector (Roads, Railways, etc.)"),
     state: Optional[str] = Query(None, description="Filter by state"),
@@ -41,17 +41,37 @@ async def list_projects(
     if project_scale:
         query = query.filter(Project.project_scale == project_scale)
 
+    from sqlalchemy import func
     projects = query.offset(skip).limit(limit).all()
+
+    # Bulk load the latest prediction for each project using a single subquery (fixes N+1 latency bottleneck)
+    latest_preds = {}
+    project_ids = [p.id for p in projects]
+    if project_ids:
+        latest_pred_subq = (
+            db.query(
+                RiskPrediction.project_id,
+                func.max(RiskPrediction.predicted_at).label("max_pred_at")
+            )
+            .filter(RiskPrediction.project_id.in_(project_ids))
+            .group_by(RiskPrediction.project_id)
+            .subquery()
+        )
+        preds = (
+            db.query(RiskPrediction)
+            .join(
+                latest_pred_subq,
+                (RiskPrediction.project_id == latest_pred_subq.c.project_id)
+                & (RiskPrediction.predicted_at == latest_pred_subq.c.max_pred_at)
+            )
+            .all()
+        )
+        latest_preds = {pred.project_id: pred for pred in preds}
 
     # Enrich each project with its latest risk prediction
     result = []
     for p in projects:
-        latest_pred = (
-            db.query(RiskPrediction)
-            .filter(RiskPrediction.project_id == p.id)
-            .order_by(desc(RiskPrediction.predicted_at))
-            .first()
-        )
+        latest_pred = latest_preds.get(p.id)
 
         item = ProjectListItem(
             id=p.id,
@@ -72,7 +92,6 @@ async def list_projects(
             cost_overrun_probability=latest_pred.cost_overrun_probability if latest_pred else None,
         )
 
-
         if risk_tier and item.risk_tier != risk_tier:
             continue
 
@@ -81,8 +100,9 @@ async def list_projects(
     return result
 
 
+
 @router.get("/{project_id}", response_model=ProjectOut)
-async def get_project(
+def get_project(
     project_id: str,
     db: Session = Depends(get_db),
     current_user: Profile = Depends(get_current_user),
@@ -128,7 +148,7 @@ async def get_project(
 
 
 @router.post("", response_model=ProjectOut, status_code=status.HTTP_201_CREATED)
-async def create_project(
+def create_project(
     payload: ProjectCreate,
     db: Session = Depends(get_db),
     current_user: Profile = Depends(get_current_user),
@@ -154,7 +174,7 @@ async def create_project(
 
 
 @router.patch("/{project_id}", response_model=ProjectOut)
-async def update_project(
+def update_project(
     project_id: UUID,
     payload: ProjectUpdate,
     db: Session = Depends(get_db),

@@ -1061,6 +1061,34 @@ export const STATE_DISTRICTS_DATA: Record<string, DistrictDefinition[]> = {
       ],
     },
   ],
+
+  // ── SIKKIM (East Sikkim, West Sikkim, North Sikkim, South Sikkim) ──
+  "SIKKIM": [
+    {
+      district: "East Sikkim",
+      state: "SIKKIM",
+      coords: [27.3292, 88.6122],
+      places: [
+        { place: "Gangtok Bypass Road", coords: [27.3389, 88.6065], category: "Roads & Bridges" },
+        { place: "Ranipool", coords: [27.2995, 88.5912], category: "Roads & Bridges" },
+        { place: "Pakyong", coords: [27.2344, 88.5975], category: "Roads & Bridges" },
+        { place: "Burtuk", coords: [27.3570, 88.6185], category: "Roads & Bridges" },
+        { place: "Rangpo Link", coords: [27.1764, 88.5303], category: "Roads & Bridges" },
+      ],
+    },
+    {
+      district: "South Sikkim",
+      state: "SIKKIM",
+      coords: [27.1667, 88.3667],
+      places: [
+        { place: "Namchi Hub", coords: [27.1667, 88.3667], category: "Roads & Bridges" },
+        { place: "Rongli", coords: [27.2045, 88.6946], category: "Roads & Bridges" },
+        { place: "Chochenpheri", coords: [27.1902, 88.7050], category: "Roads & Bridges" },
+        { place: "Rhenock", coords: [27.1794, 88.6433], category: "Roads & Bridges" },
+        { place: "Menla", coords: [27.3789, 88.7180], category: "Roads & Bridges" },
+      ],
+    },
+  ],
 };
 
 // Flattened list for backwards-compatible lookups
@@ -1106,6 +1134,7 @@ export const STATE_COORDINATES: Record<string, [number, number]> = {
   "HIMACHAL PRADESH": [31.1048, 77.1734],
   "UTTARAKHAND": [30.3165, 78.0322],
   "GOA": [15.4200, 73.9700],
+  "SIKKIM": [27.5330, 88.5122],
 };
 
 /**

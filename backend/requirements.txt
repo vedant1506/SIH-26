@@ -20,3 +20,4 @@ pandas==2.2.3
 joblib==1.4.2
 email-validator
 resend
+pypdf==6.16.2
