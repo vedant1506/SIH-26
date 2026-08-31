@@ -32,8 +32,8 @@ def main():
     print("\n[0/2] Initializing database tables and default seed data...")
     try:
         sys.path.insert(0, BACKEND_DIR)
-        from app.seed import seed_database
-        seed_database(force=False)
+        from app.seed import seed_real_mospi_dataset
+        seed_real_mospi_dataset(force=False)
     except Exception as se:
         print(f"Database seed note: {se}")
 

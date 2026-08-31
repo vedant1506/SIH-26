@@ -97,7 +97,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     Promise.all([
-      listProjects({ limit: 1200 }).catch(() => []),
+      listProjects({ limit: 2000 }).catch(() => []),
       getPortfolioSummary().catch(() => null),
     ])
       .then(([p, s]) => {

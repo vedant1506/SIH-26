@@ -64,6 +64,9 @@ async def predict_project_risk(
         "burn_rate_pct": burn_rate,
         "burn_progress_gap": burn_gap,
         "time_elapsed_ratio": float(project.time_elapsed_ratio or 0.5),
+        "original_start_date": str(project.original_start_date) if project.original_start_date else None,
+        "scheduled_completion_date": str(project.scheduled_completion_date) if project.scheduled_completion_date else None,
+        "revised_completion_date": str(project.revised_completion_date) if project.revised_completion_date else None,
     }
 
     # Apply What-If overrides if provided

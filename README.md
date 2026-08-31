@@ -1,41 +1,47 @@
-# SIH26103 — Infrastructure Risk Intelligence Platform
+# SIH26103 — PRISM: Infrastructure Risk Intelligence Platform
 
 > **Problem Statement:** Web-Based Integrated Project-Monitoring Platform  
 > **Theme:** Smart Automation / Software  
-> **Team:** [Insert Team Name & ID]
+> **Primary Demonstration Dataset:** MoSPI PAIMANA April 2026 (**Exactly 1,981 Projects**)
 
-An AI-powered platform that converts static infrastructure monitoring data into **explainable risk predictions**, **early warnings**, and **geospatial dashboards** for government decision-makers.
+An enterprise, AI-powered platform transforming official Ministry of Statistics and Programme Implementation (MoSPI) monitoring data into **explainable XGBoost risk predictions**, **TreeSHAP feature attributions**, **geospatial intelligence**, and **fine-tuned Qwen 2.5 QLoRA executive briefings**.
+
+---
+
+## 🏛️ System Highlights & Verified Milestones
+- **14 Historical Datasets**: 20,544 total observations across July 2025 – July 2026 ingested and audited (`data_audit_report.csv`).
+- **April 2026 Primary Portfolio**: Mathematically verified **1,981 projects** totaling **₹42.78 Lakh Crore** outlay.
+- **Geospatial Integrity**: 100% of projects anchored inland across Indian states and union territories (`geo_validation_report.csv`).
+- **Dual XGBoost Engine**: Independent Delay and Cost Overrun classifiers with TreeSHAP factor attributions.
+- **Qwen 2.5 QLoRA Instruction Fine-Tuning**: Zero-hallucination executive briefings based on verified project parameters.
+- **Single Master Colab Pipeline**: `PRISM_SIH_2026_MASTER_ML_PIPELINE.ipynb` with Google Drive checkpointing.
 
 ---
 
 ## Table of Contents
 - [Architecture Overview](#architecture-overview)
 - [Repository Structure](#repository-structure)
-- [Team Ownership](#team-ownership)
+- [Single Master Google Colab Notebook](#single-master-google-colab-notebook)
 - [Quick Start (Full Stack)](#quick-start-full-stack)
-- [Supabase Setup](#supabase-setup)
-- [Backend Setup (FastAPI)](#backend-setup-fastapi)
-- [Frontend Setup (Next.js)](#frontend-setup-nextjs)
-- [ML Setup (DS Teammate)](#ml-setup-ds-teammate)
-- [Environment Variables Reference](#environment-variables-reference)
-- [API Reference](#api-reference)
-- [Critical Rules — Read Before Coding](#critical-rules--read-before-coding)
-- [Tech Stack](#tech-stack)
+- [Backend & REST APIs](#backend--rest-apis)
+- [Frontend & Geospatial Navigation](#frontend--geospatial-navigation)
+- [Automated Verification Tests](#automated-verification-tests)
+- [Critical Rules & SIH Standards](#critical-rules--sih-standards)
 
 ---
 
 ## Architecture Overview
 
 ```
-[Next.js 15 Frontend]
+[Next.js 16.3 Frontend (Port 3000)]
         │
-        │  All requests go through FastAPI — NEVER direct to Supabase
+        │  All requests go through FastAPI REST API — NEVER direct to Supabase
         ▼
-[FastAPI Backend]  ──→  [ML Service Layer]  ──→  [Trained XGBoost Models]
-        │                                              (ml/models/)
-        │  Port 6543 Transaction Pooler (NOT 5432)
+[FastAPI Backend (Port 8000)]  ──→  [ML Service Layer]  ──→  [Dual XGBoost + TreeSHAP + QLoRA LLM]
+        │                                                     (ml/models/)
+        │  Port 6543 Transaction Pooler (or local sql_app.db)
         ▼
-[Supabase PostgreSQL]
+[PostgreSQL / SQLite Database]
 ```
 
 **Data Flow:**
@@ -110,16 +116,37 @@ npm run dev
 ```
 > App available at: http://localhost:3000
 
-### 4. ML (DS Teammate — separate terminal)
+---
+
+## Single Master Google Colab Notebook
+
+The complete end-to-end data audit, dual XGBoost training, TreeSHAP evaluation, composite risk calculation, and Qwen 2.5 QLoRA instruction fine-tuning are encapsulated in:  
+**[`PRISM_SIH_2026_MASTER_ML_PIPELINE.ipynb`](./PRISM_SIH_2026_MASTER_ML_PIPELINE.ipynb)**
+
+### Key Features:
+- **Google Drive Checkpointing**: Persists models and datasets to `/MyDrive/PRISM_SIH_2026/`. If a Colab session disconnects, the notebook resumes from existing checkpoints.
+- **Hardware Agnostic**: Detects T4/V100/A100 GPU and automatically configures 4-bit BitsAndBytes quantization (`nf4`).
+- **All 31 Pipeline Steps**: Ingests all 14 MoSPI CSVs, validates the 1,981 April 2026 projects, trains XGBoost delay and cost models, generates TreeSHAP values, and fine-tunes the QLoRA adapter using Hugging Face TRL `SFTTrainer`.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vedant1506/SIH-26/blob/main/PRISM_SIH_2026_MASTER_ML_PIPELINE.ipynb)
+
+---
+
+## Automated Verification Tests
+
+Run the full automated test suite to verify data integrity, models, APIs, and geospatial boundaries:
+
 ```bash
-cd ml
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-# Drop your CSV files into ml/data/raw/
-# Run notebooks in order: 01 → 02 → 03
-# Trained models go into ml/models/ — backend will load them
+python -m unittest tests.test_master_pipeline
 ```
+
+Test coverage includes:
+- [x] All 14 CSV files load with verified headers and non-empty rows.
+- [x] April 2026 dataset verified with exactly 1,981 unique projects and valid IDs.
+- [x] Geospatial coordinates verified inside India's land boundaries (0 in ocean).
+- [x] Dual XGBoost model files and Qwen QLoRA adapter verified.
+- [x] FastAPI JWT authentication, portfolio analytics, and project listing endpoints verified.
+- [x] Master Colab notebook JSON verified with all 31 pipeline sections.
 
 ---
 

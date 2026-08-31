@@ -1,0 +1,86 @@
+{
+  "pipeline_name": "PRISM MoSPI Multi-Snapshot Infrastructure Risk Intelligence",
+  "training_timestamp": "2026-08-31T16:44:00Z",
+  "data_architecture": {
+    "total_csv_files": 14,
+    "total_raw_observations": 20544,
+    "unique_projects_tracked": 3412,
+    "primary_demonstration_dataset": "FlashReport_April_2026_All_Ongoing_Projects_Structured.csv",
+    "primary_demonstration_projects": 1981,
+    "features_engineered": [
+      "burn_rate_pct",
+      "burn_progress_gap",
+      "time_elapsed_ratio",
+      "physical_progress_pct",
+      "cost_variation_pct",
+      "original_cost_cr",
+      "revised_cost_cr"
+    ],
+    "temporal_splits": {
+      "train_period": "July 2025 - January 2026",
+      "train_rows": 8847,
+      "validation_period": "February 2026 - March 2026",
+      "validation_rows": 3889,
+      "test_period": "April 2026+",
+      "test_rows": 7808
+    }
+  },
+  "models": {
+    "delay_xgboost": {
+      "model_type": "XGBClassifier (Leakage-Safe ScalePosWeight Balanced)",
+      "target": "is_delayed (schedule slippage >= 3.0 months from MoSPI dates)",
+      "file": "ml/models/delay_model.pkl",
+      "audit_status": "LEAKAGE_REPAIRED",
+      "features_used": [
+        "original_cost_cr",
+        "physical_progress_pct",
+        "original_burn_rate_pct",
+        "original_burn_gap",
+        "time_elapsed_ratio",
+        "progress_velocity"
+      ],
+      "test_accuracy": 0.7565,
+      "baseline_accuracy": 0.7033,
+      "precision": 0.7858,
+      "recall": 0.8987,
+      "f1_score": 0.8385,
+      "roc_auc": 0.8582
+    },
+    "cost_xgboost": {
+      "model_type": "XGBClassifier (Leakage-Safe ScalePosWeight Balanced)",
+      "target": "is_cost_overrun (cost variation >= 10%)",
+      "file": "ml/models/cost_model.pkl",
+      "audit_status": "LEAKAGE_REPAIRED",
+      "features_used": [
+        "original_cost_cr",
+        "physical_progress_pct",
+        "original_burn_rate_pct",
+        "original_burn_gap",
+        "time_elapsed_ratio",
+        "burn_velocity"
+      ],
+      "test_accuracy": 0.8840,
+      "baseline_accuracy": 0.8024,
+      "precision": 0.8583,
+      "recall": 0.4945,
+      "f1_score": 0.6275,
+      "roc_auc": 0.8741
+    },
+    "composite_risk_engine": {
+      "formula": "0.55 * delay_probability + 0.45 * cost_overrun_probability",
+      "tiers": {
+        "critical": ">= 0.70 (105 projects)",
+        "high": "0.45 - 0.69 (332 projects)",
+        "medium": "0.22 - 0.44 (346 projects)",
+        "low": "< 0.22 (1198 projects)"
+      }
+    },
+    "qwen_qlora_adapter": {
+      "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+      "adapter_path": "ml/models/qwen_qlora_adapter/adapter_model.safetensors",
+      "adapter_version": "qwen2.5-qlora-v1.0",
+      "quantization": "4bit_nf4",
+      "status": "SUCCESSFUL"
+    }
+  }
+}

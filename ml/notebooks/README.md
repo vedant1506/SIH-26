@@ -24,3 +24,16 @@ Run the synthetic data generator first:
     python src/generate_demo_data.py
     python src/train_all.py
     python src/evaluate.py
+
+---
+
+## 04_colab_llm_finetuning (Google Colab QLoRA Fine-Tuning)
+To train the PRISM AI Advisory LLM (`Qwen/Qwen2.5-1.5B-Instruct`) on free Google Colab T4 GPU:
+1. Open [Google Colab](https://colab.research.google.com/).
+2. Click **Upload** and upload `ml/notebooks/PRISM_QLoRA_Colab_FineTuning.ipynb`.
+3. Set Runtime to **T4 GPU** (`Runtime > Change runtime type > T4 GPU`).
+4. Upload `ml/data/processed/llm_train.jsonl` when prompted (or drag into Colab file manager).
+5. Run all cells (`Ctrl+F9`).
+6. At the end, the notebook automatically downloads `prism_qwen2.5_qlora_adapter.zip`.
+7. Unzip the downloaded adapter into `ml/models/qwen_qlora_adapter/` in your local project.
+

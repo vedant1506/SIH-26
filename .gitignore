@@ -18,6 +18,17 @@ env/
 *.db
 *.sqlite3
 
+# Model checkpoints and large optimizer states
+checkpoint-*/
+*.pt
+*.pth
+*.bin
+*.zip
+csv/
+ml/models/qwen_qlora_adapter/csv/
+data_audit_report.csv
+geo_validation_report.csv
+
 # Scratch / Temp
 scratch/
 

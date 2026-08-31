@@ -31,7 +31,7 @@ def run_colab_finetuning():
     from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, TrainingArguments
     from peft import LoraConfig, get_peft_model, TaskType, prepare_model_for_kbit_training
     from datasets import load_dataset
-    from trl import SFTTrainer
+    from trl import SFTTrainer, SFTConfig
 
     if not torch.cuda.is_available():
         logger.error("CUDA is not available. Please switch Google Colab runtime to GPU (T4/L4/A100).")
@@ -69,8 +69,9 @@ def run_colab_finetuning():
         bias="none",
     )
 
-    training_args = TrainingArguments(
+    training_args = SFTConfig(
         output_dir=OUTPUT_DIR,
+        max_length=1024,
         per_device_train_batch_size=4,
         gradient_accumulation_steps=4,
         learning_rate=2e-4,
@@ -80,6 +81,7 @@ def run_colab_finetuning():
         optim="paged_adamw_8bit",
         lr_scheduler_type="cosine",
         save_strategy="epoch",
+        save_total_limit=2,
         report_to="none",
     )
 
@@ -90,9 +92,6 @@ def run_colab_finetuning():
             model=model,
             train_dataset=dataset["train"],
             peft_config=peft_config,
-            dataset_text_field="messages",
-            max_seq_length=1024,
-            tokenizer=tokenizer,
             args=training_args,
         )
         logger.info("Training QLoRA Model...")

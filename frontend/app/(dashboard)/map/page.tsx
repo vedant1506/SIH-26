@@ -103,7 +103,7 @@ export default function MapPage() {
   const [selectedSector, setSelectedSector] = useState<string>("all");
   const [selectedTier, setSelectedTier] = useState<string>("all");
   const [colorMode, setColorMode] = useState<"risk" | "sector">("risk");
-  const [drawerTab, setDrawerTab] = useState<"project" | "districts">("project");
+  const [drawerTab, setDrawerTab] = useState<"project" | "projects" | "districts">("project");
 
   useEffect(() => {
     fetch("/india_states_simplified.geojson")
@@ -111,7 +111,7 @@ export default function MapPage() {
       .then((data) => setGeoJsonData(data))
       .catch((err) => console.error("Error loading India states GeoJSON", err));
 
-    listProjects({ limit: 1200 })
+    listProjects({ limit: 2000 })
       .then((p) => {
         const projs = p || [];
         setAllProjects(projs);
@@ -128,6 +128,10 @@ export default function MapPage() {
 
   // Filtered project list strictly mapped to inland places (zero in ocean/water)
   const filteredProjects = useMemo(() => {
+    const selStNorm = selectedState !== "all" ? selectedState.trim().toUpperCase() : null;
+    const selDistNorm = selectedDistrict !== "all" ? selectedDistrict.trim().toUpperCase() : null;
+    const selPlaceNorm = selectedPlace !== "all" ? selectedPlace.trim().toUpperCase() : null;
+
     return allProjects
       .map((p, idx) => {
         const loc = getProjectLocation(p, idx);
@@ -138,7 +142,8 @@ export default function MapPage() {
 
         return {
           ...p,
-          state: loc.state,
+          // Preserve original project state if available, fallback to loc.state
+          state: p.state || loc.state,
           district: loc.district,
           place: loc.place,
           category: p.sector || loc.category,
@@ -147,9 +152,9 @@ export default function MapPage() {
         };
       })
       .filter((p) => {
-        if (selectedState !== "all" && p.state !== selectedState) return false;
-        if (selectedDistrict !== "all" && p.district !== selectedDistrict) return false;
-        if (selectedPlace !== "all" && p.place !== selectedPlace) return false;
+        if (selStNorm && (p.state || "").trim().toUpperCase() !== selStNorm) return false;
+        if (selDistNorm && (p.district || "").trim().toUpperCase() !== selDistNorm) return false;
+        if (selPlaceNorm && (p.place || "").trim().toUpperCase() !== selPlaceNorm) return false;
         if (selectedSector !== "all" && p.sector !== selectedSector && p.category !== selectedSector) return false;
         if (selectedTier !== "all" && p.risk_tier !== selectedTier) return false;
         return true;
@@ -177,7 +182,7 @@ export default function MapPage() {
     const stUpper = selectedState.toUpperCase();
     const distDefs = STATE_DISTRICTS_DATA[stUpper] || [];
     if (selectedDistrict !== "all") {
-      const d = distDefs.find((item) => item.district === selectedDistrict);
+      const d = distDefs.find((item) => item.district.toUpperCase() === selectedDistrict.toUpperCase());
       return d ? d.places.map((p) => p.place) : [];
     }
     return distDefs.flatMap((d) => d.places.map((p) => p.place));
@@ -185,7 +190,8 @@ export default function MapPage() {
 
   const districtSummaries = useMemo(() => {
     if (selectedState === "all") return [];
-    const stProjs = allProjects.filter((p) => p.state === selectedState);
+    const selStNorm = selectedState.trim().toUpperCase();
+    const stProjs = allProjects.filter((p) => (p.state || "").trim().toUpperCase() === selStNorm);
     return aggregateDistrictData(stProjs);
   }, [allProjects, selectedState]);
 
@@ -402,7 +408,7 @@ export default function MapPage() {
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
       <TopBar
         title="Geospatial Infrastructure Intelligence Map"
-        subtitle="Hierarchy drilldown: State › District › Place / Locality › Category across all 23 Indian states (Zero-ocean verified)"
+        subtitle="MoSPI PAIMANA · April 2026 National Portfolio (1,981 Projects) · Hierarchy: State › District › Place / Locality"
       />
 
       {/* Filter Bar with Full Hierarchy: State, District, Place, Category */}
@@ -659,14 +665,14 @@ export default function MapPage() {
           >
             {/* Drawer Tab Switcher when a state is active */}
             {selectedState !== "all" && (
-              <div style={{ display: "flex", gap: 6, marginBottom: 14, background: "var(--surface-2)", padding: 3, borderRadius: 8 }}>
+              <div style={{ display: "flex", gap: 4, marginBottom: 14, background: "var(--surface-2)", padding: 3, borderRadius: 8 }}>
                 <button
                   onClick={() => setDrawerTab("project")}
                   style={{
                     flex: 1,
-                    padding: "5px 10px",
+                    padding: "5px 6px",
                     borderRadius: 6,
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: 700,
                     border: "none",
                     cursor: "pointer",
@@ -678,12 +684,29 @@ export default function MapPage() {
                   Project Details
                 </button>
                 <button
+                  onClick={() => setDrawerTab("projects")}
+                  style={{
+                    flex: 1,
+                    padding: "5px 6px",
+                    borderRadius: 6,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    border: "none",
+                    cursor: "pointer",
+                    background: drawerTab === "projects" ? "var(--accent)" : "transparent",
+                    color: drawerTab === "projects" ? "#ffffff" : "var(--text-sub)",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  Projects ({filteredProjects.length})
+                </button>
+                <button
                   onClick={() => setDrawerTab("districts")}
                   style={{
                     flex: 1,
-                    padding: "5px 10px",
+                    padding: "5px 6px",
                     borderRadius: 6,
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: 700,
                     border: "none",
                     cursor: "pointer",
@@ -692,12 +715,70 @@ export default function MapPage() {
                     transition: "all 0.15s ease",
                   }}
                 >
-                  District &amp; Place Matrix ({districtSummaries.length})
+                  Districts ({districtSummaries.length})
                 </button>
               </div>
             )}
 
-            {drawerTab === "districts" && selectedState !== "all" ? (
+            {drawerTab === "projects" && selectedState !== "all" ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, overflowY: "auto" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    {selectedState} MoSPI Projects ({filteredProjects.length})
+                  </span>
+                  <span style={{ fontSize: 10, color: "var(--text-muted)" }}>
+                    April 2026 Dataset
+                  </span>
+                </div>
+
+                <div style={{ fontSize: 11, color: "var(--text-sub)", lineHeight: 1.4 }}>
+                  Select any April 2026 project to view its executive briefing and pinpoint on map:
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {filteredProjects.map((p) => {
+                    const isSelected = selectedProject?.id === p.id;
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => {
+                          setSelectedProject(p);
+                          setDrawerTab("project");
+                          if (leafletMapRef.current && p.latitude && p.longitude) {
+                            leafletMapRef.current.setView([p.latitude, p.longitude], 12, { animate: true });
+                          }
+                        }}
+                        style={{
+                          padding: "10px 12px",
+                          background: isSelected ? "rgba(6, 182, 212, 0.14)" : "var(--surface-2)",
+                          border: isSelected ? "1px solid var(--accent)" : "1px solid var(--border)",
+                          borderRadius: 8,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", flex: 1, paddingRight: 6 }}>
+                            {p.project_name}
+                          </span>
+                          <RiskBadge tier={p.risk_tier || "low"} />
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text-sub)" }}>
+                          <span>📍 {p.place || p.district || selectedState}</span>
+                          <span style={{ color: "var(--accent)", fontWeight: 600 }}>
+                            {p.revised_cost_cr != null ? `₹${p.revised_cost_cr.toLocaleString("en-IN")} Cr` : "—"}
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>
+                          <span>{p.sector || p.category}</span>
+                          <span>Progress: {p.physical_progress_pct != null ? `${p.physical_progress_pct.toFixed(0)}%` : "—"}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : drawerTab === "districts" && selectedState !== "all" ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, overflowY: "auto" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
