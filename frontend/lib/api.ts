@@ -62,6 +62,7 @@ export async function getMe(): Promise<User> {
 
 // ── Projects ──────────────────────────────────
 export interface ProjectFilters {
+  search?: string;
   ministry?: string;
   sector?: string;
   state?: string;
@@ -99,6 +100,12 @@ export async function getProjectPredictions(
   limit = 10
 ): Promise<RiskPrediction[]> {
   return request<RiskPrediction[]>(`/projects/${projectId}/predictions?limit=${limit}`);
+}
+
+export async function generateMitigation(projectId: string): Promise<{ mitigation_text: string; model: string }> {
+  return request<{ mitigation_text: string; model: string }>(`/projects/${projectId}/mitigation`, {
+    method: "POST",
+  });
 }
 
 export async function getPortfolioSummary(filters: ProjectFilters = {}): Promise<PortfolioSummary> {

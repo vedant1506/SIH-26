@@ -8,7 +8,7 @@ export default function RiskTrendChart({ predictions }: { predictions: RiskPredi
     return <div style={{ color: "#64748b", fontSize: 13, textAlign: "center", padding: 40 }}>Need at least 2 predictions to show trend</div>;
   }
   const data = [...predictions].reverse().map(p => ({
-    date: format(new Date(p.predicted_at), "MMM d"),
+    date: format(new Date(p.predicted_at), "MMM yy"),
     score: Math.round(p.composite_risk_score * 100),
     tier: p.risk_tier,
   }));

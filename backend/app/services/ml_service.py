@@ -64,14 +64,22 @@ def _load_models(models_path: str) -> None:
                 ver_data = json.load(f)
                 _model_version = ver_data.get("model_version", _model_version)
 
-        # Detect and append active fine-tuned QLoRA adapter version
+        # Detect and append active fine-tuned QLoRA adapter or full merged model
         try:
+            full_merged_dir = os.path.join(models_path, "..", "models", "qwen_merged_full_model")
             qwen_adapter_dir = os.path.join(models_path, "..", "models", "qwen_qlora_adapter")
             qwen_ver_file = os.path.join(qwen_adapter_dir, "QWEN_QLORA_MODEL_VERSION.json")
             adapter_weights = os.path.join(qwen_adapter_dir, "adapter_model.safetensors")
             adv_ver_file = os.path.join(models_path, "..", "models", "qwen_qlora_advanced_v2", "QWEN_QLORA_ADVANCED_VERSION.json")
 
-            if os.path.exists(adapter_weights) or os.path.exists(qwen_ver_file):
+            has_full_merged = os.path.exists(full_merged_dir) and any(
+                f.endswith(".safetensors") for f in os.listdir(full_merged_dir)
+            ) if os.path.exists(full_merged_dir) else False
+
+            if has_full_merged:
+                _model_version = f"{_model_version}+qwen2.5-1.5b-merged-standalone-v1.0"
+                logger.info("✓ Detected active full standalone merged Qwen2.5 1.5B model at %s", full_merged_dir)
+            elif os.path.exists(adapter_weights) or os.path.exists(qwen_ver_file):
                 ver_tag = "qwen2.5-qlora-v1.0"
                 if os.path.exists(qwen_ver_file):
                     with open(qwen_ver_file, "r") as f:
@@ -84,7 +92,7 @@ def _load_models(models_path: str) -> None:
                     qver = json.load(f)
                     _model_version = f"{_model_version}+{qver.get('version', 'qwen2.5-advanced-qlora-v2.0')}"
         except Exception as ve:
-            logger.debug("Adapter version tag detection note: %s", ve)
+            logger.debug("Adapter / merged model version tag detection note: %s", ve)
 
         if os.path.exists(model_file) and os.path.exists(prep_file) and os.path.exists(feat_file):
             try:
@@ -102,8 +110,8 @@ def _load_models(models_path: str) -> None:
         try:
             import joblib
             delay_paths = [
-                os.path.join(models_path, "models", "delay_xgboost", "delay_model.pkl"),
                 os.path.join(models_path, "..", "models", "delay_model.pkl"),
+                os.path.join(models_path, "models", "delay_xgboost", "delay_model.pkl"),
                 os.path.join(models_path, "models", "delay_model.pkl"),
             ]
             for dp in delay_paths:
@@ -116,8 +124,8 @@ def _load_models(models_path: str) -> None:
                         logger.debug("Failed loading delay candidate %s: %s", dp, de)
 
             cost_paths = [
-                os.path.join(models_path, "models", "cost_xgboost", "cost_model.pkl"),
                 os.path.join(models_path, "..", "models", "cost_model.pkl"),
+                os.path.join(models_path, "models", "cost_xgboost", "cost_model.pkl"),
                 os.path.join(models_path, "models", "cost_model.pkl"),
             ]
             for cp in cost_paths:

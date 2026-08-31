@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { getProject, predictProject, getProjectPredictions } from "@/lib/api";
+import { getProject, predictProject, getProjectPredictions, generateMitigation } from "@/lib/api";
 import type { Project, RiskPrediction } from "@/lib/types";
 import TopBar from "@/components/layout/TopBar";
 import RiskBadge from "@/components/ui/RiskBadge";
@@ -16,24 +16,16 @@ import WhatIfPanel from "@/components/features/WhatIfPanel";
 import PdfExportButton from "@/components/features/PdfExportButton";
 
 
-const DRIVER_SOLUTIONS: Record<string, string> = {
-  burn_progress_gap:
-    "Conduct immediate joint site audit of financial invoices against physical work completion. Freeze un-verified billing claims and enforce milestone-linked escrow disbursements.",
-  time_elapsed_ratio:
-    "Fast-track critical path activities by authorizing 24/7 dual-shift operations. Accelerate pending land acquisition, environmental clearances, and utility shifting.",
-  cost_variation_pct:
-    "Re-evaluate material procurement contracts and cap price escalation clauses. Re-allocate unused project contingency reserves and mandate ministry value-engineering review.",
-  physical_progress_num:
-    "Deploy additional contractor heavy machinery and manpower. Establish weekly site-level monitoring committees chaired by regional project directors.",
-  previous_progress_change:
-    "Remove site bottlenecks hindering monthly construction velocity. Provide immediate cash-flow assistance to contractors upon milestone completion.",
-};
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [prediction, setPrediction] = useState<RiskPrediction | null>(null);
   const [history, setHistory] = useState<RiskPrediction[]>([]);
+  const [mitigationText, setMitigationText] = useState<string | null>(null);
+  const [mitigationModel, setMitigationModel] = useState<string>("");
+  const [mitigationLoading, setMitigationLoading] = useState(false);
+  const [mitigationError, setMitigationError] = useState("");
   const [loading, setLoading] = useState(true);
   const [predicting, setPredicting] = useState(false);
   const [error, setError] = useState("");
@@ -48,21 +40,26 @@ export default function ProjectDetailPage() {
         if (!p) throw new Error("Project not found");
         setProject(p);
 
+        // Always run a fresh AI prediction on page open — never show stale seed data
         try {
-          const h = await getProjectPredictions(p.id, 10).catch(() => []);
-          const historyList = (h as RiskPrediction[]) || [];
-          setHistory(historyList);
-          if (historyList.length > 0) {
-            setPrediction(historyList[0]);
+          setPredicting(true);
+          const freshPred = await predictProject(p.id).catch(() => null);
+          if (freshPred) {
+            setPrediction(freshPred);
+            // Also refresh history to include this latest run
+            const h = await getProjectPredictions(p.id, 10).catch(() => []);
+            setHistory((h as RiskPrediction[]) || [freshPred]);
           } else {
-            const freshPred = await predictProject(p.id).catch(() => null);
-            if (freshPred) {
-              setPrediction(freshPred);
-              setHistory([freshPred]);
-            }
+            // Fallback: if live prediction fails, show latest DB record
+            const h = await getProjectPredictions(p.id, 10).catch(() => []);
+            const historyList = (h as RiskPrediction[]) || [];
+            setHistory(historyList);
+            if (historyList.length > 0) setPrediction(historyList[0]);
           }
         } catch (pe) {
           console.error("Auto prediction on load failed", pe);
+        } finally {
+          setPredicting(false);
         }
       })
       .catch(async (e) => {
@@ -83,7 +80,7 @@ export default function ProjectDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  async function runPrediction() {
+  async function _runPrediction_unused() {
     if (!project) return;
     setPredicting(true);
     try {
@@ -153,40 +150,128 @@ export default function ProjectDetailPage() {
               )}
             </div>
           </div>
-          <div style={{ display: "flex", gap: 10 }}>
-            <PdfExportButton project={project} prediction={prediction} />
-            <button id="run-prediction-btn" className="btn btn-primary" onClick={runPrediction} disabled={predicting}>
-              {predicting ? "Running AI Models..." : "Run AI Prediction"}
-            </button>
+        </div>
+
+        {/* Timing & Schedule Row */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+            <span>📅</span> Project Timeline & Schedule Details
+          </div>
+          <div className="responsive-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+            <KpiCard
+              label="Starting Date"
+              value={project.original_start_date ? new Date(project.original_start_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
+              sub="Work sanctioned start"
+              color="#38bdf8"
+            />
+            <KpiCard
+              label="Scheduled Completion"
+              value={project.scheduled_completion_date ? new Date(project.scheduled_completion_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
+              sub="Contractual target date"
+              color="#a855f7"
+            />
+            <KpiCard
+              label="Revised Completion"
+              value={project.revised_completion_date ? new Date(project.revised_completion_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : (project.scheduled_completion_date ? new Date(project.scheduled_completion_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—")}
+              sub={project.revised_completion_date ? "Anticipated commission" : "Original target"}
+              color="#f59e0b"
+            />
+            <KpiCard
+              label="Timeline Elapsed"
+              value={project.time_elapsed_ratio != null ? `${(project.time_elapsed_ratio * 100).toFixed(1)}%` : "—"}
+              sub={(() => {
+                if (project.time_elapsed_ratio == null) return "Scheduled window";
+                if (project.original_start_date && project.scheduled_completion_date) {
+                  const s = new Date(project.original_start_date).getTime();
+                  const c = new Date(project.scheduled_completion_date).getTime();
+                  const totalDays = Math.max((c - s) / (1000 * 60 * 60 * 24), 30);
+                  const now = new Date("2026-04-30").getTime();
+                  const elapsedDays = (now - s) / (1000 * 60 * 60 * 24);
+                  const diffDays = elapsedDays - totalDays;
+                  if (diffDays > 0) {
+                    const mo = (diffDays / 30.4).toFixed(1);
+                    return `Overdue by ~${mo} mo`;
+                  } else {
+                    const remMo = (Math.abs(diffDays) / 30.4).toFixed(1);
+                    return `~${remMo} mo remaining`;
+                  }
+                }
+                return project.time_elapsed_ratio > 1.0 ? "Over original schedule" : "Within planned schedule";
+              })()}
+              color={project.time_elapsed_ratio != null && project.time_elapsed_ratio > 1.0 ? "#f43f5e" : "#10b981"}
+            />
           </div>
         </div>
 
-        {/* Key Metrics Row */}
-        <div className="responsive-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
-          <KpiCard
-            label="Original Cost"
-            value={project.original_cost_cr != null ? `₹${project.original_cost_cr.toLocaleString("en-IN")} Cr` : "—"}
-            sub="At sanction"
-            color="#94a3b8"
-          />
-          <KpiCard
-            label="Revised Cost"
-            value={project.revised_cost_cr != null ? `₹${project.revised_cost_cr.toLocaleString("en-IN")} Cr` : "—"}
-            sub="Latest revision"
-            color="#06b6d4"
-          />
-          <KpiCard
-            label="Physical Progress"
-            value={project.physical_progress_pct != null ? `${project.physical_progress_pct.toFixed(1)}%` : "—"}
-            sub="As reported"
-            color="#10b981"
-          />
-          <KpiCard
-            label="Delay Probability"
-            value={prediction ? `${(prediction.delay_probability * 100).toFixed(0)}%` : "—"}
-            sub={prediction?.delay_duration_months ? `~${prediction.delay_duration_months} mo delay` : "AI prediction"}
-            color={prediction ? (prediction.delay_probability > 0.6 ? "#f43f5e" : "#f59e0b") : "#94a3b8"}
-          />
+        {/* Financial & Physical Progress Row */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+            <span>📊</span> Financial & Execution Progress
+          </div>
+          <div className="responsive-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+            <KpiCard
+              label="Original Cost"
+              value={project.original_cost_cr != null ? `₹${project.original_cost_cr.toLocaleString("en-IN")} Cr` : "—"}
+              sub="At sanction"
+              color="#94a3b8"
+            />
+            <KpiCard
+              label="Revised Cost"
+              value={project.revised_cost_cr != null ? `₹${project.revised_cost_cr.toLocaleString("en-IN")} Cr` : "—"}
+              sub="Latest revision"
+              color="#06b6d4"
+            />
+            <KpiCard
+              label="Cumulative Expenditure"
+              value={project.cumulative_expenditure_cr != null ? `₹${project.cumulative_expenditure_cr.toLocaleString("en-IN")} Cr` : "—"}
+              sub={project.burn_rate_pct != null ? `${project.burn_rate_pct.toFixed(1)}% budget spent` : "Total spent to date"}
+              color="#818cf8"
+            />
+            <KpiCard
+              label="Physical Progress"
+              value={project.physical_progress_pct != null ? `${project.physical_progress_pct.toFixed(1)}%` : "—"}
+              sub={project.burn_progress_gap != null ? (project.burn_progress_gap > 0 ? `+${project.burn_progress_gap.toFixed(1)}% spend gap` : `${Math.abs(project.burn_progress_gap).toFixed(1)}% ahead of spend`) : "Ground completion"}
+              color="#10b981"
+            />
+          </div>
+        </div>
+
+        {/* XGBoost AI Models Inference Outputs Row */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+            <span>⚡</span> XGBoost AI Models Inference Outputs
+            {predicting && (
+              <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, color: "#f59e0b", background: "rgba(245,158,11,0.12)", borderRadius: 6, padding: "2px 8px", animation: "pulse 1.2s ease-in-out infinite" }}>
+                🔄 Running AI Model...
+              </span>
+            )}
+          </div>
+          <div className="responsive-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+            <KpiCard
+              label="XGBoost Delay Prob"
+              value={prediction ? `${(prediction.delay_probability * 100).toFixed(1)}%` : "—"}
+              sub={prediction ? (prediction.delay_probability > 0.60 ? "High slippage probability" : "Within scheduled buffer") : "Classification output"}
+              color={prediction ? (prediction.delay_probability > 0.6 ? "#f43f5e" : "#10b981") : "#94a3b8"}
+            />
+            <KpiCard
+              label="Forecasted Schedule Lag"
+              value={prediction?.delay_duration_months != null ? (prediction.delay_duration_months > 0 ? `+${prediction.delay_duration_months.toFixed(1)} mo` : `${prediction.delay_duration_months.toFixed(1)} mo`) : "—"}
+              sub={prediction?.delay_duration_months && prediction.delay_duration_months > 0 ? "Past original target date" : "On scheduled track"}
+              color={prediction?.delay_duration_months && prediction.delay_duration_months > 0 ? "#f43f5e" : "#10b981"}
+            />
+            <KpiCard
+              label="XGBoost Cost Overrun Prob"
+              value={prediction ? `${(prediction.cost_overrun_probability * 100).toFixed(1)}%` : "—"}
+              sub={prediction ? (prediction.cost_overrun_probability > 0.50 ? "High overrun risk" : "Low overrun probability") : "Classification output"}
+              color={prediction ? (prediction.cost_overrun_probability > 0.50 ? "#f43f5e" : "#06b6d4") : "#94a3b8"}
+            />
+            <KpiCard
+              label="Cost Exposure Amount"
+              value={prediction?.cost_overrun_amount_cr != null ? (prediction.cost_overrun_amount_cr > 0 ? `+₹${prediction.cost_overrun_amount_cr.toFixed(1)} Cr` : `₹0.0 Cr`) : "—"}
+              sub="Projected fiscal overrun"
+              color={prediction?.cost_overrun_amount_cr && prediction.cost_overrun_amount_cr > 0 ? "#f43f5e" : "#10b981"}
+            />
+          </div>
         </div>
 
         {/* Executive Risk Assessment & Policy Advisory Card (Human-Readable, Professional Format) */}
@@ -211,14 +296,18 @@ export default function ProjectDetailPage() {
             return `projected schedule lag of ${m} months`;
           });
 
-          // 4. Separate narrative and recommendation
+          // 4. Extract clean narrative summary only
           let narrativeText = clean;
-          let resolutionText = "";
           const resMatch = clean.match(/(?:Recommended Resolution|Recommended Action Plan):\s*([\s\S]+)$/i);
           if (resMatch) {
-            resolutionText = resMatch[1].trim();
             narrativeText = clean.replace(/(?:Recommended Resolution|Recommended Action Plan):\s*[\s\S]+$/i, "").trim();
           }
+
+          // 5. Parse points into distinct lines
+          const points = narrativeText
+            .split(/•\s*/)
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
 
           return (
             <div
@@ -229,34 +318,44 @@ export default function ProjectDetailPage() {
                 padding: "20px 24px",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 16 }}>🏛️</span>
                   <span className="executive-advisory-title" style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                    MoSPI PAIMANA Executive Risk Assessment & Policy Advisory
+                    MoSPI PAIMANA Executive Risk Assessment
                   </span>
                 </div>
                 <RiskBadge tier={prediction.risk_tier} suffix={prediction.composite_risk_score != null ? ` (${(prediction.composite_risk_score * 100).toFixed(0)}% Index)` : ""} />
               </div>
 
-              <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7, fontWeight: 400, marginBottom: resolutionText ? 16 : 0 }}>
-                {narrativeText}
-              </div>
-
-              {resolutionText && (
-                <div
-                  className="executive-advisory-action"
-                  style={{
-                    padding: "12px 16px",
-                    borderRadius: "0 8px 8px 0",
-                  }}
-                >
-                  <div className="executive-advisory-action-title" style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
-                    ⚡ Recommended Policy Action & Resolution Plan
-                  </div>
-                  <div className="executive-advisory-action-text" style={{ fontSize: 12.5, lineHeight: 1.6 }}>
-                    {resolutionText}
-                  </div>
+              {points.length > 1 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 13, lineHeight: 1.6 }}>
+                  {points.map((pt, idx) => {
+                    const colonIdx = pt.indexOf(":");
+                    if (colonIdx > 0 && colonIdx < 35) {
+                      const key = pt.substring(0, colonIdx).trim();
+                      const val = pt.substring(colonIdx + 1);
+                      return (
+                        <div key={idx} style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                          <span style={{ color: "var(--accent)", fontSize: 10 }}>●</span>
+                          <div style={{ flex: 1 }}>
+                            <strong style={{ color: "var(--text)", fontWeight: 600 }}>{key}:</strong>
+                            <span style={{ color: "var(--text-sub)", marginLeft: 6 }}>{val}</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={idx} style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                        <span style={{ color: "var(--accent)", fontSize: 10 }}>●</span>
+                        <div style={{ flex: 1, color: "var(--text-sub)" }}>{pt}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ fontSize: 13, color: "var(--text-sub)", lineHeight: 1.7, fontWeight: 400 }}>
+                  {narrativeText}
                 </div>
               )}
             </div>
@@ -284,27 +383,86 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        {/* Graph-Driven Actionable Mitigation Solutions Section */}
+        {/* Graph-Driven Mitigation — button triggers AI model */}
         {prediction?.shap_values && prediction.shap_values.length > 0 && (
           <div className="card animate-fade" style={{ marginBottom: 24, background: "var(--surface)" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", marginBottom: 16 }}>
-              💡 Graph-Driven Actionable Mitigation Solutions
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", display: "flex", alignItems: "center", gap: 6 }}>
+                <span>🤖</span> AI-Generated Mitigation Plan (AI Model)
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                {mitigationText && !mitigationLoading && (
+                  <PdfExportButton
+                    project={project}
+                    prediction={prediction}
+                    mitigationPlan={mitigationText}
+                    label="📄 Export PDF Report"
+                    className="btn btn-secondary animate-fade"
+                  />
+                )}
+                <button
+                  id="generate-mitigation-btn"
+                  className="btn btn-primary"
+                  disabled={mitigationLoading}
+                  onClick={async () => {
+                    if (!project) return;
+                    setMitigationLoading(true);
+                    setMitigationError("");
+                    setMitigationText(null);
+                    try {
+                      const res = await generateMitigation(project.id);
+                      setMitigationText(res.mitigation_text);
+                      setMitigationModel("AI Model");
+                    } catch (e: any) {
+                      setMitigationError(e?.message || "Failed to generate mitigation plan. Please try again.");
+                    } finally {
+                      setMitigationLoading(false);
+                    }
+                  }}
+                  style={{ fontSize: 12, padding: "8px 16px", display: "flex", alignItems: "center", gap: 6 }}
+                >
+                  {mitigationLoading ? (
+                    <><span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⚙️</span> Loading AI Model...</>
+                  ) : (
+                    <><span>⚡</span> {mitigationText ? "Regenerate AI Mitigation Plan" : "Generate AI Mitigation Plan"}</>
+                  )}
+                </button>
+              </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
-              {prediction.shap_values.slice(0, 4).map((sv, idx) => (
-                <div key={idx} style={{ background: "var(--surface-2)", padding: 14, borderRadius: 8, borderLeft: `3px solid ${sv.direction === "positive" ? "#f43f5e" : "#10b981"}` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>{sv.label}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: sv.direction === "positive" ? "#f43f5e" : "#10b981", background: "var(--surface)", padding: "2px 6px", borderRadius: 4 }}>
-                      {sv.direction === "positive" ? "+ " : "- "}{(Math.abs(sv.value) * 100).toFixed(0)}% Impact
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--text-sub)", lineHeight: 1.5 }}>
-                    {DRIVER_SOLUTIONS[sv.feature] || "Review project management schedule and optimize site resource deployment."}
+
+            {/* Loading state */}
+            {mitigationLoading && (
+              <div style={{ padding: "24px 0", textAlign: "center" }}>
+                <div style={{ fontSize: 13, color: "var(--text-sub)", marginBottom: 8 }}>🧠 AI Model is analysing this project...</div>
+                <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Analyzing project parameters and generating customized mitigation actions.</div>
+                <div style={{ marginTop: 16, height: 4, background: "var(--surface-2)", borderRadius: 2, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: "100%", background: "linear-gradient(90deg, var(--accent) 0%, #a855f7 50%, var(--accent) 100%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                </div>
+              </div>
+            )}
+
+            {/* Error state */}
+            {mitigationError && !mitigationLoading && (
+              <div style={{ color: "#f43f5e", fontSize: 12, padding: "8px 0" }}>⚠️ {mitigationError}</div>
+            )}
+
+            {/* Generated output */}
+            {mitigationText && !mitigationLoading && (
+              <div style={{ animation: "fadeIn 0.4s ease" }}>
+                <div style={{ background: "var(--surface-2)", borderRadius: 10, padding: "18px 20px", borderLeft: "3px solid var(--accent)" }}>
+                  <div style={{ whiteSpace: "pre-wrap", fontSize: 13, color: "var(--text)", lineHeight: 1.75 }}>
+                    {mitigationText}
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* Placeholder state — before button is clicked */}
+            {!mitigationText && !mitigationLoading && !mitigationError && (
+              <div style={{ padding: "20px 0", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+                Click <strong style={{ color: "var(--accent)" }}>Generate AI Mitigation Plan</strong> to run the AI model and get a unique, project-specific action plan.
+              </div>
+            )}
           </div>
         )}
 
@@ -325,10 +483,6 @@ export default function ProjectDetailPage() {
               currentScore={prediction?.composite_risk_score}
               currentRevisedCost={project.revised_cost_cr || project.original_cost_cr}
               currentProgress={project.physical_progress_pct}
-              onResult={(r) => {
-                setPrediction(r);
-                setHistory((h) => [r, ...h].slice(0, 10));
-              }}
             />
           </div>
         </div>
@@ -376,36 +530,6 @@ export default function ProjectDetailPage() {
           </div>
         )}
 
-        {/* Live Model Verification & Diagnostics Badge */}
-        {prediction && (
-          <div
-            style={{
-              marginTop: 24,
-              padding: "12px 18px",
-              borderRadius: 8,
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: 12,
-              fontSize: 12,
-              color: "var(--text-sub)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ color: "#10b981", fontSize: 14 }}>●</span>
-              <span style={{ fontWeight: 600, color: "var(--text)" }}>AI Engine Status: Live</span>
-              <span style={{ color: "var(--border)" }}>|</span>
-              <span>Model Architecture: <strong style={{ color: "var(--accent)" }}>{prediction.model_version || "XGBoost v2.0 + Qwen2.5 QLoRA"}</strong></span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <span>Leakage Audit: <strong style={{ color: "#10b981" }}>PASSED (Zero-Leakage)</strong></span>
-              <span>Inference: <strong style={{ color: "var(--text)" }}>~18ms (XGBoost) + QLoRA</strong></span>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

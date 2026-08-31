@@ -97,6 +97,7 @@ export default function MapPage() {
   const [geoJsonData, setGeoJsonData] = useState<any>(null);
 
   // 4-Tier Hierarchy: State -> District -> Place -> Category
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedState, setSelectedState] = useState<string>("all");
   const [selectedDistrict, setSelectedDistrict] = useState<string>("all");
   const [selectedPlace, setSelectedPlace] = useState<string>("all");
@@ -131,6 +132,7 @@ export default function MapPage() {
     const selStNorm = selectedState !== "all" ? selectedState.trim().toUpperCase() : null;
     const selDistNorm = selectedDistrict !== "all" ? selectedDistrict.trim().toUpperCase() : null;
     const selPlaceNorm = selectedPlace !== "all" ? selectedPlace.trim().toUpperCase() : null;
+    const qLower = searchQuery.trim().toLowerCase();
 
     return allProjects
       .map((p, idx) => {
@@ -152,6 +154,12 @@ export default function MapPage() {
         };
       })
       .filter((p) => {
+        if (qLower) {
+          const tokens = qLower.split(/\s+/).filter((t) => t.length > 1);
+          const fullText = `${p.project_name || ""} ${p.sector || ""} ${p.state || ""} ${p.place || ""} ${p.district || ""}`.toLowerCase();
+          const matchAll = tokens.every((t) => fullText.includes(t));
+          if (!matchAll) return false;
+        }
         if (selStNorm && (p.state || "").trim().toUpperCase() !== selStNorm) return false;
         if (selDistNorm && (p.district || "").trim().toUpperCase() !== selDistNorm) return false;
         if (selPlaceNorm && (p.place || "").trim().toUpperCase() !== selPlaceNorm) return false;
@@ -159,7 +167,7 @@ export default function MapPage() {
         if (selectedTier !== "all" && p.risk_tier !== selectedTier) return false;
         return true;
       });
-  }, [allProjects, selectedState, selectedDistrict, selectedPlace, selectedSector, selectedTier]);
+  }, [allProjects, searchQuery, selectedState, selectedDistrict, selectedPlace, selectedSector, selectedTier]);
 
   const stateOptions = useMemo(() => {
     const states = new Set(allProjects.map((p) => p.state).filter(Boolean));
@@ -411,7 +419,7 @@ export default function MapPage() {
         subtitle="MoSPI PAIMANA · April 2026 National Portfolio (1,981 Projects) · Hierarchy: State › District › Place / Locality"
       />
 
-      {/* Filter Bar with Full Hierarchy: State, District, Place, Category */}
+      {/* Filter Bar with Full Hierarchy: Search, State, District, Place, Category */}
       <div
         style={{
           padding: "10px 24px",
@@ -424,6 +432,22 @@ export default function MapPage() {
           zIndex: 10,
         }}
       >
+        {/* SEARCH INPUT */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Search:</span>
+          <div style={{ position: "relative" }}>
+            <span style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", fontSize: 12 }}>🔍</span>
+            <input
+              type="text"
+              placeholder="Search project, state, place..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="input"
+              style={{ width: 190, padding: "4px 8px 4px 26px", fontSize: 12 }}
+            />
+          </div>
+        </div>
+
         {/* 1. STATE SELECTOR */}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>State:</span>

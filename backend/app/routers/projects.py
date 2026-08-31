@@ -14,6 +14,7 @@ router = APIRouter(prefix="/projects", tags=["Projects"])
 
 @router.get("", response_model=List[ProjectListItem])
 async def list_projects(
+    search: Optional[str] = Query(None, description="Search across project name, ministry, sector, or state"),
     ministry: Optional[str] = Query(None, description="Filter by ministry name"),
     sector: Optional[str] = Query(None, description="Filter by sector (Roads, Railways, etc.)"),
     state: Optional[str] = Query(None, description="Filter by state"),
@@ -27,11 +28,30 @@ async def list_projects(
 ):
     """
     Returns the project list with latest risk predictions.
-    Supports filtering by ministry, sector, state, risk tier, and project scale.
+    Supports search and filtering by ministry, sector, state, risk tier, and project scale.
     Used by the Risk Matrix Table on the main dashboard.
     """
     query = db.query(Project)
 
+    if search and search.strip():
+        tokens = [t.strip() for t in search.strip().split() if len(t.strip()) > 1]
+        if tokens:
+            for t in tokens:
+                term = f"%{t}%"
+                query = query.filter(
+                    (Project.project_name.ilike(term))
+                    | (Project.ministry.ilike(term))
+                    | (Project.sector.ilike(term))
+                    | (Project.state.ilike(term))
+                )
+        else:
+            term = f"%{search.strip()}%"
+            query = query.filter(
+                (Project.project_name.ilike(term))
+                | (Project.ministry.ilike(term))
+                | (Project.sector.ilike(term))
+                | (Project.state.ilike(term))
+            )
     if ministry:
         query = query.filter(Project.ministry.ilike(f"%{ministry}%"))
     if sector:

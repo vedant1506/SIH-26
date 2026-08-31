@@ -19,12 +19,7 @@ export default function ProjectsPage() {
     setLoading(true);
     try {
       const data = await listProjects({ ...filters, skip: page * pageSize, limit: pageSize });
-      // Quick client-side filter fallback if backend search isn't fully implemented
-      let filtered = data;
-      if (filters.search) {
-        filtered = data.filter(p => p.project_name?.toLowerCase().includes(filters.search!.toLowerCase()));
-      }
-      setProjects(filtered);
+      setProjects(data);
     } catch { setProjects([]); }
     finally { setLoading(false); }
   }, [filters, page]);

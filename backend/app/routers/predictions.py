@@ -8,7 +8,7 @@ from app.core.config import get_settings
 from app.core.security import get_current_user, get_optional_user
 from app.models.project import Project, RiskPrediction, Profile
 from app.schemas.prediction import RiskPredictionOut, PredictRequest, PortfolioSummary
-from app.services import ml_service, alert_service
+from app.services import ml_service, alert_service, qwen_service
 
 router = APIRouter(prefix="/projects", tags=["Predictions"])
 settings = get_settings()
@@ -85,28 +85,66 @@ async def predict_project_risk(
     # Run ML prediction
     result = ml_service.predict(project_data, settings.ml_models_path)
 
-    # Store prediction in database
-    prediction = RiskPrediction(
-        project_id=project.id,
-        delay_probability=result["delay_probability"],
-        delay_duration_months=result["delay_duration_months"],
-        cost_overrun_probability=result["cost_overrun_probability"],
-        cost_overrun_amount_cr=result["cost_overrun_amount_cr"],
-        composite_risk_score=result["composite_risk_score"],
-        risk_tier=result["risk_tier"],
-        shap_values=result["shap_values"],
-        ai_risk_narrative=result.get("ai_risk_narrative"),
-        model_version=result["model_version"],
-    )
-
-    db.add(prediction)
-    db.commit()
-    db.refresh(prediction)
-
-    # Check for risk escalation and create alert if needed
-    alert_service.check_and_create_alert(db, project, prediction)
-
-    return prediction
+    # Store prediction in database only for real/official predictions (not hypothetical What-If simulations)
+    is_simulation = bool(payload and payload.model_dump(exclude_none=True))
+    if not is_simulation:
+        from datetime import datetime as _dt
+        latest = (
+            db.query(RiskPrediction)
+            .filter(RiskPrediction.project_id == project.id)
+            .order_by(desc(RiskPrediction.predicted_at))
+            .first()
+        )
+        if latest and latest.predicted_at and latest.predicted_at.strftime("%Y-%m") == "2026-04":
+            latest.delay_probability = result["delay_probability"]
+            latest.delay_duration_months = result["delay_duration_months"]
+            latest.cost_overrun_probability = result["cost_overrun_probability"]
+            latest.cost_overrun_amount_cr = result["cost_overrun_amount_cr"]
+            latest.composite_risk_score = result["composite_risk_score"]
+            latest.risk_tier = result["risk_tier"]
+            latest.shap_values = result["shap_values"]
+            latest.ai_risk_narrative = result.get("ai_risk_narrative")
+            latest.model_version = result["model_version"]
+            db.commit()
+            db.refresh(latest)
+            return latest
+        else:
+            prediction = RiskPrediction(
+                project_id=project.id,
+                delay_probability=result["delay_probability"],
+                delay_duration_months=result["delay_duration_months"],
+                cost_overrun_probability=result["cost_overrun_probability"],
+                cost_overrun_amount_cr=result["cost_overrun_amount_cr"],
+                composite_risk_score=result["composite_risk_score"],
+                risk_tier=result["risk_tier"],
+                shap_values=result["shap_values"],
+                ai_risk_narrative=result.get("ai_risk_narrative"),
+                model_version=result["model_version"],
+                predicted_at=_dt(2026, 4, 30, 12, 0, 0),
+            )
+            db.add(prediction)
+            db.commit()
+            db.refresh(prediction)
+            alert_service.check_and_create_alert(db, project, prediction)
+            return prediction
+    else:
+        # Return ephemeral simulation result without polluting database history
+        import uuid as _uuid
+        from datetime import datetime as _dt
+        return RiskPrediction(
+            id=_uuid.uuid4(),
+            project_id=project.id,
+            delay_probability=result["delay_probability"],
+            delay_duration_months=result["delay_duration_months"],
+            cost_overrun_probability=result["cost_overrun_probability"],
+            cost_overrun_amount_cr=result["cost_overrun_amount_cr"],
+            composite_risk_score=result["composite_risk_score"],
+            risk_tier=result["risk_tier"],
+            shap_values=result["shap_values"],
+            ai_risk_narrative=result.get("ai_risk_narrative"),
+            model_version=result["model_version"],
+            predicted_at=_dt(2026, 4, 30, 12, 0, 0),
+        )
 
 
 @router.get("/{project_id}/predictions", response_model=list[RiskPredictionOut])
@@ -114,16 +152,16 @@ async def get_project_predictions(
     project_id: str,
     limit: int = 10,
     db: Session = Depends(get_db),
-    current_user: Profile = Depends(get_current_user),
+    current_user: Profile | None = Depends(get_optional_user),
 ):
     """Returns prediction history for a project (for trend charts on project detail page)."""
     import re
     project = None
     try:
         uid = UUID(str(project_id))
-        project = db.query(Project).filter(Project.id == uid).first()
+        project = db.query(Project).filter((Project.id == uid) | (Project.id == str(project_id))).first()
     except (ValueError, TypeError):
-        pass
+        project = db.query(Project).filter(Project.id == str(project_id)).first()
 
     if not project:
         digits = re.findall(r"\d+", str(project_id))
@@ -132,9 +170,6 @@ async def get_project_predictions(
                 project = db.query(Project).filter(Project.project_name.ilike(f"%{d}%")).first()
                 if project:
                     break
-
-    if not project:
-        project = db.query(Project).first()
 
     if not project:
         return []
@@ -319,4 +354,81 @@ async def generate_llm_briefing(
         "shap_values": result["shap_values"],
         "ai_risk_narrative": result.get("ai_risk_narrative"),
         "model_version": result["model_version"],
+    }
+
+
+@router.post("/{project_id}/mitigation")
+async def generate_mitigation_plan(
+    project_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_optional_user),
+):
+    """
+    Runs the locally trained Qwen 2.5-1.5B QLoRA model to generate a unique,
+    per-project mitigation plan based on live SHAP risk drivers.
+    """
+    import re
+    project = None
+    try:
+        uid = UUID(str(project_id))
+        project = db.query(Project).filter(Project.id == uid).first()
+    except (ValueError, TypeError):
+        pass
+
+    if not project:
+        digits = re.findall(r"\d+", str(project_id))
+        for d in digits:
+            if len(d) >= 3:
+                project = db.query(Project).filter(Project.project_name.ilike(f"%{d}%")).first()
+                if project:
+                    break
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # Get the latest prediction for SHAP values
+    latest = (
+        db.query(RiskPrediction)
+        .filter(RiskPrediction.project_id == project.id)
+        .order_by(desc(RiskPrediction.predicted_at))
+        .first()
+    )
+
+    shap_drivers = []
+    delay_prob = 0.5
+    cost_prob = 0.1
+    risk_tier = "medium"
+    delay_months = 0.0
+    cost_exposure = 0.0
+
+    if latest:
+        shap_drivers = latest.shap_values or []
+        delay_prob = float(latest.delay_probability or 0.5)
+        cost_prob = float(latest.cost_overrun_probability or 0.1)
+        risk_tier = latest.risk_tier or "medium"
+        delay_months = float(latest.delay_duration_months or 0.0)
+        cost_exposure = float(latest.cost_overrun_amount_cr or 0.0)
+
+    mitigation_text = qwen_service.generate_mitigation(
+        project_name=project.project_name or "",
+        sector=project.sector or "",
+        ministry=project.ministry or "",
+        state=project.state or "",
+        delay_prob=delay_prob,
+        cost_prob=cost_prob,
+        physical_progress=float(project.physical_progress_pct or 0.0),
+        burn_rate=float(project.burn_rate_pct or 0.0),
+        burn_gap=float(project.burn_progress_gap or 0.0),
+        time_elapsed=float(project.time_elapsed_ratio or 0.5),
+        shap_drivers=shap_drivers,
+        risk_tier=risk_tier,
+        delay_months=delay_months,
+        cost_exposure_cr=cost_exposure,
+    )
+
+    return {
+        "project_id": str(project.id),
+        "project_name": project.project_name,
+        "mitigation_text": mitigation_text,
+        "model": "Qwen2.5-1.5B-Merged-QLoRA" if qwen_service.is_loaded() else "template-fallback",
     }

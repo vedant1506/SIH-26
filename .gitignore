@@ -23,6 +23,7 @@ checkpoint-*/
 *.pt
 *.pth
 *.bin
+ml/models/qwen_merged_full_model/
 *.zip
 csv/
 ml/models/qwen_qlora_adapter/csv/

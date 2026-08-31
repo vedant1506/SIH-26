@@ -5,22 +5,12 @@ import { PRISM_LOGO_BASE64 } from "@/lib/logoBase64";
 interface Props {
   project: Project;
   prediction: RiskPrediction | null;
+  mitigationPlan?: string | null;
+  label?: string;
+  className?: string;
 }
 
-const DRIVER_SOLUTIONS: Record<string, string> = {
-  burn_progress_gap:
-    "Conduct immediate joint site audit of financial invoices against physical work completion. Freeze un-verified billing claims and enforce milestone-linked escrow disbursements.",
-  time_elapsed_ratio:
-    "Fast-track critical path activities by authorizing 24/7 dual-shift operations. Accelerate pending land acquisition, environmental clearances, and utility shifting.",
-  cost_variation_pct:
-    "Re-evaluate material procurement contracts and cap price escalation clauses. Re-allocate unused project contingency reserves and mandate ministry value-engineering review.",
-  physical_progress_num:
-    "Deploy additional contractor heavy machinery and manpower. Establish weekly site-level monitoring committees chaired by regional project directors.",
-  previous_progress_change:
-    "Remove site bottlenecks hindering monthly construction velocity. Provide immediate cash-flow assistance to contractors upon milestone completion.",
-};
-
-export default function PdfExportButton({ project: p, prediction: pred }: Props) {
+export default function PdfExportButton({ project: p, prediction: pred, mitigationPlan, label = "📄 Executive PDF Report", className = "btn btn-secondary" }: Props) {
   async function handleExport() {
     const logoBase64 = PRISM_LOGO_BASE64;
     const { jsPDF } = await import("jspdf");
@@ -151,7 +141,7 @@ export default function PdfExportButton({ project: p, prediction: pred }: Props)
     // Section 1: Executive Risk Summary
     sectionHeader("1. Risk Assessment & Predictive Inference");
     if (pred) {
-      rowItem("Active Model Architecture", "PAIMANA Predictive Risk Engine v2.0");
+      rowItem("Active Model Architecture", "AI Predictive Engine (XGBoost + QLoRA)");
       rowItem("Composite Risk Score", `${(pred.composite_risk_score * 100).toFixed(1)}%`, true);
       rowItem("Assigned Risk Tier", pred.risk_tier.toUpperCase(), true);
       rowItem("Schedule Delay Probability", `${(pred.delay_probability * 100).toFixed(1)}%`);
@@ -172,26 +162,32 @@ export default function PdfExportButton({ project: p, prediction: pred }: Props)
     rowItem("Time Elapsed Ratio", p.time_elapsed_ratio != null ? `${(p.time_elapsed_ratio * 100).toFixed(1)}%` : "N/A");
     y += 4;
 
-    // Section 3: MoSPI Executive Policy Advisory Briefing
+    // Section 3: MoSPI Executive Risk Assessment Briefing
     if (pred?.ai_risk_narrative) {
-      sectionHeader("3. MoSPI Executive Policy Advisory Briefing");
+      sectionHeader("3. MoSPI Executive Risk Assessment Briefing");
 
       doc.setFillColor(241, 245, 249);
-      doc.roundedRect(ml, y, mr - ml, 20, 2, 2, "F");
+      doc.roundedRect(ml, y, mr - ml, 22, 2, 2, "F");
       doc.setDrawColor(99, 102, 241);
       doc.setLineWidth(0.8);
-      doc.line(ml, y, ml, y + 20);
+      doc.line(ml, y, ml, y + 22);
 
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
+      doc.setFontSize(8);
       doc.setTextColor(30, 41, 59);
-      const narrativeLines = doc.splitTextToSize(pred.ai_risk_narrative, mr - ml - 8);
-      let ny = y + 5;
-      narrativeLines.forEach((line: string) => {
+
+      let cleanNarrative = pred.ai_risk_narrative
+        .replace(/\[.*?Briefing\]/gi, "")
+        .replace(/(?:Recommended Resolution|Recommended Action Plan):\s*[\s\S]+$/i, "")
+        .trim();
+
+      const narrativeLines = doc.splitTextToSize(cleanNarrative, mr - ml - 8);
+      let ny = y + 4.5;
+      narrativeLines.slice(0, 4).forEach((line: string) => {
         doc.text(line, ml + 4, ny);
-        ny += 4.5;
+        ny += 4;
       });
-      y += 24;
+      y += 26;
     }
 
     // Page 2 Setup
@@ -199,94 +195,94 @@ export default function PdfExportButton({ project: p, prediction: pred }: Props)
     drawPageHeaderFooter(2, 2);
     y = 30;
 
-    // Section 4: Graph-Driven SHAP Risk Drivers & Actionable Solutions
-    sectionHeader("4. SHAP Graph-Driven Drivers & Tailored Actionable Solutions");
-    doc.setFontSize(8);
-    doc.setTextColor(100, 116, 139);
-    doc.setFont("helvetica", "normal");
-    doc.text("The following solutions are derived directly from the feature contribution graphs:", ml, y);
-    y += 6;
-
+    // Section 4: AI Risk Drivers (SHAP Analysis)
+    sectionHeader("4. Key Risk Drivers (SHAP Analysis)");
     if (pred?.shap_values && pred.shap_values.length > 0) {
-      pred.shap_values.slice(0, 4).forEach((sv, idx) => {
+      pred.shap_values.slice(0, 3).forEach((sv, idx) => {
         const sign = sv.direction === "positive" ? "+" : "-";
         const impactStr = `${sign}${(Math.abs(sv.value) * 100).toFixed(0)}%`;
-        const solText = DRIVER_SOLUTIONS[sv.feature] || "Review project management schedule and optimize site resource deployment.";
 
         doc.setFillColor(248, 250, 252);
-        doc.roundedRect(ml, y, mr - ml, 22, 2, 2, "F");
+        doc.roundedRect(ml, y, mr - ml, 11, 2, 2, "F");
         doc.setDrawColor(226, 232, 240);
-        doc.roundedRect(ml, y, mr - ml, 22, 2, 2, "D");
+        doc.roundedRect(ml, y, mr - ml, 11, 2, 2, "D");
 
-        // Driver Title & Impact
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(9);
+        doc.setFontSize(8.5);
         doc.setTextColor(15, 23, 42);
-        doc.text(`${idx + 1}. ${sv.label}`, ml + 4, y + 5);
+        doc.text(`${idx + 1}. ${sv.label}`, ml + 4, y + 7);
 
         doc.setFillColor(sv.direction === "positive" ? 225 : 16, sv.direction === "positive" ? 29 : 185, sv.direction === "positive" ? 72 : 129);
-        doc.roundedRect(mr - 24, y + 2, 20, 5, 1, 1, "F");
+        doc.roundedRect(mr - 28, y + 3, 24, 5, 1, 1, "F");
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(7.5);
-        doc.text(`Impact ${impactStr}`, mr - 14, y + 5.5, { align: "center" });
+        doc.setFontSize(7);
+        doc.text(`Impact ${impactStr}`, mr - 16, y + 6.5, { align: "center" });
 
-        // Solution Box
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8);
-        doc.setTextColor(37, 99, 235);
-        doc.text("RECOMMENDED SOLUTION:", ml + 4, y + 11);
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(51, 65, 85);
-        const solLines = doc.splitTextToSize(solText, mr - ml - 45);
-        let sy = y + 15;
-        solLines.forEach((sline: string) => {
-          doc.text(sline, ml + 4, sy);
-          sy += 4;
-        });
-
-        y += 26;
+        y += 14;
       });
     }
 
-    // Section 5: Strategic Action Plan & Escalation Roadmap
-    sectionHeader("5. Strategic Governance & Escalation Roadmap");
+    // Section 5: AI-Generated Mitigation Plan (Fine-Tuned Model)
+    y += 2;
+    sectionHeader("5. AI-Generated Mitigation Plan & Action Items");
 
-    const roadmapMap: Record<string, string[]> = {
-      critical: [
-        "1. Issue formal notice to primary contractor for joint technical & financial audit within 48 hours.",
-        "2. Escalate project oversight to Secretary level; establish a daily task force to resolve site bottlenecks.",
-        "3. Mandate milestone-linked escrow account release to prevent capital mis-allocation.",
-        "4. Prepare contingency sub-contracting packages for lagging civil works.",
-      ],
-      high: [
-        "1. Schedule mandatory site inspection by Ministry Regional Officer within 7 business days.",
-        "2. Instruct contractor to deploy secondary workforce shifts to catch up on physical progress.",
-        "3. Review land acquisition and Right of Way (ROW) clearances with state administration.",
-        "4. Enforce fortnightly progress monitoring and financial burn-rate reconciliation.",
-      ],
-      medium: [
-        "1. Require monthly progress velocity reports to be submitted directly to project director.",
-        "2. Expedite pending regulatory approvals and utility shifting clearances.",
-        "3. Conduct quarterly risk re-assessment utilizing PRISM AI predictive model.",
-      ],
-      low: [
-        "1. Maintain standard monthly milestone monitoring and reporting schedule.",
-        "2. Continue routine financial disbursements aligned with certified progress reports.",
-      ],
-    };
+    if (mitigationPlan) {
+      doc.setFillColor(240, 253, 250);
+      doc.roundedRect(ml, y, mr - ml, 52, 2, 2, "F");
+      doc.setDrawColor(13, 148, 136);
+      doc.setLineWidth(0.8);
+      doc.line(ml, y, ml, y + 52);
 
-    const steps = pred ? roadmapMap[pred.risk_tier] || roadmapMap.low : roadmapMap.low;
-    steps.forEach((stepText) => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(13, 148, 136);
+      doc.text("AI ACTION PLAN (Fine-Tuned Policy Model):", ml + 4, y + 6);
+
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
+      doc.setFontSize(8);
       doc.setTextColor(30, 41, 59);
-      doc.text(stepText, ml + 2, y);
-      y += 5.5;
-    });
 
-    y += 10;
+      const planLines = doc.splitTextToSize(mitigationPlan, mr - ml - 8);
+      let py = y + 12;
+      planLines.slice(0, 9).forEach((line: string) => {
+        doc.text(line, ml + 4, py);
+        py += 4.2;
+      });
+      y += 56;
+    } else {
+      // Fallback standard roadmap if not generated yet
+      const roadmapMap: Record<string, string[]> = {
+        critical: [
+          "1. Issue formal notice to contractor for joint site and financial audit within 48 hours.",
+          "2. Escalate project oversight to Secretary level; establish daily monitoring committee.",
+          "3. Mandate milestone-linked escrow account disbursements to prevent capital mis-allocation.",
+        ],
+        high: [
+          "1. Schedule mandatory site inspection by Ministry Regional Officer within 7 days.",
+          "2. Instruct contractor to deploy secondary workforce shifts to accelerate progress.",
+          "3. Expedite land acquisition and Right of Way (ROW) clearances with state administration.",
+        ],
+        medium: [
+          "1. Require monthly progress velocity reports to be submitted directly to project director.",
+          "2. Expedite pending regulatory approvals and utility shifting clearances.",
+          "3. Conduct quarterly risk re-assessment utilizing PRISM AI predictive model.",
+        ],
+        low: [
+          "1. Maintain standard monthly milestone monitoring and reporting schedule.",
+          "2. Continue routine financial disbursements aligned with certified progress reports.",
+        ],
+      };
+      const steps = pred ? roadmapMap[pred.risk_tier] || roadmapMap.low : roadmapMap.low;
+      steps.forEach((stepText) => {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(30, 41, 59);
+        doc.text(stepText, ml + 2, y);
+        y += 5.5;
+      });
+      y += 8;
+    }
+
     // Signature Block
     doc.setDrawColor(203, 213, 225);
     doc.line(ml, y + 15, ml + 60, y + 15);
@@ -301,8 +297,8 @@ export default function PdfExportButton({ project: p, prediction: pred }: Props)
   }
 
   return (
-    <button id="pdf-export-btn" className="btn btn-secondary" onClick={handleExport} title="Download Market-Level Executive Risk Report with Official PRISM Logo (PDF)">
-      📄 Executive PDF Report
+    <button id="pdf-export-btn" className={className} onClick={handleExport} title="Download Executive Risk Report with Official PRISM Logo (PDF)">
+      {label}
     </button>
   );
 }
