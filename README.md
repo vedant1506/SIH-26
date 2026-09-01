@@ -1,15 +1,3 @@
----
-title: PRISM Infrastructure Risk Intelligence Platform
-emoji: 🛡️
-colorFrom: blue
-colorTo: indigo
-sdk: gradio
-sdk_version: 6.26.0
-app_file: app.py
-pinned: false
-license: mit
----
-
 # SIH26103 — PRISM: Infrastructure Risk Intelligence Platform
 
 
@@ -27,14 +15,12 @@ An enterprise, AI-powered platform transforming official Ministry of Statistics 
 - **Geospatial Integrity**: 100% of projects anchored inland across Indian states and union territories (`geo_validation_report.csv`).
 - **Dual XGBoost Engine**: Independent Delay and Cost Overrun classifiers with TreeSHAP factor attributions.
 - **Qwen 2.5 QLoRA Instruction Fine-Tuning**: Zero-hallucination executive briefings based on verified project parameters.
-- **Single Master Colab Pipeline**: `PRISM_SIH_2026_MASTER_ML_PIPELINE.ipynb` with Google Drive checkpointing.
 
 ---
 
 ## Table of Contents
 - [Architecture Overview](#architecture-overview)
 - [Repository Structure](#repository-structure)
-- [Single Master Google Colab Notebook](#single-master-google-colab-notebook)
 - [Quick Start (Full Stack)](#quick-start-full-stack)
 - [Backend & REST APIs](#backend--rest-apis)
 - [Frontend & Geospatial Navigation](#frontend--geospatial-navigation)
@@ -128,20 +114,6 @@ cp .env.example .env.local      # Fill in your Supabase & API URL
 npm run dev
 ```
 > App available at: http://localhost:3000
-
----
-
-## Single Master Google Colab Notebook
-
-The complete end-to-end data audit, dual XGBoost training, TreeSHAP evaluation, composite risk calculation, and Qwen 2.5 QLoRA instruction fine-tuning are encapsulated in:  
-**[`PRISM_SIH_2026_MASTER_ML_PIPELINE.ipynb`](./PRISM_SIH_2026_MASTER_ML_PIPELINE.ipynb)**
-
-### Key Features:
-- **Google Drive Checkpointing**: Persists models and datasets to `/MyDrive/PRISM_SIH_2026/`. If a Colab session disconnects, the notebook resumes from existing checkpoints.
-- **Hardware Agnostic**: Detects T4/V100/A100 GPU and automatically configures 4-bit BitsAndBytes quantization (`nf4`).
-- **All 31 Pipeline Steps**: Ingests all 14 MoSPI CSVs, validates the 1,981 April 2026 projects, trains XGBoost delay and cost models, generates TreeSHAP values, and fine-tunes the QLoRA adapter using Hugging Face TRL `SFTTrainer`.
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vedant1506/SIH-26/blob/main/PRISM_SIH_2026_MASTER_ML_PIPELINE.ipynb)
 
 ---
 
