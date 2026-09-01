@@ -1,9 +1,18 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.routers import auth, projects, predictions, alerts, upload
+from app.services import qwen_service
 
 settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Preload Hugging Face model in background thread
+    qwen_service.preload_model_in_background()
+    yield
 
 
 app = FastAPI(
@@ -15,6 +24,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # CORS — allow Next.js frontend (adjust origins for production)

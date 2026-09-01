@@ -101,7 +101,7 @@ export default function ProjectDetailPage() {
       </div>
     );
 
-  if (error && !project)
+  if (!project)
     return (
       <div>
         <TopBar title="Project Record Status" subtitle="MoSPI PAIMANA Infrastructure Intelligence" />
@@ -149,6 +149,19 @@ export default function ProjectDetailPage() {
                 </span>
               )}
             </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <PdfExportButton
+              project={project}
+              prediction={prediction}
+              mitigationPlan={mitigationText}
+              onMitigationFetched={(text, model) => {
+                setMitigationText(text);
+                setMitigationModel(model);
+              }}
+              label="📄 Export Executive PDF Report"
+              className="btn btn-secondary"
+            />
           </div>
         </div>
 
@@ -296,18 +309,18 @@ export default function ProjectDetailPage() {
             return `projected schedule lag of ${m} months`;
           });
 
-          // 4. Extract clean narrative summary only
+          // 4. Extract clean narrative summary only (remove any attached mitigation plan from this card)
           let narrativeText = clean;
-          const resMatch = clean.match(/(?:Recommended Resolution|Recommended Action Plan):\s*([\s\S]+)$/i);
+          const resMatch = clean.match(/(?:Recommended Resolution|Recommended Action Plan|EXECUTIVE MITIGATION PLAN|Mitigation Plan)[\s\S]*$/i);
           if (resMatch) {
-            narrativeText = clean.replace(/(?:Recommended Resolution|Recommended Action Plan):\s*[\s\S]+$/i, "").trim();
+            narrativeText = clean.replace(/(?:Recommended Resolution|Recommended Action Plan|EXECUTIVE MITIGATION PLAN|Mitigation Plan)[\s\S]*$/i, "").trim();
           }
 
           // 5. Parse points into distinct lines
           const points = narrativeText
             .split(/•\s*/)
             .map(p => p.trim())
-            .filter(p => p.length > 0);
+            .filter(p => p.length > 0 && !p.startsWith("PROJECT RISK ASSESSMENT") && !p.startsWith("━") && !p.startsWith("─"));
 
           return (
             <div
@@ -387,8 +400,13 @@ export default function ProjectDetailPage() {
         {prediction?.shap_values && prediction.shap_values.length > 0 && (
           <div className="card animate-fade" style={{ marginBottom: 24, background: "var(--surface)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", display: "flex", alignItems: "center", gap: 6 }}>
-                <span>🤖</span> AI-Generated Mitigation Plan (AI Model)
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", display: "flex", alignItems: "center", gap: 8 }}>
+                <span>🤖</span> AI-Generated Mitigation Plan
+                {mitigationModel && (
+                  <span style={{ fontSize: 10, padding: "2px 8px", background: "rgba(99, 102, 241, 0.15)", color: "#818cf8", borderRadius: 12, border: "1px solid rgba(99, 102, 241, 0.3)", textTransform: "none", letterSpacing: "normal", fontWeight: 500 }}>
+                    ⚡ {mitigationModel}
+                  </span>
+                )}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 {mitigationText && !mitigationLoading && (
@@ -396,7 +414,11 @@ export default function ProjectDetailPage() {
                     project={project}
                     prediction={prediction}
                     mitigationPlan={mitigationText}
-                    label="📄 Export PDF Report"
+                    onMitigationFetched={(text, model) => {
+                      setMitigationText(text);
+                      setMitigationModel(model);
+                    }}
+                    label="📄 Export PDF with AI Plan"
                     className="btn btn-secondary animate-fade"
                   />
                 )}
@@ -412,7 +434,7 @@ export default function ProjectDetailPage() {
                     try {
                       const res = await generateMitigation(project.id);
                       setMitigationText(res.mitigation_text);
-                      setMitigationModel("AI Model");
+                      setMitigationModel(res.model || "Hugging Face Qwen 2.5");
                     } catch (e: any) {
                       setMitigationError(e?.message || "Failed to generate mitigation plan. Please try again.");
                     } finally {
@@ -422,7 +444,7 @@ export default function ProjectDetailPage() {
                   style={{ fontSize: 12, padding: "8px 16px", display: "flex", alignItems: "center", gap: 6 }}
                 >
                   {mitigationLoading ? (
-                    <><span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⚙️</span> Loading AI Model...</>
+                    <><span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⚙️</span> Generating Plan...</>
                   ) : (
                     <><span>⚡</span> {mitigationText ? "Regenerate AI Mitigation Plan" : "Generate AI Mitigation Plan"}</>
                   )}
@@ -482,7 +504,7 @@ export default function ProjectDetailPage() {
               projectId={id}
               currentScore={prediction?.composite_risk_score}
               currentRevisedCost={project.revised_cost_cr || project.original_cost_cr}
-              currentProgress={project.physical_progress_pct}
+              currentProgress={project.physical_progress_pct ?? undefined}
             />
           </div>
         </div>

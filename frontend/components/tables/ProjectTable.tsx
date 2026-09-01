@@ -61,7 +61,14 @@ export default function ProjectTable({ projects, loading }: Props) {
                 </td>
                 <td className="num tabular">
                   {p.risk_tier ? (
-                    <RiskBadge tier={p.risk_tier} suffix={p.composite_risk_score != null ? ` (${(p.composite_risk_score * 100).toFixed(0)}%)` : ""} />
+                    <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
+                      <RiskBadge tier={p.risk_tier} suffix={p.composite_risk_score != null ? ` (${(p.composite_risk_score * 100).toFixed(0)}%)` : ""} />
+                      {p.delay_probability != null && p.delay_probability > 0.5 && (
+                        <span style={{ fontSize: 10, color: "#a855f7", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 3 }}>
+                          ⏱️ {(p.delay_probability * 100).toFixed(0)}% delay risk
+                        </span>
+                      )}
+                    </div>
                   ) : "—"}
                 </td>
                 <td className="num tabular" style={{ color: (p.burn_progress_gap ?? 0) > 15 ? "var(--critical)" : "var(--text-sub)" }}>

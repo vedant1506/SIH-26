@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 interface KpiCardProps {
   label: string;
@@ -9,6 +10,10 @@ interface KpiCardProps {
   loading?: boolean;
   icon?: React.ReactNode;
   trend?: { value: string; up?: boolean } | null;
+  href?: string;
+  target?: string;
+  rel?: string;
+  onClick?: () => void;
 }
 
 function useCountUp(target: number, duration = 900) {
@@ -29,7 +34,19 @@ function useCountUp(target: number, duration = 900) {
   return display;
 }
 
-export default function KpiCard({ label, value, sub, color = "#06b6d4", loading, icon, trend }: KpiCardProps) {
+export default function KpiCard({
+  label,
+  value,
+  sub,
+  color = "#06b6d4",
+  loading,
+  icon,
+  trend,
+  href,
+  target,
+  rel,
+  onClick,
+}: KpiCardProps) {
   const numericVal = typeof value === "number" ? value : (typeof value === "string" ? parseInt(value.replace(/[^0-9]/g, "")) || 0 : 0);
   const isNumeric = typeof value === "number" || (typeof value === "string" && /^[\d,]+$/.test(value.replace(/,/g, "")));
   const counted = useCountUp(isNumeric && !loading ? numericVal : 0);
@@ -43,33 +60,59 @@ export default function KpiCard({ label, value, sub, color = "#06b6d4", loading,
     return `${r},${g},${b}`;
   };
   const rgb = color.startsWith("#") ? hexToRgb(color) : "6,182,212";
+  const isInteractive = Boolean(href || onClick);
 
-  return (
+  const cardContent = (
     <div
-      className="kpi-card"
+      className={`kpi-card ${isInteractive ? "interactive" : ""}`}
       style={{
-        "--kpi-glow": `rgba(${rgb},0.10)`,
+        "--kpi-glow": `rgba(${rgb},0.12)`,
         boxShadow: `var(--shadow), 0 0 0 1px rgba(${rgb},0.08)`,
-        borderTop: `2px solid rgba(${rgb},0.35)`,
+        borderTop: `2px solid rgba(${rgb},0.45)`,
+        cursor: isInteractive ? "pointer" : "default",
+        textDecoration: "none",
+        color: "inherit",
+        position: "relative",
       } as React.CSSProperties}
+      onClick={onClick}
+      role={onClick && !href ? "button" : undefined}
+      tabIndex={onClick && !href ? 0 : undefined}
     >
       {/* Top row */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-        <span
-          style={{
-            fontSize: 10, fontWeight: 700, textTransform: "uppercase",
-            letterSpacing: "0.10em", color: "var(--text-muted)", lineHeight: 1.3,
-            fontFamily: "'Inter', sans-serif",
-          }}
-        >
-          {label}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span
+            style={{
+              fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+              letterSpacing: "0.10em", color: "var(--text-muted)", lineHeight: 1.3,
+              fontFamily: "'Inter', sans-serif",
+            }}
+          >
+            {label}
+          </span>
+          {isInteractive && (
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ color: "var(--text-muted)", opacity: 0.6, transition: "transform 0.2s" }}
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          )}
+        </div>
+
         {icon && (
           <div
             style={{
               width: 32, height: 32, borderRadius: 8, flexShrink: 0,
               background: `rgba(${rgb},0.12)`,
-              border: `1px solid rgba(${rgb},0.18)`,
+              border: `1px solid rgba(${rgb},0.20)`,
               display: "flex", alignItems: "center", justifyContent: "center",
               color: color,
             }}
@@ -122,4 +165,19 @@ export default function KpiCard({ label, value, sub, color = "#06b6d4", loading,
       </div>
     </div>
   );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        target={target}
+        rel={target === "_blank" ? (rel || "noopener noreferrer") : rel}
+        style={{ textDecoration: "none", display: "block" }}
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return cardContent;
 }

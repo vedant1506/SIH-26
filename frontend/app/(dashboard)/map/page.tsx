@@ -223,7 +223,7 @@ export default function MapPage() {
     if (loading || !mapRef.current) return;
 
     import("leaflet").then((L) => {
-      if (!leafletMapRef.current) {
+      if (!leafletMapRef.current && mapRef.current) {
         // Center on India [22.5937, 78.9629], zoom 5
         const map = L.map(mapRef.current, { zoomControl: true }).setView([22.5937, 78.9629], 5);
         leafletMapRef.current = map;

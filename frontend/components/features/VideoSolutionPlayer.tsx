@@ -129,7 +129,7 @@ export default function VideoSolutionPlayer({ project: p, prediction: pred }: Pr
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              justify: "center",
+              justifyContent: "center",
               overflow: "hidden",
               padding: 20,
             }}

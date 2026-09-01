@@ -1,0 +1,13 @@
+{
+  "name": "sih-26-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PRISM Infrastructure Risk Intelligence Platform",
+  "scripts": {
+    "dev": "python start_all.py",
+    "start": "python start_all.py",
+    "dev:all": "python start_all.py",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "python -m uvicorn app.main:app --port 8000 --app-dir backend"
+  }
+}

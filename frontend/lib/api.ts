@@ -68,6 +68,7 @@ export interface ProjectFilters {
   state?: string;
   risk_tier?: string;
   project_scale?: string;
+  delayed?: string | boolean;
   skip?: number;
   limit?: number;
 }
@@ -117,15 +118,22 @@ export async function getPortfolioSummary(filters: ProjectFilters = {}): Promise
 }
 
 // ── Alerts ────────────────────────────────────
-export async function listAlerts(unacknowledgedOnly = false, limit = 50): Promise<Alert[]> {
-  return request<Alert[]>(
-    `/alerts?unacknowledged_only=${unacknowledgedOnly}&limit=${limit}`
-  );
+export async function listAlerts(unacknowledgedOnly = false, limit?: number): Promise<Alert[]> {
+  const params = new URLSearchParams();
+  if (unacknowledgedOnly) params.set("unacknowledged_only", "true");
+  if (limit !== undefined && limit !== null && limit > 0) params.set("limit", String(limit));
+  const qs = params.toString() ? `?${params.toString()}` : "";
+  return request<Alert[]>(`/alerts${qs}`);
 }
 
 export async function acknowledgeAlert(alertId: string): Promise<void> {
   return request<void>(`/alerts/${alertId}/acknowledge`, { method: "POST" });
 }
+
+export async function acknowledgeAllAlerts(): Promise<{ status: string; acknowledged_count: number }> {
+  return request<{ status: string; acknowledged_count: number }>(`/alerts/acknowledge-all`, { method: "POST" });
+}
+
 
 export async function parseOutsideFile(file: File): Promise<any> {
   const token = getToken();

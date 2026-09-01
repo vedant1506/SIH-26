@@ -40,7 +40,7 @@ export default function TopBar({ title, subtitle, status }: TopBarProps) {
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    listAlerts(true, 100).then((a) => setUnread(a.length)).catch(() => {});
+    listAlerts(true).then((a) => setUnread(a.length)).catch(() => {});
     getPortfolioSummary().then((s) => setTotalProjects(s?.total_projects ?? null)).catch(() => {});
     setTheme(getStoredTheme());
     const timer = setInterval(() => setTime(new Date()), 1000);

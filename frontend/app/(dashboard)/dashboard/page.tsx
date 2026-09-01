@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { getPortfolioSummary, listProjects } from "@/lib/api";
-import type { PortfolioSummary, ProjectListItem, ProjectFilters } from "@/lib/api";
+import type { ProjectFilters } from "@/lib/api";
+import type { PortfolioSummary, ProjectListItem } from "@/lib/types";
 import TopBar from "@/components/layout/TopBar";
 import KpiCard from "@/components/ui/KpiCard";
 import RiskDistribution from "@/components/charts/RiskDistribution";
@@ -58,6 +59,7 @@ export default function DashboardPage() {
             color="#06b6d4"
             loading={loading}
             icon={<IconProjects />}
+            href="/projects"
           />
           <KpiCard
             label="Critical Risk"
@@ -66,6 +68,7 @@ export default function DashboardPage() {
             color="#f43f5e"
             loading={loading}
             icon={<IconAlert />}
+            href="/projects?risk_tier=critical"
           />
           <KpiCard
             label="Total Exposure"
@@ -74,6 +77,7 @@ export default function DashboardPage() {
             color="#f59e0b"
             loading={loading}
             icon={<IconRupee />}
+            href="/projects?risk_tier=high"
           />
           <KpiCard
             label="Projects Delayed"
@@ -82,6 +86,8 @@ export default function DashboardPage() {
             color="#a855f7"
             loading={loading}
             icon={<IconClock />}
+            href="/projects?delayed=true"
+            target="_blank"
           />
         </div>
 
@@ -100,7 +106,13 @@ export default function DashboardPage() {
             )}
           </div>
           <div className="card">
-            <div className="section-label" style={{ marginBottom: 12 }}>Early Warning Feed</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div className="section-label">Early Warning Feed</div>
+              <a href="/alerts" style={{ fontSize: 12, color: "var(--accent)", textDecoration: "none", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
+                View all alerts
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            </div>
             <AlertFeed maxItems={5} compact />
           </div>
         </div>

@@ -1,6 +1,14 @@
 "use client";
 
-interface Filters { ministry?: string; sector?: string; state?: string; risk_tier?: string; project_scale?: string; search?: string; }
+interface Filters {
+  ministry?: string;
+  sector?: string;
+  state?: string;
+  risk_tier?: string;
+  project_scale?: string;
+  search?: string;
+  delayed?: string;
+}
 interface Props { filters: Filters; onChange: (f: Filters) => void; }
 
 const SECTORS = ["Roads", "Railways", "Power", "Petroleum", "Urban Dev", "Water Resources", "Telecom", "Shipping"];
@@ -43,7 +51,26 @@ export default function ProjectFilters({ filters, onChange }: Props) {
           {TIERS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
       </div>
-      <div style={{ flex: "1 1 140px" }}>
+      <div style={{ flex: "1 1 130px" }}>
+        <div style={labelStyle}>Schedule Status</div>
+        <select
+          id="filter-delayed"
+          className="input"
+          value={filters.delayed || ""}
+          onChange={e => set("delayed", e.target.value)}
+          style={{
+            ...inputStyle,
+            width: "100%",
+            color: filters.delayed ? "#a855f7" : "inherit",
+            fontWeight: filters.delayed ? 700 : 400,
+            borderColor: filters.delayed ? "rgba(168, 85, 247, 0.4)" : "var(--border-2)",
+          }}
+        >
+          <option value="">All Statuses</option>
+          <option value="true">⏱️ Delayed Only (1,805)</option>
+        </select>
+      </div>
+      <div style={{ flex: "1 1 130px" }}>
         <div style={labelStyle}>Scale</div>
         <select id="filter-scale" className="input" value={filters.project_scale || ""} onChange={e => set("project_scale", e.target.value)} style={{ ...inputStyle, width: "100%" }}>
           {SCALES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}

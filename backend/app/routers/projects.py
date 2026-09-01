@@ -20,6 +20,7 @@ async def list_projects(
     state: Optional[str] = Query(None, description="Filter by state"),
     risk_tier: Optional[str] = Query(None, description="Filter by risk tier: low, medium, high, critical"),
     project_scale: Optional[str] = Query(None, description="Filter by scale: mega, major, other"),
+    delayed: Optional[str] = Query(None, description="Filter for delayed projects (true/1/yes)"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=2000),
     db: Session = Depends(get_db),
@@ -28,10 +29,29 @@ async def list_projects(
 ):
     """
     Returns the project list with latest risk predictions.
-    Supports search and filtering by ministry, sector, state, risk tier, and project scale.
+    Supports search and filtering by ministry, sector, state, risk tier, project scale, and delayed status.
     Used by the Risk Matrix Table on the main dashboard.
     """
-    query = db.query(Project)
+    from sqlalchemy import func
+
+    latest_pred_subq = (
+        db.query(
+            RiskPrediction.project_id,
+            func.max(RiskPrediction.predicted_at).label("max_pred_at"),
+        )
+        .group_by(RiskPrediction.project_id)
+        .subquery()
+    )
+
+    query = (
+        db.query(Project, RiskPrediction)
+        .outerjoin(latest_pred_subq, Project.id == latest_pred_subq.c.project_id)
+        .outerjoin(
+            RiskPrediction,
+            (RiskPrediction.project_id == latest_pred_subq.c.project_id)
+            & (RiskPrediction.predicted_at == latest_pred_subq.c.max_pred_at),
+        )
+    )
 
     if search and search.strip():
         tokens = [t.strip() for t in search.strip().split() if len(t.strip()) > 1]
@@ -60,19 +80,15 @@ async def list_projects(
         query = query.filter(Project.state.ilike(f"%{state}%"))
     if project_scale:
         query = query.filter(Project.project_scale == project_scale)
+    if risk_tier:
+        query = query.filter(RiskPrediction.risk_tier == risk_tier.lower())
+    if delayed and str(delayed).lower() in ("true", "1", "yes"):
+        query = query.filter(RiskPrediction.delay_probability > 0.5)
 
-    projects = query.offset(skip).limit(limit).all()
+    rows = query.offset(skip).limit(limit).all()
 
-    # Enrich each project with its latest risk prediction
     result = []
-    for p in projects:
-        latest_pred = (
-            db.query(RiskPrediction)
-            .filter(RiskPrediction.project_id == p.id)
-            .order_by(desc(RiskPrediction.predicted_at))
-            .first()
-        )
-
+    for p, pred in rows:
         item = ProjectListItem(
             id=p.id,
             project_name=p.project_name,
@@ -86,16 +102,11 @@ async def list_projects(
             physical_progress_pct=p.physical_progress_pct,
             project_scale=p.project_scale,
             burn_progress_gap=p.burn_progress_gap,
-            risk_tier=latest_pred.risk_tier if latest_pred else None,
-            composite_risk_score=latest_pred.composite_risk_score if latest_pred else None,
-            delay_probability=latest_pred.delay_probability if latest_pred else None,
-            cost_overrun_probability=latest_pred.cost_overrun_probability if latest_pred else None,
+            risk_tier=pred.risk_tier if pred else None,
+            composite_risk_score=pred.composite_risk_score if pred else None,
+            delay_probability=pred.delay_probability if pred else None,
+            cost_overrun_probability=pred.cost_overrun_probability if pred else None,
         )
-
-
-        if risk_tier and item.risk_tier != risk_tier:
-            continue
-
         result.append(item)
 
     return result

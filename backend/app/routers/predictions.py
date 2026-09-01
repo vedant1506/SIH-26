@@ -1,3 +1,4 @@
+import asyncio
 from uuid import UUID
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException
@@ -409,7 +410,8 @@ async def generate_mitigation_plan(
         delay_months = float(latest.delay_duration_months or 0.0)
         cost_exposure = float(latest.cost_overrun_amount_cr or 0.0)
 
-    mitigation_text = qwen_service.generate_mitigation(
+    mitigation_text = await asyncio.to_thread(
+        qwen_service.generate_mitigation,
         project_name=project.project_name or "",
         sector=project.sector or "",
         ministry=project.ministry or "",
@@ -430,5 +432,5 @@ async def generate_mitigation_plan(
         "project_id": str(project.id),
         "project_name": project.project_name,
         "mitigation_text": mitigation_text,
-        "model": "Qwen2.5-1.5B-Merged-QLoRA" if qwen_service.is_loaded() else "template-fallback",
+        "model": qwen_service.get_last_model_source(),
     }

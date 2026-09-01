@@ -302,35 +302,280 @@ def _get_sector_advisory(sector: str, ministry: str, proj_name: str, top_feature
 
 def _get_financial_enforcement(burn_gap: float, cost_var: float, time_elapsed: float, tier: str, current_progress: float) -> str:
     if burn_gap >= 12.0:
-        return f"Audit technical Measurement Books (MB) on-site against contractor billing claims; withhold unverified invoices until physical progress catches up with expenditure ({burn_gap:+.1f}% burn gap)."
+        return (
+            f"Commission an independent third-party Measurement Book (MB) audit on all live contractor work packages. "
+            f"Cross-verify billed quantities against drone photogrammetry surveys and on-ground certified physical work. "
+            f"Withhold release of pending interim payment certificates (IPC) and contractor advance payments until the {burn_gap:+.1f}% "
+            f"expenditure-to-progress gap is formally reconciled and approved by the Project Director."
+        )
     elif burn_gap <= -12.0 and current_progress > 20.0:
-        return f"Expedite processing of pending contractor interim payment certificates (IPC) to eliminate cash-flow bottlenecks and ensure uninterrupted supply of critical construction materials."
+        return (
+            f"Expedite scrutiny and approval of all pending contractor Interim Payment Certificates (IPCs) and running bills "
+            f"to eliminate cash-flow bottlenecks that are directly constraining site productivity. Mandate the Project Finance Officer "
+            f"to clear invoices within a 7-day SLA, ensuring uninterrupted supply of critical construction materials and labour mobilization."
+        )
     elif cost_var >= 10.0:
-        return f"Institute strict price-escalation caps on EPC contract packages, mandate ministry-level value-engineering review, and re-allocate unutilized contingency reserves (Current escalation: {cost_var:+.1f}%)."
+        return (
+            f"Institute strict price-escalation caps on all EPC contract packages. Mandate a ministry-level value-engineering review "
+            f"committee to identify and remove non-essential scope changes responsible for the {cost_var:+.1f}% budget revision. "
+            f"Re-allocate unutilized contingency reserves to lagging critical-path packages and submit a revised cost sanction note "
+            f"to the Expenditure Finance Committee (EFC) within 30 days."
+        )
     elif current_progress < 15.0 and time_elapsed >= 0.35:
-        return "Issue cure notice to concessionaire for sluggish mobilization; mandate deployment of 100% committed site equipment and engineering personnel within 14 days."
+        return (
+            f"Issue a formal Cure Notice to the lead concessionaire citing sluggish site mobilization with {current_progress:.1f}% physical progress "
+            f"against {time_elapsed * 100:.0f}% time elapsed. Mandate deployment of 100% committed site equipment, "
+            f"engineering personnel, and key sub-contractors within 14 calendar days or invoke contract termination provisions under "
+            f"standard FIDIC/EPC agreement clauses."
+        )
     elif time_elapsed >= 0.80 and current_progress < 75.0:
-        return "Mandate dual-shift 24/7 construction rosters on all lagging critical-path packages and enforce contractual liquidated damage provisions for milestone default."
+        return (
+            f"Mandate dual-shift 24/7 construction rosters across all lagging critical-path work packages to recover the schedule deficit. "
+            f"Invoke contractual Liquidated Damages (LD) provisions for each week of milestone default. Deploy a dedicated site resident "
+            f"engineer from the ministry PMU for daily progress monitoring and direct escalation to the Joint Secretary if weekly "
+            f"targets are missed consecutively for two reporting cycles."
+        )
     elif tier in ("critical", "high"):
-        return "Freeze non-essential budget outlays, mandate weekly vendor milestone reviews, and establish an escrow account disbursement mechanism linked directly to physical completion certificates."
+        return (
+            f"Freeze all non-essential budget outlays and discretionary spending immediately. Mandate bi-weekly vendor milestone reviews "
+            f"with physical site verification. Establish an escrow account disbursement mechanism where all future contractor payments "
+            f"are released only against digitally verified, geo-tagged physical completion certificates approved by the Project Director."
+        )
     else:
-        return "Maintain scheduled milestone-linked disbursements while deploying digital drone photogrammetry audits to prevent emerging critical-path slippages."
+        return (
+            f"Maintain structured milestone-linked disbursements as per the approved Annual Plan. Deploy quarterly drone photogrammetry "
+            f"and LiDAR-based progress audits to detect any emerging critical-path slippages early. Ensure all contractor bills are "
+            f"processed within the MoSPI-mandated 30-day payment cycle to maintain construction momentum."
+        )
+
+
+def _get_resource_mobilization(tier: str, current_progress: float, time_elapsed_ratio: float, delay_months: float, sec_name: str) -> str:
+    """Returns a detailed Phase 1 resource mobilization action."""
+    s = (sec_name or "").lower()
+    if tier == "critical":
+        return (
+            f"Invoke emergency resource deployment powers under the project concession agreement. Direct the EPC contractor to "
+            f"immediately augment site strength with additional shift crews, heavy plant (excavators, batching plants, cranes), "
+            f"and specialized sub-contractors on all critical path activities. Mandate a 24/7 dual-shift construction roster within "
+            f"72 hours and submit an updated recovery micro-schedule to the PMU within 7 days."
+        )
+    elif tier == "high":
+        return (
+            f"Direct the primary EPC contractor to deploy additional machinery, engineering supervisors, and labour on all lagging "
+            f"critical-path packages within 10 working days. With {current_progress:.1f}% physical completion and {time_elapsed_ratio * 100:.0f}% "
+            f"of schedule elapsed, a projected delay of ~{delay_months:.1f} months necessitates immediate resource re-allocation from "
+            f"non-critical to critical work packages, supported by a revised micro-schedule approved by the Project Director."
+        )
+    else:
+        return (
+            f"Review the contractor's current deployed resource strength against contractual commitments. If equipment utilization "
+            f"is below 80% of peak requirement, issue a formal resource mobilization notice. Constitute a dedicated site acceleration "
+            f"task force for the top 3 lagging work packages and set fortnightly physical progress targets with escalation thresholds."
+        )
+
+
+def _get_monitoring_protocol(tier: str, proj_name: str, min_name: str, st_name: str, composite: float) -> str:
+    """Returns a Phase 2 digital monitoring and governance action."""
+    if tier == "critical":
+        return (
+            f"Activate PRISM real-time monitoring dashboard for '{proj_name}' with daily automated alerts. Deploy geo-tagged "
+            f"drone photogrammetry surveys at the site every 15 days for independent civil work verification. Constitute a "
+            f"High-Level Review Committee (HLRC) under the Secretary, {min_name}, with bi-weekly meetings to review progress, "
+            f"unblock inter-departmental bottlenecks, and authorize emergency expenditure re-allocations."
+        )
+    elif tier == "high":
+        return (
+            f"Integrate the project into the PRAGATI (Pro-Active Governance And Timely Implementation) monthly review mechanism. "
+            f"Assign a dedicated Nodal Officer at the Joint Secretary level in {min_name} with direct hotline access to the "
+            f"state government's Chief Secretary in {st_name}. Mandate weekly progress reports with geo-tagged photographic evidence "
+            f"of all milestone activities and review against the approved S-curve progress trajectory."
+        )
+    else:
+        return (
+            f"Maintain the project on PAIMANA (Project Appraisal and Monitoring) with monthly milestone updates. Require fortnightly "
+            f"progress reports from the Implementing Agency with photographic and video evidence of key work packages. "
+            f"Conduct a quarterly third-party quality audit (TPQA) by an empanelled MoSPI agency to validate physical works "
+            f"and identify any quality/scope deviations before they escalate."
+        )
+
+
+def _get_compliance_clearance_action(sec_name: str, min_name: str, st_name: str, proj_name: str, tier: str) -> str:
+    """Returns a detailed Phase 2 statutory/regulatory clearance action specific to the sector."""
+    s = (sec_name or "").lower()
+    m = (min_name or "").lower()
+    p = (proj_name or "").lower()
+
+    if any(k in s for k in ["road", "highway", "bridge", "expressway"]) or "road transport" in m:
+        return (
+            f"Escalate all pending Right-of-Way (ROW) encumbrance cases to the {st_name} District Collector level for "
+            f"resolution under urgency provisions of the National Highways Act. Simultaneously fast-track utility shifting "
+            f"permissions (HT power lines, BSNL, water mains) with respective state departments. Coordinate with the Forest "
+            f"Department for Stage-II forest diversion compliance and obtain approved Environmental Clearance (EC) "
+            f"amendments for any scope revisions."
+        )
+    elif any(k in s for k in ["rail", "freight", "train"]) or "railway" in m:
+        return (
+            f"Obtain guaranteed Non-Interlocking (NI) traffic block schedule from the Zonal Railway Division for critical "
+            f"track-linking and bridge works. Expedite Ministry of Environment's Stage-II forest clearance for embankment "
+            f"sections. Coordinate with the Commissioner of Railway Safety (CRS) for early inspection scheduling to prevent "
+            f"last-mile commissioning delays, and secure RDSO technical approvals for all new design deviations."
+        )
+    elif any(k in s for k in ["power", "energy", "hydro", "thermal", "transmission"]) or "power" in m:
+        return (
+            f"Fast-track Central Electricity Authority (CEA) statutory approvals for grid synchronization and metering. "
+            f"Expedite MoEFCC Stage-II forest clearance compliance for transmission corridors and substation land. "
+            f"Coordinate with {st_name} SLDC (State Load Dispatch Centre) and DISCOM for grid trial charging permissions "
+            f"and secure statutory Environmental Clearance amendments for any revised capacity parameters."
+        )
+    elif any(k in s for k in ["water", "irrigation", "dam"]) or "jal" in m:
+        return (
+            f"Obtain Irrigation Department's Final Detailed Project Report (DPR) revision approval for all scope modifications. "
+            f"Expedite Central Water Commission (CWC) stage-wise clearance for dam safety parameters and hydraulic design revisions. "
+            f"Coordinate with the {st_name} Rehabilitation & Resettlement (R&R) authority to resolve any outstanding land "
+            f"acquisition disputes blocking canal network construction."
+        )
+    elif any(k in s for k in ["aviation", "airport"]) or "civil aviation" in m:
+        return (
+            f"Obtain DGCA aerodrome site clearance amendment for any infrastructure scope changes. Expedite Bureau of Civil Aviation "
+            f"Security (BCAS) security vetting for airside operations personnel and secure AAI NOC for airfield ground lighting "
+            f"(AGL) and instrument landing system (ILS) commissioning. Coordinate with MoEFCC for amended Environmental Clearance "
+            f"for terminal building expansion or runway extension activities."
+        )
+    elif any(k in s for k in ["urban", "metro"]):
+        return (
+            f"Expedite municipal traffic diversion and road closure permissions from {st_name} Traffic Police and Urban Local Body "
+            f"for underground/elevated corridor works. Obtain CMRS/Metro Rail Safety Committee statutory inspection schedule "
+            f"for newly completed viaduct and tunnel segments. Coordinate with DISCOMs for traction power supply permissions "
+            f"and with state for property acquisition disputes."
+        )
+    else:
+        return (
+            f"Identify all pending statutory clearances (Environmental, Forest, Revenue, Utility NOCs) through a dedicated "
+            f"Clearance Tracking Register maintained by the PMU in {st_name}. Assign a single-window officer at the {min_name} "
+            f"level to interface with all regulatory agencies. Escalate clearances older than 60 days to the Cabinet Secretariat "
+            f"for resolution through the PRAGATI mechanism."
+        )
+
+
+def _get_contract_enforcement(tier: str, proj_name: str, delay_months: float, est_overrun_cr: float, burn_gap: float, cost_var: float) -> str:
+    """Returns a Phase 3 contract enforcement and dispute resolution action."""
+    if tier == "critical":
+        return (
+            f"Invoke contractual Liquidated Damages (LD) clauses immediately for all milestone defaults, capping deductions "
+            f"at the contract-specified ceiling. Simultaneously, commission an independent Dispute Review Expert (DRE) panel "
+            f"under the FIDIC framework to adjudicate all pending contractor claims and arbitration notices within 90 days. "
+            f"Prepare a contingency plan for contractor replacement/supplementation if recovery schedule commitments are not "
+            f"met within 45 days, to contain the Rs. {est_overrun_cr:,.1f} Cr cost exposure."
+        )
+    elif tier == "high":
+        return (
+            f"Issue formal milestone default notices and begin Liquidated Damage (LD) deduction proceedings for all critical-path "
+            f"packages behind schedule. Constitute an Empowered Contract Review Committee at the Additional Secretary level to review "
+            f"contractor extension-of-time (EOT) claims and approve legitimate time extensions only against documented force majeure "
+            f"or ministry-attributable delays. Fast-track settlement of all undisputed contractor bills to reduce litigation risk."
+        )
+    else:
+        return (
+            f"Conduct a comprehensive contract health-check review covering: (a) contractor performance against agreed KPIs, "
+            f"(b) pending variation order approvals, (c) price escalation index (PVI) reconciliation, and (d) insurance and bond "
+            f"coverage adequacy. Approve legitimate extension-of-time (EOT) claims within the standard 30-day SLA and close out "
+            f"all variation orders pending for more than 60 days to prevent cost crystallization at project completion."
+        )
+
+
+def _get_value_engineering_action(tier: str, current_progress: float, cost_var: float, est_overrun_cr: float, sec_name: str) -> str:
+    """Returns a Phase 3 value engineering and risk containment action."""
+    s = (sec_name or "").lower()
+    if cost_var >= 15.0:
+        return (
+            f"Constitute an urgent Value Engineering (VE) review panel comprising CPWD/MoSPI technical advisors and the project "
+            f"design consultant. Mandate review of all remaining Bill-of-Quantities (BOQ) items for design optimization, material "
+            f"substitution (e.g., precast vs. in-situ concrete), and modular construction techniques to reduce the {cost_var:+.1f}% "
+            f"cost overrun trajectory. Cap contingency drawdowns at 50% of remaining reserve until VE savings are formally quantified."
+        )
+    elif tier in ("critical", "high") and est_overrun_cr > 10.0:
+        return (
+            f"Restructure remaining contract packages to enforce milestone-linked payment tranches tied directly to verifiable "
+            f"physical completion certificates. Eliminate all unverified advance payments and mobilization advances not backed by "
+            f"bank guarantees. Submit a revised Financial Completion Cost estimate to the Expenditure Finance Committee (EFC) "
+            f"within 30 days, reflecting the latest scope, escalation provisions, and risk-adjusted contingency of Rs. {est_overrun_cr:,.1f} Cr."
+        )
+    else:
+        return (
+            f"Deploy digital twin-based progress tracking to continuously compare actual vs. planned cost-to-complete (CTC) estimates. "
+            f"Review procurement strategy for remaining major material packages (steel, cement, electrical equipment) and explore "
+            f"bulk government rate contract procurement through DGS&D/GeM portal to reduce market price risk. "
+            f"Maintain a rolling 90-day cash flow forecast to ensure budget availability for the project completion phase."
+        )
+
+
+def _get_closeout_action(tier: str, current_progress: float, proj_name: str, st_name: str, delay_months: float) -> str:
+    """Returns a Phase 3 project completion and capitalization action."""
+    if current_progress >= 85.0:
+        return (
+            f"Initiate formal project closeout procedures for '{proj_name}': (a) Commission independent technical audit of all "
+            f"completed structures; (b) Obtain statutory testing certifications (load tests, pressure tests, fire safety); "
+            f"(c) Prepare Joint Handover Certificate (JHC) for asset transfer to {st_name} state authority; "
+            f"(d) Submit Final Project Completion Report (PCR) to MoSPI; (e) Release defect liability retainage against bank guarantees "
+            f"post Defect Notification Period (DNP). Target full administrative closure within 120 days."
+        )
+    else:
+        return (
+            f"Establish a formal Project Completion Roadmap with monthly milestones for the remaining {100 - current_progress:.1f}% "
+            f"of work. Schedule the MoSPI Project Completion Review at 95% physical progress to pre-empt administrative delays. "
+            f"Initiate early preparation of Operation & Maintenance (O&M) manuals, As-Built drawings, and asset handover "
+            f"documentation so that final commissioning is not held up by administrative paperwork. Target a recovery of "
+            f"~{delay_months:.1f} months by front-loading all enabling works and long-lead procurement."
+        )
 
 
 def _get_executive_directive(tier: str, proj_name: str, delay_months: float, est_overrun_cr: float, top_feature: str) -> str:
     if tier == "critical":
-        return f"Immediate executive escalation required. Issue statutory notice to lead contractor, initiate high-level MoSPI-Ministry joint technical audit within 48 hours, and freeze all unverified fiscal advances to contain Rs. {est_overrun_cr:,.1f} Cr exposure."
+        return (
+            f"Immediate executive escalation to the Secretary, Ministry level. Issue a statutory cure notice to the lead "
+            f"contractor under the concession agreement, initiate a high-level MoSPI-Ministry joint technical audit within "
+            f"48 hours, and constitute an Emergency Project Recovery Task Force. Freeze all unverified fiscal advances and "
+            f"contractor payments until audit findings are presented, to contain the projected Rs. {est_overrun_cr:,.1f} Cr "
+            f"cost exposure and arrest the ~{delay_months:.1f}-month schedule deviation."
+        )
     elif tier == "high":
-        return f"Urgent administrative intervention recommended. Convene inter-ministerial task force meeting within 7 business days, assign dedicated nodal officer for bottleneck resolution, and mandate a contractor recovery catch-up schedule."
+        return (
+            f"Urgent administrative intervention required within 7 working days. Convene an inter-ministerial task force "
+            f"meeting chaired by the Additional Secretary. Assign a dedicated Nodal Officer at the Director level for daily "
+            f"bottleneck resolution. Mandate the contractor to submit a credible Recovery Action Plan (RAP) within 14 days "
+            f"with weekly milestone targets, and activate Performance Security encashment if RAP is not met within the first "
+            f"30-day review cycle."
+        )
     elif tier == "medium":
         if "burn" in top_feature:
-            return f"Enhanced financial velocity tracking active. Reconcile expenditure milestones against physical site measurements and optimize procurement cash-flow to mitigate projected ~{delay_months:.1f} mo delay."
+            return (
+                f"Enhanced financial velocity monitoring protocol activated. Appoint a dedicated Finance Controller at the "
+                f"PMU to reconcile expenditure milestones against certified physical work measurements on a fortnightly basis. "
+                f"Optimize procurement cash-flow scheduling and ensure all pending contractor bills are cleared within the "
+                f"MoSPI-mandated payment cycle to prevent artificial expenditure inflation and mitigate the projected "
+                f"~{delay_months:.1f}-month schedule impact."
+            )
         elif "progress" in top_feature:
-            return f"Site acceleration protocol active. Mandate contractor deploy additional machinery and manpower on lagging sub-packages to compress the projected ~{delay_months:.1f} mo delay."
+            return (
+                f"Site acceleration protocol activated. Issue a formal performance notice to the contractor requiring deployment "
+                f"of additional machinery and qualified technical personnel on all lagging sub-packages within 10 working days. "
+                f"Mandate submission of a revised micro-schedule (activity-level Gantt chart) aligned to compress the projected "
+                f"~{delay_months:.1f}-month schedule lag, with weekly progress velocity targets tracked against the approved S-curve."
+            )
         else:
-            return f"Enhanced administrative monitoring active. Enforce fortnightly progress velocity tracking and mandate milestone-linked critical path acceleration to mitigate projected ~{delay_months:.1f} mo delay."
+            return (
+                f"Enhanced administrative monitoring activated. Elevate reporting frequency from monthly to fortnightly. "
+                f"Mandate the Implementing Agency to submit geo-tagged photographic evidence of all key milestone activities "
+                f"and enforce critical path acceleration sprints to mitigate the projected ~{delay_months:.1f}-month delay before "
+                f"it cascades into a high-risk classification in the next quarterly MoSPI review cycle."
+            )
     else:
-        return "Project trajectory is optimal. Maintain standard monthly milestone monitoring and certified progress disbursements under PAIMANA."
+        return (
+            f"Project trajectory is currently within acceptable parameters. Maintain standard monthly milestone monitoring "
+            f"under PAIMANA. Continue certified progress-linked disbursements as per the approved Annual Plan. Schedule a "
+            f"routine quarterly review to confirm that physical progress velocity is sustained and that no new risk factors "
+            f"emerge in the next reporting cycle."
+        )
 
 
 def generate_dynamic_analysis_and_plan(
@@ -350,23 +595,17 @@ def generate_dynamic_analysis_and_plan(
     top_label: str,
     top_feature: str = "",
 ) -> str:
-    """Generates customized, non-generic, sector-aware executive risk analysis and 3-step action plan."""
-    exec_dir = _get_executive_directive(tier, proj_name, delay_months, est_overrun_cr, top_feature)
-    sec_advisory = _get_sector_advisory(sec_name, min_name, proj_name, top_feature)
-    fin_enforce = _get_financial_enforcement(burn_progress_gap, cost_variation_pct, time_elapsed_ratio, tier, current_progress)
-
-    narrative = (
-        f"• Project Name: {proj_name}\n"
+    """Generates clean, professional MoSPI PAIMANA executive risk assessment points."""
+    return (
+        f"• Project: {proj_name}\n"
         f"• Ministry & Sector: {min_name} | {sec_name} ({st_name})\n"
         f"• Risk Classification: {tier.upper()} RISK TIER (Composite Index: {composite * 100:.1f}%)\n"
-        f"• Primary Risk Driver: '{top_label}' with financial burn gap of {burn_progress_gap:+.1f}%\n"
-        f"• Forecasted Impact: Projected schedule lag of ~{delay_months:.1f} months with an estimated cost exposure of Rs. {est_overrun_cr:,.2f} Crore.\n\n"
-        f"Recommended Action Plan:\n"
-        f"1. {exec_dir}\n"
-        f"2. {sec_advisory}\n"
-        f"3. {fin_enforce}"
+        f"• Primary Risk Driver: {top_label}\n"
+        f"• Financial Burn Gap: {burn_progress_gap:+.1f}% | Physical Progress: {current_progress:.1f}% | Time Elapsed: {time_elapsed_ratio * 100:.0f}%\n"
+        f"• Cost Revision: {cost_variation_pct:+.1f}% | Burn Rate: {burn_rate:.1f}%\n"
+        f"• Forecasted Impact: Projected schedule lag of ~{delay_months:.1f} months with an estimated cost exposure of Rs. {est_overrun_cr:,.2f} Crore."
     )
-    return narrative
+
 
 
 def predict(project_data: Dict[str, Any], models_path: str) -> Dict[str, Any]:
