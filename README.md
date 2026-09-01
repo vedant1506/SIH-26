@@ -1,4 +1,17 @@
+---
+title: PRISM Infrastructure Risk Intelligence Platform
+emoji: 🛡️
+colorFrom: blue
+colorTo: indigo
+sdk: gradio
+sdk_version: 6.26.0
+app_file: app.py
+pinned: false
+license: mit
+---
+
 # SIH26103 — PRISM: Infrastructure Risk Intelligence Platform
+
 
 > **Problem Statement:** Web-Based Integrated Project-Monitoring Platform  
 > **Theme:** Smart Automation / Software  
