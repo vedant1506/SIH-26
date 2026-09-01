@@ -100,8 +100,13 @@ def generate_mitigation(
     # Build the top 3 risk drivers from SHAP
     driver_lines = ""
     for i, d in enumerate(shap_drivers[:3], 1):
-        direction = "INCREASES" if d.get("direction") == "positive" else "REDUCES"
-        driver_lines += f"  {i}. {d.get('label', '')} — {direction} risk by {abs(d.get('value', 0)) * 100:.1f}%\n"
+        if isinstance(d, dict):
+            direction = "INCREASES" if d.get("direction") == "positive" else "REDUCES"
+            driver_lines += f"  {i}. {d.get('label', d.get('feature', 'Risk factor'))} — {direction} risk by {abs(float(d.get('value', 0))) * 100:.1f}%\n"
+        elif isinstance(d, (list, tuple)) and len(d) >= 2:
+            driver_lines += f"  {i}. {d[0]} — metric factor: {d[1]}\n"
+        else:
+            driver_lines += f"  {i}. {str(d)}\n"
 
     prompt = f"""<|im_start|>system
 You are PRISM, an expert AI assistant for the Government of India's Ministry of Statistics and Programme Implementation (MoSPI). You analyze infrastructure project data and provide specific, actionable mitigation recommendations.
