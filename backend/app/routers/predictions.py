@@ -1,7 +1,9 @@
 import asyncio
+import json
+from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from app.core.database import get_db
@@ -9,7 +11,13 @@ from app.core.config import get_settings
 from app.core.security import get_current_user, get_optional_user
 from app.models.project import Project, RiskPrediction, Profile
 from app.schemas.prediction import RiskPredictionOut, PredictRequest, PortfolioSummary
-from app.services import ml_service, alert_service, qwen_service
+from app.schemas.mitigation import (
+    StructuredMitigationPlan,
+    MitigationPlanRequest,
+    MitigationPlanResponse,
+    ExportPdfRequest,
+)
+from app.services import ml_service, alert_service, qwen_service, llm_orchestrator, pdf_service
 
 router = APIRouter(prefix="/projects", tags=["Predictions"])
 settings = get_settings()
@@ -358,15 +366,17 @@ async def generate_llm_briefing(
     }
 
 
-@router.post("/{project_id}/mitigation")
-async def generate_mitigation_plan(
+@router.post("/{project_id}/mitigation-plan", response_model=MitigationPlanResponse)
+async def get_structured_mitigation_plan(
     project_id: str,
+    payload: Optional[MitigationPlanRequest] = None,
     db: Session = Depends(get_db),
     current_user=Depends(get_optional_user),
 ):
     """
-    Runs the locally trained Qwen 2.5-1.5B QLoRA model to generate a unique,
-    per-project mitigation plan based on live SHAP risk drivers.
+    Multi-LLM Orchestrator:
+    Generates a 100% dynamic, project-specific AI Mitigation Plan using Qwen 2.5
+    as primary generator with multi-LLM validation and strict JSON schema adherence.
     """
     import re
     project = None
@@ -387,7 +397,7 @@ async def generate_mitigation_plan(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # Get the latest prediction for SHAP values
+    # Get latest prediction
     latest = (
         db.query(RiskPrediction)
         .filter(RiskPrediction.project_id == project.id)
@@ -395,42 +405,119 @@ async def generate_mitigation_plan(
         .first()
     )
 
-    shap_drivers = []
-    delay_prob = 0.5
-    cost_prob = 0.1
-    risk_tier = "medium"
-    delay_months = 0.0
-    cost_exposure = 0.0
+    pred_dict = {
+        "risk_tier": latest.risk_tier if latest else "medium",
+        "composite_risk_score": latest.composite_risk_score if latest else 0.45,
+        "delay_probability": latest.delay_probability if latest else 0.45,
+        "cost_overrun_probability": latest.cost_overrun_probability if latest else 0.40,
+        "delay_duration_months": latest.delay_duration_months if latest else 0.0,
+        "cost_overrun_amount_cr": latest.cost_overrun_amount_cr if latest else 0.0,
+        "shap_values": latest.shap_values if latest else [],
+    }
 
-    if latest:
-        shap_drivers = latest.shap_values or []
-        delay_prob = float(latest.delay_probability or 0.5)
-        cost_prob = float(latest.cost_overrun_probability or 0.1)
-        risk_tier = latest.risk_tier or "medium"
-        delay_months = float(latest.delay_duration_months or 0.0)
-        cost_exposure = float(latest.cost_overrun_amount_cr or 0.0)
+    project_dict = {
+        "id": str(project.id),
+        "project_name": project.project_name,
+        "ministry": project.ministry,
+        "sector": project.sector,
+        "state": project.state,
+        "district": getattr(project, "district", None),
+        "location_name": getattr(project, "location_name", None),
+        "original_cost_cr": float(project.original_cost_cr or 0),
+        "revised_cost_cr": float(project.revised_cost_cr or project.original_cost_cr or 0),
+        "cumulative_expenditure_cr": float(project.cumulative_expenditure_cr or 0),
+        "physical_progress_pct": float(project.physical_progress_pct or 0),
+        "burn_rate_pct": float(project.burn_rate_pct or 0),
+        "burn_progress_gap": float(project.burn_progress_gap or 0),
+        "time_elapsed_ratio": float(project.time_elapsed_ratio or 0.5),
+        "original_start_date": str(project.original_start_date) if project.original_start_date else None,
+        "scheduled_completion_date": str(project.scheduled_completion_date) if project.scheduled_completion_date else None,
+        "revised_completion_date": str(project.revised_completion_date) if project.revised_completion_date else None,
+    }
 
-    mitigation_text = await asyncio.to_thread(
-        qwen_service.generate_mitigation,
-        project_name=project.project_name or "",
-        sector=project.sector or "",
-        ministry=project.ministry or "",
-        state=project.state or "",
-        delay_prob=delay_prob,
-        cost_prob=cost_prob,
-        physical_progress=float(project.physical_progress_pct or 0.0),
-        burn_rate=float(project.burn_rate_pct or 0.0),
-        burn_gap=float(project.burn_progress_gap or 0.0),
-        time_elapsed=float(project.time_elapsed_ratio or 0.5),
-        shap_drivers=shap_drivers,
-        risk_tier=risk_tier,
-        delay_months=delay_months,
-        cost_exposure_cr=cost_exposure,
+    force = payload.force_regenerate if payload else False
+    plan, model_used, val_models = await asyncio.to_thread(
+        llm_orchestrator.generate_structured_mitigation_plan,
+        project_dict=project_dict,
+        prediction_dict=pred_dict,
+        force_regenerate=force,
     )
 
+    # Convert plan to readable text for legacy components
+    lines = [
+        f"EXECUTIVE MITIGATION STRATEGY: {plan.project_summary.project_name.upper()}",
+        f"Status: {plan.project_summary.risk_level.upper()} RISK | Risk Score: {plan.project_summary.overall_risk_score}%\n",
+        f"EXECUTIVE SUMMARY:\n{plan.executive_summary}\n",
+        "PHASE 1: IMMEDIATE MOBILIZATION & FIELD ACTIONS (0 - 30 DAYS)"
+    ]
+    for act in plan.immediate_actions:
+        lines.append(f"{act.priority}. {act.action}\n   - Target: {act.timeline} | Role: {act.responsible_role}\n   - Outcome: {act.expected_outcome}")
+
+    lines.append("\nPHASE 2: STATUTORY CLEARANCES & SCHEDULE ACCELERATION (30 - 90 DAYS)")
+    for act in plan.short_term_actions:
+        lines.append(f"{act.priority}. {act.action}\n   - Target: {act.timeline} | Role: {act.responsible_role}\n   - Outcome: {act.expected_outcome}")
+
+    lines.append("\nPHASE 3: FINANCIAL CONTROLS & ASSET HANDOVER (90 - 180 DAYS)")
+    for act in plan.medium_term_actions:
+        lines.append(f"{act.priority}. {act.action}\n   - Target: {act.timeline} | Role: {act.responsible_role}\n   - Outcome: {act.expected_outcome}")
+
+    return MitigationPlanResponse(
+        success=True,
+        model=model_used,
+        validation_models=val_models,
+        generated_at=datetime.utcnow().isoformat(),
+        plan=plan,
+        mitigation_text="\n".join(lines),
+    )
+
+
+@router.post("/{project_id}/mitigation-plan/pdf")
+async def export_mitigation_plan_pdf(
+    project_id: str,
+    payload: ExportPdfRequest,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_optional_user),
+):
+    """
+    Renders an official, multi-page government PDF from the exact currently active plan JSON.
+    """
+    try:
+        plan = StructuredMitigationPlan(**payload.plan)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid plan JSON format: {str(e)}")
+
+    model_name = payload.model or "Qwen 2.5 (Primary) + Multi-LLM Validation"
+    val_models = payload.validation_models or []
+
+    pdf_bytes = await asyncio.to_thread(
+        pdf_service.generate_mitigation_pdf,
+        plan=plan,
+        model_name=model_name,
+        validation_models=val_models,
+    )
+
+    filename = f"PRISM_AI_Mitigation_Plan_{plan.project_summary.project_id}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename=\"{filename}\""
+        }
+    )
+
+
+@router.post("/{project_id}/mitigation")
+async def generate_mitigation_plan_legacy(
+    project_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_optional_user),
+):
+    """Backwards-compatible legacy endpoint returning both text and structured plan."""
+    res = await get_structured_mitigation_plan(project_id=project_id, payload=None, db=db, current_user=current_user)
     return {
-        "project_id": str(project.id),
-        "project_name": project.project_name,
-        "mitigation_text": mitigation_text,
-        "model": qwen_service.get_last_model_source(),
+        "project_id": str(project_id),
+        "project_name": res.plan.project_summary.project_name,
+        "mitigation_text": res.mitigation_text,
+        "plan": res.plan.model_dump(),
+        "model": res.model,
     }

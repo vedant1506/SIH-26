@@ -7,7 +7,8 @@
 import { getToken } from "./auth";
 import type {
   Project, ProjectListItem, RiskPrediction, Alert,
-  PortfolioSummary, User, PredictRequest
+  PortfolioSummary, User, PredictRequest,
+  StructuredMitigationPlan, MitigationPlanResponse
 } from "./types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -103,10 +104,32 @@ export async function getProjectPredictions(
   return request<RiskPrediction[]>(`/projects/${projectId}/predictions?limit=${limit}`);
 }
 
-export async function generateMitigation(projectId: string): Promise<{ mitigation_text: string; model: string }> {
-  return request<{ mitigation_text: string; model: string }>(`/projects/${projectId}/mitigation`, {
+export async function generateMitigation(projectId: string): Promise<{ mitigation_text: string; model: string; plan?: StructuredMitigationPlan }> {
+  return request<{ mitigation_text: string; model: string; plan?: StructuredMitigationPlan }>(`/projects/${projectId}/mitigation`, {
     method: "POST",
   });
+}
+
+export async function generateMitigationPlan(projectId: string, forceRegenerate = false): Promise<MitigationPlanResponse> {
+  return request<MitigationPlanResponse>(`/projects/${projectId}/mitigation-plan`, {
+    method: "POST",
+    body: JSON.stringify({ project_id: projectId, force_regenerate: forceRegenerate }),
+  });
+}
+
+export async function downloadMitigationPdf(projectId: string, plan: StructuredMitigationPlan, modelName?: string): Promise<Blob> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("prism_token") : null;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+  const res = await fetch(`${baseUrl}/projects/${projectId}/mitigation-plan/pdf`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ project_id: projectId, plan, model: modelName }),
+  });
+  if (!res.ok) throw new Error("Failed to generate server PDF");
+  return res.blob();
 }
 
 export async function getPortfolioSummary(filters: ProjectFilters = {}): Promise<PortfolioSummary> {

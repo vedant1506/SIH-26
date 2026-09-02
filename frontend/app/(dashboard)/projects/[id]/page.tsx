@@ -14,6 +14,7 @@ import RiskTrendChart from "@/components/charts/RiskTrendChart";
 import BurnProgressGauge from "@/components/charts/BurnProgressGauge";
 import WhatIfPanel from "@/components/features/WhatIfPanel";
 import PdfExportButton from "@/components/features/PdfExportButton";
+import StructuredMitigationSection from "@/components/features/StructuredMitigationSection";
 
 
 
@@ -431,122 +432,8 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        {/* Graph-Driven Mitigation — button triggers AI model */}
-        {prediction?.shap_values && prediction.shap_values.length > 0 && (
-          <div className="card animate-fade" style={{ marginBottom: 24, background: "var(--surface)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", display: "flex", alignItems: "center", gap: 8 }}>
-                <div
-                  style={{
-                    width: 20, height: 20, borderRadius: 5, overflow: "hidden", flexShrink: 0,
-                    border: "1px solid var(--accent-glow)",
-                  }}
-                >
-                  <img src="/logo.jpg" alt="PRISM AI" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                </div>
-                AI-Generated Mitigation Plan
-                {mitigationModel && (
-                  <span style={{ fontSize: 10, padding: "2px 8px", background: "rgba(99, 102, 241, 0.15)", color: "#818cf8", borderRadius: 12, border: "1px solid rgba(99, 102, 241, 0.3)", textTransform: "none", letterSpacing: "normal", fontWeight: 500 }}>
-                    {mitigationModel}
-                  </span>
-                )}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                {mitigationText && !mitigationLoading && (
-                  <PdfExportButton
-                    project={project}
-                    prediction={prediction}
-                    mitigationPlan={mitigationText}
-                    onMitigationFetched={(text, model) => {
-                      setMitigationText(text);
-                      setMitigationModel(model);
-                    }}
-                    label="Export PDF with AI Plan"
-                    className="btn btn-secondary animate-fade"
-                  />
-                )}
-                <button
-                  id="generate-mitigation-btn"
-                  className="btn btn-primary"
-                  disabled={mitigationLoading}
-                  onClick={async () => {
-                    if (!project) return;
-                    setMitigationLoading(true);
-                    setMitigationError("");
-                    setMitigationText(null);
-                    try {
-                      const res = await generateMitigation(project.id);
-                      setMitigationText(res.mitigation_text);
-                      setMitigationModel(res.model || "Hugging Face Qwen 2.5");
-                    } catch (e: any) {
-                      setMitigationError(e?.message || "Failed to generate mitigation plan. Please try again.");
-                    } finally {
-                      setMitigationLoading(false);
-                    }
-                  }}
-                  style={{ fontSize: 12, padding: "8px 16px", display: "flex", alignItems: "center", gap: 6 }}
-                >
-                  {mitigationLoading ? (
-                    <>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "spin 1s linear infinite" }}>
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                      </svg>
-                      Generating Plan...
-                    </>
-                  ) : (
-                    <>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                      </svg>
-                      {mitigationText ? "Regenerate AI Mitigation Plan" : "Generate AI Mitigation Plan"}
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Loading state */}
-            {mitigationLoading && (
-              <div style={{ padding: "24px 0", textAlign: "center" }}>
-                <div style={{ fontSize: 13, color: "var(--text-sub)", marginBottom: 8 }}>AI Model is analysing this project...</div>
-                <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Analyzing project parameters and generating customized mitigation actions.</div>
-                <div style={{ marginTop: 16, height: 4, background: "var(--surface-2)", borderRadius: 2, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: "100%", background: "linear-gradient(90deg, var(--accent) 0%, #a855f7 50%, var(--accent) 100%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s ease-in-out infinite" }} />
-                </div>
-              </div>
-            )}
-
-            {/* Error state */}
-            {mitigationError && !mitigationLoading && (
-              <div style={{ color: "#f43f5e", fontSize: 12, padding: "8px 0", display: "flex", alignItems: "center", gap: 6 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                  <line x1="12" y1="9" x2="12" y2="13"/>
-                  <line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-                {mitigationError}
-              </div>
-            )}
-
-            {/* Generated output */}
-            {mitigationText && !mitigationLoading && (
-              <div style={{ animation: "fadeIn 0.4s ease" }}>
-                <div style={{ background: "var(--surface-2)", borderRadius: 10, padding: "18px 20px", borderLeft: "3px solid var(--accent)" }}>
-                  <div style={{ whiteSpace: "pre-wrap", fontSize: 13, color: "var(--text)", lineHeight: 1.75 }}>
-                    {mitigationText}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Placeholder state — before button is clicked */}
-            {!mitigationText && !mitigationLoading && !mitigationError && (
-              <div style={{ padding: "20px 0", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
-                Click <strong style={{ color: "var(--accent)" }}>Generate AI Mitigation Plan</strong> to run the AI model and get a unique, project-specific action plan.
-              </div>
-            )}
-          </div>
-        )}
+        {/* AI-Powered Multi-LLM Mitigation Plan */}
+        <StructuredMitigationSection project={project} prediction={prediction} />
 
         {/* Bottom Trend & What-If Simulation Grid */}
         <div className="responsive-grid-2" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 24 }}>

@@ -125,3 +125,68 @@ export interface PredictRequest {
   physical_progress_pct?: number;
   revised_completion_date?: string;
 }
+
+// ── Multi-LLM Structured AI Mitigation Plan Interfaces ──
+
+export interface ProjectSummarySchema {
+  project_name: string;
+  project_id: string;
+  risk_level: string;
+  overall_risk_score?: number | null;
+  cost_risk?: number | null;
+  schedule_risk?: number | null;
+}
+
+export interface RiskAssessmentItem {
+  risk: string;
+  severity: string;
+  evidence: string[];
+  root_cause: string;
+  shap_factors: string[];
+}
+
+export interface MitigationActionItem {
+  priority: number;
+  action: string;
+  reason: string;
+  responsible_role: string;
+  timeline: string;
+  expected_outcome: string;
+  monitoring_indicator: string;
+  escalation_condition: string;
+}
+
+export interface MonitoringItem {
+  indicator: string;
+  current_value: string;
+  target_value: string;
+  frequency: string;
+  responsible_role: string;
+}
+
+export interface EscalationItem {
+  trigger: string;
+  threshold: string;
+  escalate_to: string;
+  recommended_action: string;
+}
+
+export interface StructuredMitigationPlan {
+  project_summary: ProjectSummarySchema;
+  risk_assessment: RiskAssessmentItem[];
+  immediate_actions: MitigationActionItem[];
+  short_term_actions: MitigationActionItem[];
+  medium_term_actions: MitigationActionItem[];
+  monitoring_plan: MonitoringItem[];
+  escalation_plan: EscalationItem[];
+  executive_summary: string;
+}
+
+export interface MitigationPlanResponse {
+  success: boolean;
+  model: string;
+  validation_models: string[];
+  generated_at: string;
+  plan: StructuredMitigationPlan;
+  mitigation_text?: string | null;
+}
