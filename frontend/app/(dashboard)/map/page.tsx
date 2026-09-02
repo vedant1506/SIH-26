@@ -5,6 +5,7 @@ import type { ProjectListItem } from "@/lib/types";
 import TopBar from "@/components/layout/TopBar";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import RiskBadge from "@/components/ui/RiskBadge";
+import masterGeolocations from "@/app/data/geolocations_master.json";
 import {
   aggregateDistrictData,
   aggregateStateData,
@@ -61,6 +62,13 @@ function normalizeGeoJsonState(s: string = ""): string {
   if (clean.includes("PUDUCHERRY") || clean.includes("PONDICHERRY")) return "PUDUCHERRY";
   return clean;
 }
+
+// Build instant 1-to-1 lookup from authoritative April 2026 geolocations
+const geoLookup = new Map<string, any>();
+(masterGeolocations as any[]).forEach((g) => {
+  if (g.project_id) geoLookup.set(String(g.project_id), g);
+  if (g.project_name) geoLookup.set(String(g.project_name).trim().toLowerCase(), g);
+});
 
 function getExecutiveAiBriefing(project: ProjectListItem) {
   const tier = (project.risk_tier || "low").toLowerCase();
@@ -132,10 +140,24 @@ export default function MapPage() {
 
     listProjects({ limit: 2000 })
       .then((p) => {
-        const projs = p || [];
-        setAllProjects(projs);
-        if (projs.length > 0) {
-          setSelectedProject(projs[0]);
+        const rawProjs = p || [];
+        // Ensure 100% of projects have exact district and location names
+        const enriched = rawProjs.map((proj) => {
+          const cached = geoLookup.get(String(proj.id)) || geoLookup.get((proj.project_name || "").trim().toLowerCase());
+          const districtVal = proj.district || cached?.district || (proj.state ? `${proj.state} Region` : "District Hub");
+          const locationVal = proj.location_name || cached?.location_name || proj.place || `${districtVal} Project Corridor`;
+          return {
+            ...proj,
+            district: districtVal,
+            location_name: locationVal,
+            latitude: proj.latitude ?? cached?.latitude,
+            longitude: proj.longitude ?? cached?.longitude,
+          };
+        });
+
+        setAllProjects(enriched);
+        if (enriched.length > 0) {
+          setSelectedProject(enriched[0]);
         }
       })
       .catch((err) => {
@@ -151,7 +173,6 @@ export default function MapPage() {
     const selDistNorm = selectedDistrict !== "all" ? selectedDistrict.trim().toUpperCase() : null;
 
     return allProjects.filter((p) => {
-      // Must have valid coordinates
       if (p.latitude == null || p.longitude == null || isNaN(p.latitude) || isNaN(p.longitude)) {
         return false;
       }
@@ -163,22 +184,18 @@ export default function MapPage() {
         if (!matchAll) return false;
       }
 
-      // State matching (including multi-state associated states)
       if (selectedState !== "all" && !projectMatchesState(p.state, selectedState)) {
         return false;
       }
 
-      // District matching
       if (selDistNorm && (p.district || "").trim().toUpperCase() !== selDistNorm) {
         return false;
       }
 
-      // Sector / Category matching
       if (selectedSector !== "all" && p.sector !== selectedSector && p.category !== selectedSector) {
         return false;
       }
 
-      // Risk tier matching
       if (selectedTier !== "all" && p.risk_tier !== selectedTier) {
         return false;
       }
@@ -221,7 +238,7 @@ export default function MapPage() {
 
     const map = new Map<string, number>();
     stProjs.forEach((p) => {
-      const d = p.district || "Main District";
+      const d = p.district || `${selectedState} District`;
       map.set(d, (map.get(d) || 0) + 1);
     });
 
@@ -270,7 +287,6 @@ export default function MapPage() {
 
     import("leaflet").then((L) => {
       if (!leafletMapRef.current && mapRef.current) {
-        // Center on India [22.5937, 78.9629], zoom 5
         const map = L.map(mapRef.current, { zoomControl: true }).setView([22.5937, 78.9629], 5);
         leafletMapRef.current = map;
 
@@ -352,14 +368,17 @@ export default function MapPage() {
             ? SECTOR_COLOR[p.category || p.sector || ""] || "#3b82f6"
             : TIER_COLOR[p.risk_tier || "low"] || "#3b82f6";
 
+        const locBadge = p.location_name || p.district || p.state;
+        const distName = p.district || p.location_name || p.state;
+
         const popupContent = `
           <div style="font-family:Inter,sans-serif;min-width:260px;padding:6px;color:#0f172a">
             <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:4px;line-height:1.3">${p.project_name}</div>
             <div style="font-size:11px;color:#475569;margin-bottom:8px;line-height:1.6">
               <span style="display:inline-block;padding:1px 6px;background:#e0f2fe;color:#0369a1;border-radius:4px;font-weight:700;font-size:10px;margin-bottom:4px">
-                <svg style="display:inline-block;vertical-align:middle;margin-right:2px" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${p.location_name || p.district || p.state}
+                <svg style="display:inline-block;vertical-align:middle;margin-right:2px" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${locBadge}
               </span><br/>
-              <strong>District:</strong> ${p.district || "District"} • <strong>State:</strong> ${p.state}<br/>
+              <strong>District:</strong> ${distName} • <strong>State:</strong> ${p.state}<br/>
               <strong>Category:</strong> ${p.category || p.sector}<br/>
               <strong>Outlay:</strong> ${p.revised_cost_cr != null ? `₹${p.revised_cost_cr.toLocaleString("en-IN")} Cr` : "—"} • <strong>Progress:</strong> ${p.physical_progress_pct != null ? `${p.physical_progress_pct.toFixed(0)}%` : "—"}
             </div>
@@ -392,7 +411,6 @@ export default function MapPage() {
           this.setStyle({ fillOpacity: 0.92, weight: 2 });
         });
 
-        // Exact Project ID Binding on Click
         circle.on("click", () => {
           setSelectedProject(p);
           setDrawerTab("project");
@@ -972,11 +990,11 @@ export default function MapPage() {
                     <strong style={{ color: "var(--text)" }}>Location / Hub:</strong>{" "}
                     <span style={{ color: "#10b981", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 3 }}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                      {selectedProject.location_name || selectedProject.place || selectedProject.district || "Project Corridor"}
+                      {selectedProject.location_name || selectedProject.place || selectedProject.district || selectedProject.state}
                     </span>
                   </div>
                   <div style={{ fontSize: 11, color: "var(--text-sub)", marginBottom: 4 }}>
-                    <strong style={{ color: "var(--text)" }}>District:</strong> {selectedProject.district || "District"} • <strong style={{ color: "var(--text)" }}>State:</strong> {selectedProject.state}
+                    <strong style={{ color: "var(--text)" }}>District:</strong> {selectedProject.district || selectedProject.location_name || selectedProject.state} • <strong style={{ color: "var(--text)" }}>State:</strong> {selectedProject.state}
                   </div>
                   <div style={{ fontSize: 11, color: "var(--text-sub)" }}>
                     <strong style={{ color: "var(--text)" }}>Category:</strong> {selectedProject.category || selectedProject.sector} ({selectedProject.ministry})

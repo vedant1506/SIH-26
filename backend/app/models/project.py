@@ -78,6 +78,8 @@ class Project(Base):
     ministry = Column(String, nullable=False)
     sector = Column(String, nullable=False)        # Roads, Railways, Power, etc.
     state = Column(String, nullable=False)
+    district = Column(String)
+    location_name = Column(String)
     latitude = Column(Numeric)
     longitude = Column(Numeric)
 
