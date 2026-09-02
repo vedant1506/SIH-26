@@ -69,7 +69,16 @@ export default function WhatIfPanel({ projectId, currentScore, currentRevisedCos
       {error && <div style={{ color: "#f43f5e", fontSize: 12, marginBottom: 12 }}>{error}</div>}
 
       <button id="whatif-run" className="btn btn-primary" onClick={simulate} disabled={loading} style={{ width: "100%", justifyContent: "center", marginBottom: 16 }}>
-        {loading ? <LoadingSpinner size={16} /> : "▶ Run Simulation"}
+        {loading ? (
+          <LoadingSpinner size={16} />
+        ) : (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Run Simulation
+          </span>
+        )}
       </button>
 
       {result && (

@@ -35,7 +35,7 @@ export default function PdfExportButton({
   prediction: pred,
   mitigationPlan,
   onMitigationFetched,
-  label = "📄 Executive PDF Report",
+  label = "Export Executive PDF Report",
   className = "btn btn-secondary",
   style,
 }: Props) {
@@ -555,7 +555,7 @@ export default function PdfExportButton({
       disabled={exporting}
       title="Download Comprehensive Executive Risk & AI Mitigation Report (PDF)"
     >
-      {exporting ? "⏳ Generating PDF Report..." : label}
+      {exporting ? "Generating PDF Report..." : label}
     </button>
   );
 }

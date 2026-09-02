@@ -443,8 +443,11 @@ export default function FileUploadPage() {
         
         {/* Upload Banner Card */}
         <div className="card" style={{ marginBottom: 24, borderLeft: "4px solid #06b6d4", background: "var(--surface)" }}>
-          <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", marginBottom: 6 }}>
-            📂 Upload Custom Project File or Report for AI Analysis
+          <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
+            </svg>
+            Upload Custom Project File or Report for AI Analysis
           </div>
           <div style={{ fontSize: 12, color: "var(--text-sub)", lineHeight: 1.5, marginBottom: 16 }}>
             Upload raw project monitoring documents (CSV, PDF, JSON). PRISM's multi-model engine parses raw fields, computes non-CUF burn gaps, runs XGBoost risk classification, and fine-tuned Qwen-2.5 QLoRA LLM generates executive decision briefs.
@@ -453,7 +456,14 @@ export default function FileUploadPage() {
           <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16 }}>
             {/* File Dropzone */}
             <div style={{ border: "2px dashed var(--border)", borderRadius: 10, padding: 24, textAlign: "center", background: "var(--surface-2)", transition: "all 0.2s" }}>
-              <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.8 }}>📄</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}>
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <path d="M12 18v-6"/>
+                  <path d="m9 15 3-3 3 3"/>
+                </svg>
+              </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>
                 {customFile ? customFile.name : "Drag & Drop raw CSV, PDF, or JSON file here"}
               </div>
@@ -468,8 +478,11 @@ export default function FileUploadPage() {
 
             {/* Instant Sample Preset Buttons for Judges */}
             <div style={{ background: "var(--surface-2)", padding: 16, borderRadius: 10, border: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 }}>
-                ⚡ Or Select a Preset MoSPI Document Sample for Instant Demo:
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                Or Select a Preset MoSPI Document Sample for Instant Demo:
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {SAMPLES.map((s, idx) => (
@@ -507,9 +520,24 @@ export default function FileUploadPage() {
               onClick={runDocumentAnalysis}
               disabled={analyzing || (selectedSample === null && !customFile)}
               className="btn btn-primary"
-              style={{ padding: "10px 24px", fontSize: 13, fontWeight: 700 }}
+              style={{ padding: "10px 24px", fontSize: 13, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8 }}
             >
-              {analyzing ? "⚡ Parsing Document & Fine-Tuned Qwen LLM Inference..." : "🔍 Run AI Document Analysis & Risk Scoring"}
+              {analyzing ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "spin 1s linear infinite" }}>
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                  </svg>
+                  Parsing Document & Fine-Tuned Qwen LLM Inference...
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.3-4.3"/>
+                  </svg>
+                  Run AI Document Analysis & Risk Scoring
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -520,8 +548,13 @@ export default function FileUploadPage() {
             <div className="card" style={{ marginBottom: 24, borderTop: "3px solid var(--accent)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
-                    📊 AI Analysis Report: {analysisResult.projectName}
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", display: "flex", alignItems: "center", gap: 8 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="20" x2="18" y2="10"/>
+                      <line x1="12" y1="20" x2="12" y2="4"/>
+                      <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    AI Analysis Report: {analysisResult.projectName}
                   </div>
                   <div style={{ fontSize: 11, color: "var(--text-sub)", marginTop: 2 }}>
                     Source Document: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{analysisResult.fileName}</span> ({analysisResult.fileType})
@@ -529,7 +562,12 @@ export default function FileUploadPage() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <button onClick={handleExportPDF} className="btn btn-secondary btn-sm" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px" }}>
-                    📄 Download Executive PDF Report
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download Executive PDF Report
                   </button>
                   <span
                     style={{
@@ -579,8 +617,11 @@ export default function FileUploadPage() {
               {/* Non-CUF Burn Gap & Schedule Lag Indicators */}
               <div className="responsive-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
                 <div style={{ padding: 14, background: "var(--surface-2)", borderRadius: 8, border: "1px solid var(--border)" }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text)", textTransform: "uppercase", marginBottom: 6 }}>
-                    🔥 Non-CUF Financial-Physical Divergence
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text)", textTransform: "uppercase", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+                    </svg>
+                    Non-CUF Financial-Physical Divergence
                   </div>
                   <div style={{ fontSize: 18, fontWeight: 700, color: analysisResult.burnGap > 0 ? "#f43f5e" : "#10b981" }}>
                     Burn Gap: {analysisResult.burnGap > 0 ? "+" : ""}{analysisResult.burnGap}%
@@ -593,8 +634,12 @@ export default function FileUploadPage() {
                 </div>
 
                 <div style={{ padding: 14, background: "var(--surface-2)", borderRadius: 8, border: "1px solid var(--border)" }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text)", textTransform: "uppercase", marginBottom: 6 }}>
-                    ⏱ Predicted Schedule Delay (PAIMANA Predictive Engine)
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text)", textTransform: "uppercase", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Predicted Schedule Delay (PAIMANA Predictive Engine)
                   </div>
 
                   <div style={{ fontSize: 18, fontWeight: 700, color: "#f59e0b" }}>
@@ -610,8 +655,13 @@ export default function FileUploadPage() {
               <div className="responsive-grid-2" style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16, marginBottom: 20 }}>
                 {/* Visual Bar Graph */}
                 <div style={{ background: "var(--surface-2)", padding: 16, borderRadius: 10, border: "1px solid var(--border)" }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-sub)", marginBottom: 12 }}>
-                    📊 Financial Allocation vs Physical Progress Comparison (Cr / %)
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-sub)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="20" x2="18" y2="10"/>
+                      <line x1="12" y1="20" x2="12" y2="4"/>
+                      <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    Financial Allocation vs Physical Progress Comparison (Cr / %)
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     <div>
@@ -658,8 +708,14 @@ export default function FileUploadPage() {
 
                 {/* Audit Comparison Data Table */}
                 <div style={{ background: "var(--surface-2)", padding: 16, borderRadius: 10, border: "1px solid var(--border)", overflowX: "auto" }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-sub)", marginBottom: 10 }}>
-                    📋 Key Metric Audit Comparison Table
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-sub)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect width="18" height="18" x="3" y="3" rx="2"/>
+                      <path d="M3 9h18"/>
+                      <path d="M3 15h18"/>
+                      <path d="M9 3v18"/>
+                    </svg>
+                    Key Metric Audit Comparison Table
                   </div>
                   <table style={{ width: "100%", fontSize: 11, borderCollapse: "collapse" }}>
                     <thead>
@@ -696,8 +752,12 @@ export default function FileUploadPage() {
 
               {/* Detailed Plain-English Paragraph Analysis Section */}
               <div style={{ background: "var(--surface-2)", padding: 18, borderRadius: 10, border: "1px solid var(--border)", marginBottom: 20 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", marginBottom: 12 }}>
-                  📖 Detailed Human-Readable Analysis & Project Evaluation Report
+                <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                  </svg>
+                  Detailed Human-Readable Analysis & Project Evaluation Report
                 </div>
 
                 <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.6, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -717,8 +777,13 @@ export default function FileUploadPage() {
 
               {/* Detailed Actionable Solutions Section */}
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", marginBottom: 12 }}>
-                  💡 Actionable Mitigation Solutions & Policy Guidelines
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+                    <path d="M9 18h6"/>
+                    <path d="M10 22h4"/>
+                  </svg>
+                  Actionable Mitigation Solutions & Policy Guidelines
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14 }}>
                   <div style={{ background: "var(--surface-2)", padding: 14, borderRadius: 8, borderLeft: "3px solid #f43f5e" }}>
@@ -752,16 +817,21 @@ export default function FileUploadPage() {
 
               {/* MoSPI PAIMANA Executive Advisory Briefing */}
               <div style={{ padding: 16, background: "var(--surface-2)", borderRadius: 10, border: "1px solid var(--border)", borderLeft: "4px solid var(--accent)" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", marginBottom: 8 }}>
-                  🏛️ MoSPI PAIMANA Executive Risk Assessment & Policy Advisory
+                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                  <div
+                    style={{
+                      width: 20, height: 20, borderRadius: 4, overflow: "hidden", flexShrink: 0,
+                      border: "1px solid var(--accent-glow)",
+                    }}
+                  >
+                    <img src="/logo.jpg" alt="MoSPI" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                  MoSPI PAIMANA Executive Risk Assessment & Policy Advisory
                 </div>
                 <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.7, background: "var(--surface)", padding: 16, borderRadius: 8, border: "1px solid var(--border)", whiteSpace: "pre-line" }}>
                   {analysisResult.llmBriefing}
                 </div>
-
               </div>
-
-
 
             </div>
           </div>

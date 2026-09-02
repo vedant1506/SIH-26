@@ -30,9 +30,9 @@ def build_alert_email_html(project: Any, prediction: Any) -> str:
                 label = sv.get("label", sv.get("feature", ""))
                 val = sv.get("value", 0)
                 direction = sv.get("direction", "positive")
-                icon = "🔴" if direction == "positive" else "🟢"
                 sign = "+" if direction == "positive" else "-"
-                shap_rows += f"<li style='margin:6px 0;'>{icon} {sign}{abs(float(val)):.0%} — {label}</li>"
+                color = "#dc2626" if direction == "positive" else "#16a34a"
+                shap_rows += f"<li style='margin:6px 0;'><span style='color:{color}; font-weight:bold;'>[{sign}]</span> {sign}{abs(float(val)):.0%} — {label}</li>"
 
     return f"""
 <!DOCTYPE html>
@@ -43,7 +43,7 @@ def build_alert_email_html(project: Any, prediction: Any) -> str:
     
     <!-- Header -->
     <div style="background: {tier_color}; padding: 20px 24px;">
-      <h1 style="margin: 0; color: white; font-size: 18px;">⚠️ Risk Escalation Alert</h1>
+      <h1 style="margin: 0; color: white; font-size: 18px;">Risk Escalation Alert</h1>
       <p style="margin: 4px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">PRISM Infrastructure Risk Intelligence Platform</p>
     </div>
 
@@ -119,7 +119,7 @@ def send_escalation_email(project: Any, prediction: Any, previous_tier: Optional
         resend.Emails.send({
             "from": "alerts@prism-risk.gov.in",
             "to": [recipient],
-            "subject": f"⚠️ Risk Escalation: {project.project_name} — {prev} → {new_tier}",
+            "subject": f"Risk Escalation: {project.project_name} — {prev} → {new_tier}",
             "html": build_alert_email_html(project, prediction),
         })
         logger.info("Escalation email sent for project %s (%s → %s)", project.project_name, prev, new_tier)

@@ -265,8 +265,8 @@ def _verify_and_finalize_plan(
         return None
 
     # Ensure clean header
-    if not cleaned.startswith("📌"):
-        header = f"📌 EXECUTIVE MITIGATION STRATEGY: {project_name.upper()}\n"
+    if not cleaned.startswith("EXECUTIVE MITIGATION STRATEGY:"):
+        header = f"EXECUTIVE MITIGATION STRATEGY: {project_name.upper()}\n"
         header += f"Status: {risk_tier.upper()} RISK | Progress: {physical_progress:.1f}% | Forecast Delay: {delay_months:.1f} Months | Cost Exposure: Rs. {cost_exposure_cr:,.1f} Cr\n\n"
         cleaned = header + cleaned
 
@@ -385,7 +385,7 @@ def _generate_dynamic_project_mitigation(
         driver_focus = f"Enforce weekly critical-path milestone tracking on the PRISM and PRAGATI monitoring portals to prevent further schedule slippage."
 
     # Construct the complete, clean 3-phase mitigation plan
-    return f"""📌 EXECUTIVE MITIGATION STRATEGY: {p_name.upper()}
+    return f"""EXECUTIVE MITIGATION STRATEGY: {p_name.upper()}
 Status: {risk_tier.upper()} RISK | Progress: {physical_progress:.1f}% | Forecast Delay: {delay_months:.1f} Months | Cost Exposure: Rs. {cost_exposure_cr:,.1f} Cr
 Context: {stage_context}
 

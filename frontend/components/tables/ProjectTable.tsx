@@ -38,7 +38,9 @@ export default function ProjectTable({ projects, loading }: Props) {
             <tr>
               <td colSpan={6}>
                 <div style={{ textAlign: "center", padding: "64px 24px", color: "var(--text-muted)", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-                  <span style={{ fontSize: 32, opacity: 0.5 }}>📂</span>
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
+                    <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
+                  </svg>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>No projects found matching current filters. Try clearing your filters.</span>
                 </div>
               </td>
@@ -65,7 +67,11 @@ export default function ProjectTable({ projects, loading }: Props) {
                       <RiskBadge tier={p.risk_tier} suffix={p.composite_risk_score != null ? ` (${(p.composite_risk_score * 100).toFixed(0)}%)` : ""} />
                       {p.delay_probability != null && p.delay_probability > 0.5 && (
                         <span style={{ fontSize: 10, color: "#a855f7", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 3 }}>
-                          ⏱️ {(p.delay_probability * 100).toFixed(0)}% delay risk
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                          </svg>
+                          {(p.delay_probability * 100).toFixed(0)}% delay risk
                         </span>
                       )}
                     </div>

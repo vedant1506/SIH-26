@@ -26,7 +26,12 @@ export default function ProjectFilters({ filters, onChange }: Props) {
       <div style={{ flex: "1 1 200px" }}>
         <div style={labelStyle}>Search</div>
         <div style={{ position: "relative" }}>
-          <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14 }}>🔍</span>
+          <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", color: "var(--text-muted)", pointerEvents: "none" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.3-4.3"/>
+            </svg>
+          </span>
           <input className="input" placeholder="Search by Project Name or ID..." value={filters.search || ""} onChange={e => set("search", e.target.value)} style={{ ...inputStyle, paddingLeft: 32, width: "100%" }} />
         </div>
       </div>
@@ -67,7 +72,7 @@ export default function ProjectFilters({ filters, onChange }: Props) {
           }}
         >
           <option value="">All Statuses</option>
-          <option value="true">⏱️ Delayed Only (1,805)</option>
+          <option value="true">Delayed Only (1,805)</option>
         </select>
       </div>
       <div style={{ flex: "1 1 130px" }}>
@@ -77,7 +82,11 @@ export default function ProjectFilters({ filters, onChange }: Props) {
         </select>
       </div>
       <button className="btn" style={{ marginBottom: 1, background: "transparent", border: "1px solid var(--critical)", color: "var(--critical)", fontSize: 13, padding: "6px 12px", display: "flex", alignItems: "center", gap: 6 }} onClick={() => onChange({})}>
-        <span>⨯</span> Clear Filters
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Clear Filters
       </button>
     </div>
   );

@@ -403,8 +403,16 @@ export default function AnalyticsPage() {
             <div className="card" style={{ marginTop: 20 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)" }}>
-                    🏛️ District-Level Infrastructure Risk &amp; Outlay Intelligence
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", display: "flex", alignItems: "center", gap: 6 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 21h18"/>
+                      <path d="M5 21V7l8-4v18"/>
+                      <path d="M19 21V11l-6-4"/>
+                      <path d="M9 9h1"/>
+                      <path d="M9 13h1"/>
+                      <path d="M9 17h1"/>
+                    </svg>
+                    District-Level Infrastructure Risk &amp; Outlay Intelligence
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-sub)", marginTop: 2 }}>
                     Granular municipal and district allocation across <strong style={{ color: "var(--text)" }}>{analyticsState}</strong> ({analyticsDistrictData.length} districts monitored)
@@ -488,8 +496,15 @@ export default function AnalyticsPage() {
           <div className="animate-fade">
             {/* Technical Evaluation Section: Conventional Statistical Baseline vs PRISM AI (Dimensions a & b) */}
             <div className="card" style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", marginBottom: 16 }}>
-                🔬 SIH 2026 Technical Evaluation — Statistical Baselines vs AI/ML Model Performance
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", marginBottom: 16, display: "flex", alignItems: "center", gap: 6 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 2v7.31"/>
+                  <path d="M14 9.3V2"/>
+                  <path d="M8.5 2h7"/>
+                  <path d="M14 9.3a6.5 6.5 0 1 1-4 0"/>
+                  <path d="M5.52 16h12.96"/>
+                </svg>
+                SIH 2026 Technical Evaluation — Statistical Baselines vs AI/ML Model Performance
               </div>
               <table className="data-table">
                 <thead>
@@ -543,8 +558,12 @@ export default function AnalyticsPage() {
             {/* Real Empirical Metrics Execution Card */}
             <div style={{ marginBottom: 24, padding: "12px 16px", background: "var(--surface-2)", borderRadius: 8, border: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
               <div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  ✅ Real Empirical Model Evaluation Metrics (Scikit-Learn Verified via ml/src/evaluate.py)
+                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 6 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  Real Empirical Model Evaluation Metrics (Scikit-Learn Verified via ml/src/evaluate.py)
                 </span>
                 <div style={{ fontSize: 11, color: "var(--text-sub)", marginTop: 2 }}>
                   Evaluated on 1,200 PAIMANA project observations using strict chronological train/val/test splits
@@ -563,8 +582,14 @@ export default function AnalyticsPage() {
             {/* Technical Evaluation Section: Common Upload Form (CUF) vs Extended Feature Attribution (Dimension c) */}
             <div className="responsive-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div className="card">
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text)", marginBottom: 12 }}>
-                  📋 Common Upload Form (CUF) vs Extended Variables
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2"/>
+                    <path d="M3 9h18"/>
+                    <path d="M3 15h18"/>
+                    <path d="M9 3v18"/>
+                  </svg>
+                  Common Upload Form (CUF) vs Extended Variables
                 </div>
                 <div style={{ fontSize: 12, color: "var(--text-sub)", lineHeight: 1.6, marginBottom: 16 }}>
                   Evaluating model performance using standard PAIMANA CUF fields (Original Cost, Revised Cost, Expenditure, Dates) vs engineered Non-CUF features.
@@ -585,8 +610,13 @@ export default function AnalyticsPage() {
               </div>
 
               <div className="card">
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text)", marginBottom: 12 }}>
-                  📊 Feature Attribution & Predictive Weight
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                  </svg>
+                  Feature Attribution & Predictive Weight
                 </div>
                 {[
                   { name: "Financial Burn Rate vs Progress Gap (Non-CUF)", weight: 38.4, color: "#f43f5e" },
@@ -677,9 +707,36 @@ export default function AnalyticsPage() {
               {/* 3 quick stat pills */}
               <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
                 {[
-                  { icon: "📚", label: "Trained on", value: "840 India infrastructure briefings" },
-                  { icon: "🎯", label: "Validated on", value: "180 real project scenarios" },
-                  { icon: "⚡", label: "Fine-tuning platform", value: "Google Colab T4 GPU" },
+                  {
+                    icon: (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                      </svg>
+                    ),
+                    label: "Trained on",
+                    value: "840 India infrastructure briefings",
+                  },
+                  {
+                    icon: (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="6"/>
+                        <circle cx="12" cy="12" r="2"/>
+                      </svg>
+                    ),
+                    label: "Validated on",
+                    value: "180 real project scenarios",
+                  },
+                  {
+                    icon: (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                      </svg>
+                    ),
+                    label: "Fine-tuning platform",
+                    value: "Google Colab T4 GPU",
+                  },
                 ].map(stat => (
                   <div key={stat.label} style={{
                     display: "flex", alignItems: "center", gap: 8,
@@ -687,7 +744,7 @@ export default function AnalyticsPage() {
                     background: "var(--surface-2)", border: "1px solid var(--border)",
                     flex: "1 1 200px",
                   }}>
-                    <span style={{ fontSize: 18 }}>{stat.icon}</span>
+                    <span style={{ display: "flex", alignItems: "center" }}>{stat.icon}</span>
                     <div>
                       <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>{stat.label}</div>
                       <div style={{ fontSize: 12, color: "var(--text)", fontWeight: 700, marginTop: 1 }}>{stat.value}</div>
@@ -728,9 +785,9 @@ export default function AnalyticsPage() {
                 {/* Mode Selector Buttons */}
                 <div style={{ display: "flex", gap: 6, padding: "12px 20px 0", background: "var(--surface-2)", borderBottom: "1px solid var(--border)" }}>
                   {[
-                    { key: "scenarios", label: "⚡ Presets" },
-                    { key: "project", label: "🏛️ Live Portfolio Projects" },
-                    { key: "custom", label: "🎛️ Custom Simulation Sandbox" },
+                    { key: "scenarios", label: "Presets" },
+                    { key: "project", label: "Live Portfolio Projects" },
+                    { key: "custom", label: "Custom Simulation Sandbox" },
                   ].map((tab) => (
                     <button
                       key={tab.key}
@@ -825,9 +882,23 @@ export default function AnalyticsPage() {
                         onClick={handleRunProjectBriefing}
                         disabled={inferring || !selectedProjectId}
                         className="btn btn-primary"
-                        style={{ alignSelf: "flex-start", padding: "8px 16px", fontSize: 12 }}
+                        style={{ alignSelf: "flex-start", padding: "8px 16px", fontSize: 12, display: "inline-flex", alignItems: "center", gap: 6 }}
                       >
-                        {inferring ? "Evaluating Project..." : "⚡ Generate Live AI Briefing"}
+                        {inferring ? (
+                          <>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "spin 1s linear infinite" }}>
+                              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                            </svg>
+                            Evaluating Project...
+                          </>
+                        ) : (
+                          <>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                            Generate Live AI Briefing
+                          </>
+                        )}
                       </button>
                     </div>
                   )}
@@ -912,9 +983,23 @@ export default function AnalyticsPage() {
                         onClick={handleRunCustomBriefing}
                         disabled={inferring}
                         className="btn btn-primary"
-                        style={{ alignSelf: "flex-start", padding: "8px 16px", fontSize: 12 }}
+                        style={{ alignSelf: "flex-start", padding: "8px 16px", fontSize: 12, display: "inline-flex", alignItems: "center", gap: 6 }}
                       >
-                        {inferring ? "Computing ML Analysis..." : "⚡ Run Real-Time AI Analysis"}
+                        {inferring ? (
+                          <>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "spin 1s linear infinite" }}>
+                              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                            </svg>
+                            Computing ML Analysis...
+                          </>
+                        ) : (
+                          <>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                            Run Real-Time AI Analysis
+                          </>
+                        )}
                       </button>
                     </div>
                   )}
@@ -986,8 +1071,11 @@ export default function AnalyticsPage() {
                                       borderRadius: "0 6px 6px 0",
                                       marginTop: 10,
                                     }}>
-                                      <div style={{ fontSize: 11, fontWeight: 700, color: "#10b981", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
-                                        ⚡ Recommended Policy Action & Resolution Plan
+                                      <div style={{ fontSize: 11, fontWeight: 700, color: "#10b981", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                        </svg>
+                                        Recommended Policy Action & Resolution Plan
                                       </div>
                                       <div style={{ fontSize: 12, color: "var(--text-sub)", lineHeight: 1.6 }}>
                                         {actionPart}
@@ -1047,28 +1135,100 @@ export default function AnalyticsPage() {
                     Model Configuration
                   </div>
                   {[
-                    { label: "Base Model",             val: "Qwen 2.5 (0.5B parameters)",            icon: "🧠" },
-                    { label: "Training Method",        val: "LoRA fine-tuning on GPU",               icon: "⚙️" },
-                    { label: "Memory Efficiency",      val: "4-bit compression (uses 75% less RAM)",  icon: "💾" },
-                    { label: "Precision",              val: "Rank 32 — high fidelity adaptation",     icon: "🎯" },
-                    { label: "Training Examples",      val: "840 real PAIMANA project briefings",    icon: "📖" },
-                    { label: "Validation Examples",    val: "180 held-out project scenarios",         icon: "✅" },
-                    { label: "What it learns",         val: "Risk language, ministry tone, actions",  icon: "📝" },
-                    { label: "Training Platform",      val: "Google Colab (free T4 GPU)",             icon: "☁️" },
+                    {
+                      label: "Base Model",
+                      val: "Qwen 2.5 (0.5B parameters)",
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 2a4 4 0 0 0-4 4v1a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3v1a4 4 0 0 0 4 4"/>
+                          <path d="M12 2a4 4 0 0 1 4 4v1a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3v1a4 4 0 0 1-4 4"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      label: "Training Method",
+                      val: "LoRA fine-tuning on GPU",
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="3"/>
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      label: "Memory Efficiency",
+                      val: "4-bit compression (uses 75% less RAM)",
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="22" y1="12" x2="2" y2="12"/>
+                          <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      label: "Precision",
+                      val: "Rank 32 — high fidelity adaptation",
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <circle cx="12" cy="12" r="6"/>
+                          <circle cx="12" cy="12" r="2"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      label: "Training Examples",
+                      val: "840 real PAIMANA project briefings",
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      label: "Validation Examples",
+                      val: "180 held-out project scenarios",
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                          <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      label: "What it learns",
+                      val: "Risk language, ministry tone, actions",
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      label: "Training Platform",
+                      val: "Google Colab (free T4 GPU)",
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+                        </svg>
+                      ),
+                    },
                   ].map(spec => (
                     <div key={spec.label} style={{
                       display: "flex", justifyContent: "space-between", alignItems: "center",
                       padding: "8px 0", borderBottom: "1px solid var(--border)",
                     }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 14 }}>{spec.icon}</span>
+                        <span style={{ display: "flex", alignItems: "center" }}>{spec.icon}</span>
                         <span style={{ fontSize: 12, color: "var(--text-sub)", fontWeight: 500 }}>{spec.label}</span>
                       </div>
                       <span style={{ fontSize: 12, color: "var(--text)", fontWeight: 700, textAlign: "right", maxWidth: "55%" }}>{spec.val}</span>
                     </div>
                   ))}
                   <div style={{ marginTop: 14, padding: "10px 12px", background: "rgba(6,182,212,0.06)", border: "1px solid rgba(6,182,212,0.15)", borderRadius: 8 }}>
-                    <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, marginBottom: 4 }}>🚀 Ready to train?</div>
+                    <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, marginBottom: 4 }}>Ready to train?</div>
                     <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.5 }}>
                       Open <code style={{ background: "var(--surface-3)", padding: "1px 5px", borderRadius: 4, fontSize: 11 }}>colab_qlora_training.py</code> in Google Colab with a free T4 GPU to complete the fine-tuning in ~30 minutes.
                     </div>

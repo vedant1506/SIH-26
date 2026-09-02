@@ -253,7 +253,14 @@ export default function Sidebar({
             display: "flex", alignItems: "center", gap: 8,
           }}
         >
-          <span style={{ fontSize: 16 }}>🇮🇳</span>
+          <div
+            style={{
+              width: 20, height: 20, borderRadius: 4, overflow: "hidden", flexShrink: 0,
+              border: "1px solid rgba(6,182,212,0.3)",
+            }}
+          >
+            <img src="/logo.jpg" alt="MoSPI" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
           <div>
             <div style={{ fontSize: 9, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
               MoSPI · PAIMANA

@@ -82,7 +82,17 @@ export default function LoginPage() {
           )}
 
           <button id="login-submit" type="submit" className="btn btn-primary" style={{ width: "100%", justifyContent: "center", padding: "11px 16px", fontSize: 14, marginTop: 4 }} disabled={loading}>
-            {loading ? "Signing in…" : "Sign In →"}
+            {loading ? (
+              "Signing in…"
+            ) : (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                Sign In
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </span>
+            )}
           </button>
         </form>
 

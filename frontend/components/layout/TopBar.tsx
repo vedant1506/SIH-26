@@ -35,11 +35,12 @@ const MoonIcon = () => (
 
 export default function TopBar({ title, subtitle, status }: TopBarProps) {
   const [unread, setUnread] = useState(0);
-  const [time, setTime] = useState(new Date());
+  const [time, setTime] = useState<Date | null>(null);
   const [totalProjects, setTotalProjects] = useState<number | null>(null);
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
+    setTime(new Date());
     listAlerts(true).then((a) => setUnread(a.length)).catch(() => {});
     getPortfolioSummary().then((s) => setTotalProjects(s?.total_projects ?? null)).catch(() => {});
     setTheme(getStoredTheme());
@@ -52,8 +53,12 @@ export default function TopBar({ title, subtitle, status }: TopBarProps) {
     setTheme(next);
   };
 
-  const timeStr = time.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-  const dateStr = time.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  const timeStr = time
+    ? time.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })
+    : "12:00:00";
+  const dateStr = time
+    ? time.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+    : "01 Apr 2026";
 
   return (
     <header
@@ -168,6 +173,7 @@ export default function TopBar({ title, subtitle, status }: TopBarProps) {
         {/* Live Clock */}
         <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
           <span
+            suppressHydrationWarning
             style={{
               fontFamily: "'JetBrains Mono', monospace",
               fontSize: 13, fontWeight: 600, color: "var(--text)", letterSpacing: "0.04em",
@@ -176,7 +182,10 @@ export default function TopBar({ title, subtitle, status }: TopBarProps) {
           >
             {timeStr}
           </span>
-          <span style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: "0.04em", marginTop: 1 }}>
+          <span
+            suppressHydrationWarning
+            style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: "0.04em", marginTop: 1 }}
+          >
             {dateStr} · IST
           </span>
         </div>

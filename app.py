@@ -5,6 +5,7 @@ Hugging Face Gradio Application — MoSPI SIH26103
 
 import os
 import json
+import base64
 import pickle
 import numpy as np
 import pandas as pd
@@ -127,15 +128,15 @@ def analyze_single_project(
         0.15 * min(100.0, (100.0 - phys_prog) * (time_elapsed_ratio / 1.5))
     )
     risk_score = round(float(np.clip(risk_score, 4.0, 98.0)), 1)
-
+    
     if risk_score >= 65.0:
-        risk_tier = "🔴 HIGH RISK (Escalation / Critical Intervention Needed)"
+        risk_tier = "HIGH RISK (Escalation / Critical Intervention Needed)"
         alert_status = "CRITICAL"
     elif risk_score >= 35.0:
-        risk_tier = "🟡 MEDIUM RISK (Moderate Delay / Cost Deviation)"
+        risk_tier = "MEDIUM RISK (Moderate Delay / Cost Deviation)"
         alert_status = "WARNING"
     else:
-        risk_tier = "🟢 LOW RISK (Normal Execution / On-Track)"
+        risk_tier = "LOW RISK (Normal Execution / On-Track)"
         alert_status = "NORMAL"
 
     delay_prob = round(min(0.99, (risk_score / 100.0) * 0.95 + 0.05), 2)
@@ -143,24 +144,24 @@ def analyze_single_project(
     est_delay_months = round(max(0.0, (risk_score / 100.0) * orig_dur * 0.45), 1)
 
     # Generate Structured AI Mitigation Advisory
-    advisory = f"""### 🛡️ PRISM Executive Intelligence & Mitigation Brief
+    advisory = f"""### PRISM Executive Intelligence & Mitigation Brief
 **Project:** `{project_name or 'Strategic Infrastructure Asset'}`
 **Sector:** {sector} | **State:** {state} | **Status:** `{alert_status}`
 
 ---
 
-#### 📌 1. Critical Risk Indicators
-- **Overall Project Risk Index:** `{risk_score} / 100` ({risk_tier.split(' ')[1]} Tier)
+#### 1. Critical Risk Indicators
+- **Overall Project Risk Index:** `{risk_score} / 100` ({risk_tier.split(' ')[0]} Tier)
 - **Probability of Timeline Slippage:** `{int(delay_prob * 100)}%` (Estimated Delay: ~**{est_delay_months} months**)
 - **Probability of Further Cost Escalation:** `{int(cost_prob * 100)}%`
-- **Financial Burn vs Physical Output Gap:** `{'⚠️ +' if burn_gap > 0 else ''}{round(burn_gap, 1)}%`
+- **Financial Burn vs Physical Output Gap:** `+{round(burn_gap, 1)}%`
 
-#### 🎯 2. Identified Bottlenecks & Early Warnings
+#### 2. Identified Bottlenecks & Early Warnings
 1. **Capital Expenditure Velocity:** Financial burn stands at **{round(financial_burn_rate_pct, 1)}%** while physical completion is at **{phys_prog}%**. {'Expenditure outpaces physical milestones.' if burn_gap > 5 else 'Expenditure trajectory is currently synchronized with physical progress.'}
 2. **Cost Revision Impact:** Cumulative cost escalation is **₹ {round(cost_overrun_cr, 2)} Cr** (+{round(cost_overrun_pct, 1)}% above initial estimates).
 3. **Timeline Trajectory:** Elapsed project duration is **{round(time_elapsed_ratio * 100, 1)}%** with **{round(100 - phys_prog, 1)}%** physical scope remaining.
 
-#### 📋 3. Recommended Intervention Framework
+#### 3. Recommended Intervention Framework
 - **Right-of-Way (RoW) & Environmental Clearances:** Expedite pending statutory clearances and inter-agency utility shifting within 15 working days.
 - **Contractor & Vendor Accountability:** Implement weekly milestone-based release of funds and enforce liquidated damages clause for unexcused milestone slippage.
 - **Inter-Ministerial Task Force Review:** Schedule an executive steering committee review with {sector} nodal officers.
@@ -168,15 +169,12 @@ def analyze_single_project(
 """
 
     summary_metrics = {
-        "Risk Tier": risk_tier,
-        "Risk Index Score": f"{risk_score} / 100",
-        "Estimated Delay Probability": f"{int(delay_prob * 100)}%",
-        "Estimated Delay Duration": f"{est_delay_months} Months",
+        "Risk Score": f"{risk_score} / 100",
+        "Risk Tier": alert_status,
+        "Delay Probability": f"{int(delay_prob * 100)}%",
+        "Estimated Delay": f"{est_delay_months} Months",
         "Cost Overrun Probability": f"{int(cost_prob * 100)}%",
-        "Cost Escalation Exposure": f"₹ {round(cost_overrun_cr, 2)} Cr (+{round(cost_overrun_pct, 1)}%)",
-        "Financial Burn Rate": f"{round(financial_burn_rate_pct, 1)}%",
-        "Burn-Progress Gap": f"{round(burn_gap, 1)}%",
-        "Estimated Next Physical Progress": f"{round(predicted_next_progress, 1)}%"
+        "Financial vs Physical Gap": f"{round(burn_gap, 1)}%"
     }
 
     return summary_metrics, advisory
@@ -184,70 +182,99 @@ def analyze_single_project(
 
 def analyze_batch_csv(file_obj):
     if file_obj is None:
-        return None, "Please upload a CSV file."
+        return None, "Please upload a valid CSV file."
     
     try:
         df = pd.read_csv(file_obj.name)
         required_cols = ["project_name", "original_cost", "expenditure", "physical_progress"]
+        for col in required_cols:
+            if col not in df.columns:
+                return None, f"Missing required column: '{col}' in CSV."
         
-        # Calculate risk scores across rows
         results = []
-        for idx, row in df.iterrows():
-            p_name = str(row.get("project_name", f"Project-{idx+1}"))
-            orig_c = float(row.get("original_cost", row.get("original_cost_num", 100.0)) or 100.0)
-            rev_c = float(row.get("revised_cost", row.get("anticipated_cost", orig_c)) or orig_c)
-            exp_c = float(row.get("expenditure", row.get("expenditure_num", 0.0)) or 0.0)
-            prog = float(row.get("physical_progress", row.get("physical_progress_num", 0.0)) or 0.0)
+        for _, row in df.iterrows():
+            orig_cost = float(row.get("original_cost", 100.0))
+            rev_cost = float(row.get("revised_cost", orig_cost))
+            exp = float(row.get("expenditure", 0.0))
+            prog = float(row.get("physical_progress", 0.0))
+            dur = float(row.get("original_duration_months", 36))
+            elapsed = float(row.get("elapsed_duration_months", 18))
             
-            cost_overrun = max(0.0, rev_c - orig_c)
-            burn_pct = (exp_c / orig_c * 100.0) if orig_c > 0 else 0.0
-            burn_gap = burn_pct - prog
+            # Simple score approximation for batch
+            fin_burn = (exp / rev_cost * 100.0) if rev_cost > 0 else 0
+            burn_gap = fin_burn - prog
+            cost_ov = ((rev_cost - orig_cost) / orig_cost * 100.0) if orig_cost > 0 else 0
+            time_el = min(2.0, elapsed / dur) if dur > 0 else 1.0
             
-            risk_score = round(float(np.clip(
-                0.35 * (cost_overrun / (orig_c + 1e-5) * 100) +
-                0.40 * (100.0 - prog) +
-                0.25 * max(0.0, burn_gap), 5.0, 95.0
-            )), 1)
-            
-            tier = "High Risk" if risk_score >= 65 else ("Medium Risk" if risk_score >= 35 else "Low Risk")
+            score = 0.30 * min(100.0, cost_ov) + 0.35 * max(0.0, (time_el * 100.0) - prog) + 0.20 * max(0.0, burn_gap * 1.8) + 0.15 * max(0.0, 100.0 - prog)
+            score = round(float(np.clip(score, 5.0, 98.0)), 1)
+            tier = "CRITICAL" if score >= 65 else "WARNING" if score >= 35 else "NORMAL"
             
             results.append({
-                "Project Name": p_name,
-                "Original Cost (₹ Cr)": orig_c,
-                "Revised Cost (₹ Cr)": rev_c,
-                "Expenditure (₹ Cr)": exp_c,
-                "Physical Progress (%)": prog,
-                "Burn Gap (%)": round(burn_gap, 1),
-                "Risk Score": risk_score,
-                "Risk Tier": tier
+                "Project Name": row.get("project_name", "Unknown"),
+                "Sector": row.get("sector", "General"),
+                "State": row.get("state", "India"),
+                "Risk Score": score,
+                "Risk Tier": tier,
+                "Financial Burn Gap (%)": round(burn_gap, 1),
+                "Physical Progress (%)": prog
             })
             
         res_df = pd.DataFrame(results)
-        out_path = "batch_risk_assessment_output.csv"
-        res_df.to_csv(out_path, index=False)
-        return res_df, f"Successfully processed {len(res_df)} infrastructure projects."
+        return res_df, f"Successfully analyzed {len(res_df)} infrastructure projects."
     except Exception as e:
         return None, f"Error processing CSV: {str(e)}"
 
 
+# Load PRISM Emblem Logo
+LOGO_BASE64 = ""
+for candidate in [
+    os.path.join(ROOT_DIR, "logo.jpg"),
+    os.path.join(ROOT_DIR, "frontend", "public", "logo.jpg"),
+    os.path.join(ROOT_DIR, "icon.png"),
+]:
+    if os.path.exists(candidate):
+        try:
+            with open(candidate, "rb") as f:
+                LOGO_BASE64 = f"data:image/jpeg;base64,{base64.b64encode(f.read()).decode('utf-8')}"
+                break
+        except Exception:
+            pass
+
+
 # Build Gradio UI
 with gr.Blocks(title="PRISM | AI Infrastructure Risk Platform") as demo:
-    gr.HTML("""
-    <div style="text-align: center; padding: 15px 0;">
-        <h1 style="font-size: 2.2rem; font-weight: 700; color: #1e293b; margin-bottom: 8px;">
-            🛡️ PRISM: Predictive Risk & Infrastructure Status Monitoring
-        </h1>
-        <p style="font-size: 1.1rem; color: #64748b; margin: 0;">
-            SIH 2026 / MoSPI Integrated Project Intelligence & Early Warning AI Engine
-        </p>
+    gr.HTML(f"""
+    <div style="background: linear-gradient(135deg, #090d16 0%, #0f172a 100%); border: 1px solid rgba(6,182,212,0.25); border-radius: 14px; padding: 20px 24px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 56px; height: 56px; border-radius: 12px; overflow: hidden; border: 1.5px solid rgba(6,182,212,0.4); box-shadow: 0 0 20px rgba(6,182,212,0.3); flex-shrink: 0; background: #000;">
+                <img src="{LOGO_BASE64}" alt="PRISM Logo" style="width: 100%; height: 100%; object-fit: cover;" />
+            </div>
+            <div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.5rem; font-weight: 800; color: #f8fafc; letter-spacing: 0.05em; font-family: system-ui, -apple-system, sans-serif;">PRISM</span>
+                    <span style="background: rgba(6,182,212,0.15); color: #06b6d4; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 9999px; border: 1px solid rgba(6,182,212,0.3); text-transform: uppercase; letter-spacing: 0.05em;">MoSPI SIH 2026</span>
+                </div>
+                <div style="font-size: 0.95rem; color: #94a3b8; margin-top: 3px; font-weight: 500;">
+                    Predictive Risk & Infrastructure Status Monitoring Platform
+                </div>
+                <div style="font-size: 0.78rem; color: #64748b; margin-top: 2px;">
+                    Ministry of Statistics & Programme Implementation · Government of India
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); padding: 6px 14px; border-radius: 9999px;">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 10px #10b981;"></span>
+            <span style="color: #10b981; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Live Synced</span>
+        </div>
     </div>
     """)
 
     with gr.Tabs():
-        with gr.TabItem("🔍 Single Project Risk Predictor"):
+        with gr.TabItem("Single Project Risk Predictor"):
             with gr.Row():
                 with gr.Column(scale=1):
-                    gr.Markdown("### 📋 Project Baseline Parameters")
+                    gr.Markdown("### Project Baseline Parameters")
                     p_name = gr.Textbox(label="Project Name", value="Varanasi Ring Road Phase II Corridor")
                     with gr.Row():
                         p_sector = gr.Dropdown(choices=SECTORS, value="ROAD TRANSPORT AND HIGHWAYS", label="Sector")
@@ -265,10 +292,10 @@ with gr.Blocks(title="PRISM | AI Infrastructure Risk Platform") as demo:
                         p_dur = gr.Number(label="Original Duration (Months)", value=36)
                         p_elapsed = gr.Number(label="Elapsed Duration (Months)", value=24)
 
-                    analyze_btn = gr.Button("⚡ Analyze Risk & Generate Mitigation", variant="primary")
+                    analyze_btn = gr.Button("Analyze Risk & Generate Mitigation", variant="primary")
 
                 with gr.Column(scale=1):
-                    gr.Markdown("### 📊 AI Risk Analysis & Outputs")
+                    gr.Markdown("### AI Risk Analysis & Outputs")
                     metrics_output = gr.JSON(label="Computed Risk Metrics")
                     advisory_output = gr.Markdown(label="Mitigation Advisory")
 
@@ -278,11 +305,11 @@ with gr.Blocks(title="PRISM | AI Infrastructure Risk Platform") as demo:
                 outputs=[metrics_output, advisory_output]
             )
 
-        with gr.TabItem("📁 Batch Projects Risk Assessment"):
+        with gr.TabItem("Batch Projects Risk Assessment"):
             gr.Markdown("### Upload MoSPI Flash Report / Ongoing Projects CSV")
             with gr.Row():
                 file_input = gr.File(label="Upload Project CSV (Must contain project_name, original_cost, expenditure, physical_progress)")
-                batch_btn = gr.Button("🚀 Run Batch Risk Assessment", variant="primary")
+                batch_btn = gr.Button("Run Batch Risk Assessment", variant="primary")
 
             batch_status = gr.Textbox(label="Batch Processing Status", interactive=False)
             batch_table = gr.DataFrame(label="Assessed Projects Risk Table")
@@ -293,7 +320,7 @@ with gr.Blocks(title="PRISM | AI Infrastructure Risk Platform") as demo:
                 outputs=[batch_table, batch_status]
             )
 
-        with gr.TabItem("ℹ️ About PRISM Platform"):
+        with gr.TabItem("About PRISM Platform"):
             gr.Markdown("""
             ### About PRISM Platform (SIH26103)
             PRISM is an end-to-end Machine Learning and Decision Intelligence platform designed to monitor large-scale infrastructure projects across India.

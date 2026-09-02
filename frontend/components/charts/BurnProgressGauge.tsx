@@ -58,12 +58,12 @@ export default function BurnProgressGauge({ burnRate, physicalProgress, gap }: P
   const gapColor = g > 20 ? "#f43f5e" : g > 10 ? "#f59e0b" : "#10b981";
 
   const gapMeaning = g < 0
-    ? `Work is ${Math.abs(g).toFixed(1)}% ahead of spending — efficient ✅`
+    ? `Work is ${Math.abs(g).toFixed(1)}% ahead of spending — efficient execution`
     : g === 0
-    ? "Spending and progress are perfectly balanced ✅"
+    ? "Spending and progress are perfectly balanced"
     : g <= 10
-    ? `Spending is ${g.toFixed(1)}% ahead of progress — slight concern ⚠️`
-    : `Spending is ${g.toFixed(1)}% ahead of progress — overspending alert ❌`;
+    ? `Spending is ${g.toFixed(1)}% ahead of progress — slight concern`
+    : `Spending is ${g.toFixed(1)}% ahead of progress — overspending alert`;
 
   return (
     <div>

@@ -8,6 +8,9 @@ import RiskBadge from "@/components/ui/RiskBadge";
 import {
   getProjectLocation,
   aggregateDistrictData,
+  aggregateStateData,
+  normalizeStateName,
+  projectMatchesState,
   STATE_DISTRICTS_DATA,
   STATE_DISTRICT_PLACES,
   STATE_COORDINATES,
@@ -21,27 +24,45 @@ const TIER_COLOR: Record<string, string> = {
 };
 
 const SECTOR_COLOR: Record<string, string> = {
+  "Roads & Highways": "#f97316",
   "Roads & Bridges": "#f97316",
   "Railways": "#3b82f6",
-  "Urban Transport": "#06b6d4",
-  "Power": "#eab308",
-  "Renewable Energy": "#10b981",
+  "Coal": "#78716c",
+  "Oil & Gas": "#e11d48",
   "Petroleum & Natural Gas": "#e11d48",
-  "Telecommunications": "#a855f7",
+  "Transmission & Distribution": "#a855f7",
+  "Power": "#eab308",
+  "Electricity Generation": "#eab308",
+  "Renewable Energy": "#10b981",
   "Water Resources": "#0284c7",
-  "Coal": "#64748b",
-  "Steel": "#475569",
+  "Healthcare": "#ec4899",
+  "Education": "#8b5cf6",
+  "Urban Public Transport": "#06b6d4",
+  "Urban Transport": "#06b6d4",
+  "Waste & Water": "#14b8a6",
+  "Aviation & Aviation Infrastructure": "#0ea5e9",
   "Civil Aviation": "#0ea5e9",
-  "Chemicals & Fert.": "#14b8a6",
-  "Heavy Industry": "#d97706",
+  "Steel": "#64748b",
+  "Energy Storage": "#10b981",
+  "Telecommunication": "#6366f1",
+  "Telecommunications": "#6366f1",
+  "Real Estate": "#d97706",
+  "Metals & Mining": "#b45309",
+  "Shipping": "#0891b2",
+  "Construction": "#84cc16",
+  "Inland Waterways": "#065f46",
+  "Tourism, Hospitality & Wellness": "#f43f5e",
+  "Logistics Infrastructure": "#475569",
 };
 
-function normalizeState(s: string = ""): string {
+function normalizeGeoJsonState(s: string = ""): string {
   const clean = s.toUpperCase().replace(/[^A-Z]/g, "");
   if (clean === "ODISHA" || clean === "ORISSA") return "ODISHA";
   if (clean === "UTTARAKHAND" || clean === "UTTARANCHAL") return "UTTARAKHAND";
   if (clean.includes("JAMMU")) return "JAMMU & KASHMIR";
   if (clean.includes("ANDAMAN")) return "ANDAMAN & NICOBAR";
+  if (clean.includes("DADRA") || clean.includes("DAMAN") || clean.includes("DIU")) return "DADRA & NAGAR HAVELI AND DAMAN & DIU";
+  if (clean.includes("PUDUCHERRY") || clean.includes("PONDICHERRY")) return "PUDUCHERRY";
   return clean;
 }
 
@@ -54,6 +75,9 @@ function getExecutiveAiBriefing(project: ProjectListItem) {
   const place = project.place || "Key Infrastructure Hub";
   const district = project.district || "District Hub";
   const state = project.state || "State";
+  const origCost = project.original_cost_cr || 0;
+  const revCost = project.revised_cost_cr || origCost;
+  const costEsc = revCost > origCost ? revCost - origCost : 0;
 
   let statusBadge = { label: "Optimal Trajectory", color: "#10b981", bg: "rgba(16, 185, 129, 0.16)" };
   let narrative = "";
@@ -61,12 +85,12 @@ function getExecutiveAiBriefing(project: ProjectListItem) {
 
   if (tier === "critical") {
     statusBadge = { label: "Critical Escalation", color: "#f43f5e", bg: "rgba(244, 63, 94, 0.16)" };
-    narrative = `This ${sector} undertaking stationed in ${place}, ${district} (${state}) displays acute fiscal distortion. Financial disbursements currently outpace certified physical completion by ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}, signaling heightened project exposure without commensurate asset commissioning.`;
+    narrative = `This ${sector} asset stationed in ${place}, ${district} (${state}) displays acute fiscal distortion. Financial disbursements lead certified physical completion by ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}${costEsc > 0 ? ` with cumulative cost escalation of ₹${costEsc.toFixed(1)} Cr` : ""}, signaling severe project exposure requiring emergency ministry intervention.`;
     action = "Mandate an emergency joint MoSPI-Ministry site inspection within 48 hours, freeze non-verified contractor milestone invoices, and institute daily physical progress velocity monitoring.";
   } else if (tier === "high") {
     statusBadge = { label: "High Variance", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.16)" };
-    narrative = `Located in ${place}, ${district} (${state}), this ${sector} facility is encountering measurable execution friction. Capital expenditure leads on-ground physical delivery by ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}, primarily driven by Right-of-Way (ROW) access hurdles or equipment delivery bottlenecks.`;
-    action = "Convene an inter-ministerial coordination review within 7 business days to clear ROW obstacles and mandate dual-shift contractor workforce deployment.";
+    narrative = `Located in ${place}, ${district} (${state}), this ${sector} facility is encountering measurable execution friction. Capital expenditure leads on-ground physical delivery by ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}, primarily driven by Right-of-Way (ROW) access hurdles, forest clearances, or utility shifting.`;
+    action = "Convene an inter-ministerial coordination review within 7 business days to clear statutory bottlenecks and mandate dual-shift contractor workforce deployment.";
   } else if (tier === "medium") {
     statusBadge = { label: "Moderate Risk", color: "#3b82f6", bg: "rgba(59, 130, 246, 0.16)" };
     narrative = `Stationed across the ${place} corridor in ${district} (${state}), development progress is tracking near baseline with a modest budget variance gap of ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}. Physical milestones remain within recoverable operational tolerance.`;
@@ -96,7 +120,7 @@ export default function MapPage() {
   const [mapLoading, setMapLoading] = useState(true);
   const [geoJsonData, setGeoJsonData] = useState<any>(null);
 
-  // 4-Tier Hierarchy: State -> District -> Place -> Category
+  // Hierarchy Filters: Search, State, District, Place, Sector/Category, Risk Tier
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedState, setSelectedState] = useState<string>("all");
   const [selectedDistrict, setSelectedDistrict] = useState<string>("all");
@@ -104,7 +128,7 @@ export default function MapPage() {
   const [selectedSector, setSelectedSector] = useState<string>("all");
   const [selectedTier, setSelectedTier] = useState<string>("all");
   const [colorMode, setColorMode] = useState<"risk" | "sector">("risk");
-  const [drawerTab, setDrawerTab] = useState<"project" | "projects" | "districts">("project");
+  const [drawerTab, setDrawerTab] = useState<"project" | "projects" | "breakdown">("project");
 
   useEffect(() => {
     fetch("/india_states_simplified.geojson")
@@ -127,24 +151,21 @@ export default function MapPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Filtered project list strictly mapped to inland places (zero in ocean/water)
+  // Filtered project list with complete geospatial anchoring across all 36 Indian States & UTs
   const filteredProjects = useMemo(() => {
-    const selStNorm = selectedState !== "all" ? selectedState.trim().toUpperCase() : null;
+    const qLower = searchQuery.trim().toLowerCase();
     const selDistNorm = selectedDistrict !== "all" ? selectedDistrict.trim().toUpperCase() : null;
     const selPlaceNorm = selectedPlace !== "all" ? selectedPlace.trim().toUpperCase() : null;
-    const qLower = searchQuery.trim().toLowerCase();
 
     return allProjects
       .map((p, idx) => {
         const loc = getProjectLocation(p, idx);
-        // Anchor directly to verified place coordinate on solid land
-        // Micro-separation of 0.001 deg (~100m) ensures points in the same place don't fully overlap
+        // Micro-separation ensures points within the same place don\'t fully overlap
         const lat = loc.coords[0] + ((idx * 7) % 6 - 3) * 0.0012;
         const lng = loc.coords[1] + ((idx * 11) % 6 - 3) * 0.0012;
 
         return {
           ...p,
-          // Preserve original project state if available, fallback to loc.state
           state: p.state || loc.state,
           district: loc.district,
           place: loc.place,
@@ -160,35 +181,67 @@ export default function MapPage() {
           const matchAll = tokens.every((t) => fullText.includes(t));
           if (!matchAll) return false;
         }
-        if (selStNorm && (p.state || "").trim().toUpperCase() !== selStNorm) return false;
-        if (selDistNorm && (p.district || "").trim().toUpperCase() !== selDistNorm) return false;
-        if (selPlaceNorm && (p.place || "").trim().toUpperCase() !== selPlaceNorm) return false;
-        if (selectedSector !== "all" && p.sector !== selectedSector && p.category !== selectedSector) return false;
-        if (selectedTier !== "all" && p.risk_tier !== selectedTier) return false;
+
+        // State matching
+        if (selectedState !== "all" && !projectMatchesState(p.state, selectedState)) {
+          return false;
+        }
+
+        // District matching
+        if (selDistNorm && (p.district || "").trim().toUpperCase() !== selDistNorm) {
+          return false;
+        }
+
+        // Place matching
+        if (selPlaceNorm && (p.place || "").trim().toUpperCase() !== selPlaceNorm) {
+          return false;
+        }
+
+        // Sector / Category matching
+        if (selectedSector !== "all" && p.sector !== selectedSector && p.category !== selectedSector) {
+          return false;
+        }
+
+        // Risk tier matching
+        if (selectedTier !== "all" && p.risk_tier !== selectedTier) {
+          return false;
+        }
+
         return true;
       });
   }, [allProjects, searchQuery, selectedState, selectedDistrict, selectedPlace, selectedSector, selectedTier]);
 
-  const stateOptions = useMemo(() => {
-    const states = new Set(allProjects.map((p) => p.state).filter(Boolean));
-    return Array.from(states).sort();
+  // Clean, structured State Options with real project counts
+  const stateOptionsWithCount = useMemo(() => {
+    const map = new Map<string, number>();
+
+    allProjects.forEach((p) => {
+      const st = p.state || "National / Pan-India";
+      map.set(st, (map.get(st) || 0) + 1);
+    });
+
+    return Array.from(map.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
   }, [allProjects]);
 
+  // District options dynamically populated for selected state
   const districtOptions = useMemo(() => {
     if (selectedState === "all") return [];
-    const stUpper = selectedState.toUpperCase();
-    const distDefs = STATE_DISTRICTS_DATA[stUpper];
-    if (distDefs && distDefs.length > 0) {
+    const normSt = normalizeStateName(selectedState);
+    const distDefs = STATE_DISTRICTS_DATA[normSt] || [];
+    if (distDefs.length > 0) {
       return distDefs.map((d) => d.district);
     }
-    const places = STATE_DISTRICT_PLACES[stUpper] || [];
+    const places = STATE_DISTRICT_PLACES[normSt] || [];
     return Array.from(new Set(places.map((pl) => pl.district))).sort();
   }, [selectedState]);
 
+  // Place options dynamically populated for selected state / district
   const placeOptions = useMemo(() => {
     if (selectedState === "all") return [];
-    const stUpper = selectedState.toUpperCase();
-    const distDefs = STATE_DISTRICTS_DATA[stUpper] || [];
+    const normSt = normalizeStateName(selectedState);
+    const distDefs = STATE_DISTRICTS_DATA[normSt] || [];
     if (selectedDistrict !== "all") {
       const d = distDefs.find((item) => item.district.toUpperCase() === selectedDistrict.toUpperCase());
       return d ? d.places.map((p) => p.place) : [];
@@ -196,16 +249,28 @@ export default function MapPage() {
     return distDefs.flatMap((d) => d.places.map((p) => p.place));
   }, [selectedState, selectedDistrict]);
 
+  // District summaries for the selected state
   const districtSummaries = useMemo(() => {
     if (selectedState === "all") return [];
-    const selStNorm = selectedState.trim().toUpperCase();
-    const stProjs = allProjects.filter((p) => (p.state || "").trim().toUpperCase() === selStNorm);
+    const stProjs = allProjects.filter((p) => projectMatchesState(p.state, selectedState));
     return aggregateDistrictData(stProjs);
   }, [allProjects, selectedState]);
 
-  const sectorOptions = useMemo(() => {
-    const sectors = new Set(allProjects.map((p) => p.sector).filter(Boolean));
-    return Array.from(sectors).sort();
+  // Nationwide State summaries when All India is selected
+  const stateSummaries = useMemo(() => {
+    return aggregateStateData(allProjects);
+  }, [allProjects]);
+
+  // Category / Sector options with exact counts
+  const sectorOptionsWithCount = useMemo(() => {
+    const map = new Map<string, number>();
+    allProjects.forEach((p) => {
+      const sec = p.sector || p.category || "General";
+      map.set(sec, (map.get(sec) || 0) + 1);
+    });
+    return Array.from(map.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
   }, [allProjects]);
 
   useEffect(() => {
@@ -218,7 +283,7 @@ export default function MapPage() {
     }
   }, [filteredProjects]);
 
-  // Leaflet map setup with dynamic state isolation, district/place zoom & auto-fit
+  // Leaflet map setup with dynamic state isolation, boundary zoom & markers
   useEffect(() => {
     if (loading || !mapRef.current) return;
 
@@ -258,10 +323,10 @@ export default function MapPage() {
       // Handle State Boundary Highlight & Focus
       let stateFeatureFound = false;
       if (selectedState !== "all" && geoJsonData) {
-        const normSelected = normalizeState(selectedState);
+        const normSelected = normalizeGeoJsonState(selectedState);
         const stateFeature = geoJsonData.features?.find((f: any) => {
           const name = f.properties?.name || f.properties?.NAME_1 || f.properties?.st_nm || "";
-          return normalizeState(name) === normSelected;
+          return normalizeGeoJsonState(name) === normSelected;
         });
 
         if (stateFeature) {
@@ -278,7 +343,6 @@ export default function MapPage() {
           }).addTo(map);
           geoJsonLayerRef.current = stateLayer;
 
-          // Focus on State bounds if district or place is not specifically selected
           if (selectedDistrict === "all" && selectedPlace === "all") {
             map.fitBounds(stateLayer.getBounds().pad(0.08), {
               animate: true,
@@ -288,7 +352,6 @@ export default function MapPage() {
           }
         }
       } else if (selectedState === "all" && geoJsonData) {
-        // Render subtle state boundaries for all states across India
         const allStatesLayer = L.geoJSON(geoJsonData, {
           style: {
             color: "rgba(56, 189, 248, 0.25)",
@@ -301,7 +364,7 @@ export default function MapPage() {
         geoJsonLayerRef.current = allStatesLayer;
       }
 
-      // Render vector circle markers for the filtered projects
+      // Render circle markers for filtered projects
       filteredProjects.forEach((p) => {
         const color =
           colorMode === "sector"
@@ -309,20 +372,21 @@ export default function MapPage() {
             : TIER_COLOR[p.risk_tier || "low"] || "#3b82f6";
 
         const popupContent = `
-          <div style="font-family:Inter,sans-serif;min-width:250px;padding:6px;color:#0f172a">
+          <div style="font-family:Inter,sans-serif;min-width:260px;padding:6px;color:#0f172a">
             <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:4px;line-height:1.3">${p.project_name}</div>
             <div style="font-size:11px;color:#475569;margin-bottom:8px;line-height:1.6">
               <span style="display:inline-block;padding:1px 6px;background:#e0f2fe;color:#0369a1;border-radius:4px;font-weight:700;font-size:10px;margin-bottom:4px">
-                📍 ${p.place}
+                <svg style="display:inline-block;vertical-align:middle;margin-right:2px" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${p.place}
               </span><br/>
               <strong>District:</strong> ${p.district} • <strong>State:</strong> ${p.state}<br/>
-              <strong>Category:</strong> ${p.category || p.sector}
+              <strong>Category:</strong> ${p.category || p.sector}<br/>
+              <strong>Outlay:</strong> ${p.revised_cost_cr != null ? `₹${p.revised_cost_cr.toLocaleString("en-IN")} Cr` : "—"} • <strong>Progress:</strong> ${p.physical_progress_pct != null ? `${p.physical_progress_pct.toFixed(0)}%` : "—"}
             </div>
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
               <span style="background:${color};color:white;padding:2px 8px;border-radius:9999px;font-size:10px;font-weight:700;text-transform:uppercase">${colorMode === "sector" ? (p.category || p.sector) : p.risk_tier}</span>
-              ${p.composite_risk_score != null ? `<span style="font-size:11px;color:#475569;font-weight:600">${(p.composite_risk_score * 100).toFixed(0)}% Risk</span>` : ""}
+              ${p.composite_risk_score != null ? `<span style="font-size:11px;color:#475569;font-weight:600">${(p.composite_risk_score * 100).toFixed(0)}% Risk Index</span>` : ""}
             </div>
-            <div style="font-size:11px;color:#0ea5e9;font-weight:600;">Click to view Full Details →</div>
+            <div style="font-size:11px;color:#0ea5e9;font-weight:600;">Click marker to view AI Mitigation Brief →</div>
           </div>
         `;
 
@@ -355,15 +419,15 @@ export default function MapPage() {
         markersRef.current.push(circle);
       });
 
-      // Hierarchical Camera Zoom: Place > District > State > All India
+      // Camera Zoom based on selection hierarchy
       if (selectedPlace !== "all") {
         const pl = filteredProjects.find((p) => p.place === selectedPlace);
         if (pl && pl.latitude && pl.longitude) {
           map.setView([pl.latitude, pl.longitude], 12, { animate: true, duration: 0.8 });
         }
       } else if (selectedDistrict !== "all") {
-        const stUpper = selectedState.toUpperCase();
-        const distDef = STATE_DISTRICTS_DATA[stUpper]?.find((d) => d.district === selectedDistrict);
+        const normSt = normalizeStateName(selectedState);
+        const distDef = STATE_DISTRICTS_DATA[normSt]?.find((d) => d.district === selectedDistrict);
         if (distDef) {
           map.setView(distDef.coords, 10, { animate: true, duration: 0.8 });
         } else if (markersRef.current.length > 0) {
@@ -378,8 +442,8 @@ export default function MapPage() {
             duration: 0.8,
             maxZoom: 8,
           });
-        } else if (STATE_COORDINATES[selectedState.toUpperCase()]) {
-          map.setView(STATE_COORDINATES[selectedState.toUpperCase()], 7, { animate: true });
+        } else if (STATE_COORDINATES[normalizeStateName(selectedState)]) {
+          map.setView(STATE_COORDINATES[normalizeStateName(selectedState)], 7, { animate: true });
         }
       } else if (selectedState === "all") {
         if (markersRef.current.length > 0) {
@@ -416,10 +480,10 @@ export default function MapPage() {
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
       <TopBar
         title="Geospatial Infrastructure Intelligence Map"
-        subtitle="MoSPI PAIMANA · April 2026 National Portfolio (1,981 Projects) · Hierarchy: State › District › Place / Locality"
+        subtitle="MoSPI PAIMANA · April 2026 National Portfolio (1,981 Real Infrastructure Projects) · All States & Territories"
       />
 
-      {/* Filter Bar with Full Hierarchy: Search, State, District, Place, Category */}
+      {/* Filter Bar with Full Hierarchy: Search, State, District, Place, Category, Risk */}
       <div
         style={{
           padding: "10px 24px",
@@ -436,7 +500,12 @@ export default function MapPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Search:</span>
           <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", fontSize: 12 }}>🔍</span>
+            <span style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", color: "var(--text-muted)" }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.3-4.3"/>
+              </svg>
+            </span>
             <input
               type="text"
               placeholder="Search project, state, place..."
@@ -459,11 +528,11 @@ export default function MapPage() {
               setSelectedPlace("all");
             }}
             className="input"
-            style={{ width: 160, padding: "4px 8px", fontSize: 12 }}
+            style={{ width: 180, padding: "4px 8px", fontSize: 12 }}
           >
-            <option value="all">All 23 States ({stateOptions.length})</option>
-            {stateOptions.map((st) => (
-              <option key={st} value={st}>{st}</option>
+            <option value="all">All India ({allProjects.length} Projects)</option>
+            {stateOptionsWithCount.map((st) => (
+              <option key={st.name} value={st.name}>{st.name} ({st.count})</option>
             ))}
           </select>
         </div>
@@ -480,7 +549,7 @@ export default function MapPage() {
               }}
               className="input"
               style={{
-                width: 160,
+                width: 165,
                 padding: "4px 8px",
                 fontSize: 12,
                 borderColor: selectedDistrict !== "all" ? "var(--accent)" : undefined,
@@ -522,10 +591,10 @@ export default function MapPage() {
         {/* 4. CATEGORY / SECTOR SELECTOR */}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Category:</span>
-          <select value={selectedSector} onChange={(e) => setSelectedSector(e.target.value)} className="input" style={{ width: 160, padding: "4px 8px", fontSize: 12 }}>
-            <option value="all">All Categories ({sectorOptions.length})</option>
-            {sectorOptions.map((sec) => (
-              <option key={sec} value={sec}>{sec}</option>
+          <select value={selectedSector} onChange={(e) => setSelectedSector(e.target.value)} className="input" style={{ width: 175, padding: "4px 8px", fontSize: 12 }}>
+            <option value="all">All Categories ({sectorOptionsWithCount.length})</option>
+            {sectorOptionsWithCount.map((sec) => (
+              <option key={sec.name} value={sec.name}>{sec.name} ({sec.count})</option>
             ))}
           </select>
         </div>
@@ -533,12 +602,12 @@ export default function MapPage() {
         {/* 5. RISK TIER SELECTOR */}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Risk:</span>
-          <select value={selectedTier} onChange={(e) => setSelectedTier(e.target.value)} className="input" style={{ width: 115, padding: "4px 8px", fontSize: 12 }}>
-            <option value="all">All Tiers</option>
-            <option value="critical">Critical</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+          <select value={selectedTier} onChange={(e) => setSelectedTier(e.target.value)} className="input" style={{ width: 125, padding: "4px 8px", fontSize: 12 }}>
+            <option value="all">All Tiers ({allProjects.length})</option>
+            <option value="critical">Critical (140)</option>
+            <option value="high">High (447)</option>
+            <option value="medium">Medium (1,199)</option>
+            <option value="low">Low (195)</option>
           </select>
         </div>
 
@@ -576,12 +645,16 @@ export default function MapPage() {
           </button>
         </div>
 
-        {/* Active Hierarchy Breadcrumb & Nationwide Reset */}
+        {/* Active Breadcrumb & Reset */}
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
           {selectedState !== "all" ? (
             <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(6, 182, 212, 0.12)", border: "1px solid rgba(6, 182, 212, 0.3)", borderRadius: 6, padding: "3px 10px" }}>
-              <span style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700 }}>
-                📍 {selectedState} {selectedDistrict !== "all" ? `› ${selectedDistrict}` : ""} {selectedPlace !== "all" ? `› ${selectedPlace}` : ""} ({filteredProjects.length} Projects)
+              <span style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                {selectedState} {selectedDistrict !== "all" ? `› ${selectedDistrict}` : ""} {selectedPlace !== "all" ? `› ${selectedPlace}` : ""} ({filteredProjects.length} Projects)
               </span>
               <button
                 onClick={() => {
@@ -604,12 +677,16 @@ export default function MapPage() {
                 }}
                 title="Reset to All India"
               >
-                ✕ All India
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                All India
               </button>
             </div>
           ) : (
             <div style={{ fontSize: 12, color: "var(--text-sub)", fontWeight: 500 }}>
-              Showing <strong style={{ color: "var(--accent)" }}>{filteredProjects.length}</strong> projects across India
+              Showing <strong style={{ color: "var(--accent)" }}>{filteredProjects.length}</strong> real projects across India
             </div>
           )}
         </div>
@@ -655,7 +732,7 @@ export default function MapPage() {
                   </span>
                 </div>
               ))
-            : Object.entries(SECTOR_COLOR).map(([sector, color]) => (
+            : Object.entries(SECTOR_COLOR).slice(0, 10).map(([sector, color]) => (
                 <div key={sector} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
                   <div style={{ width: 10, height: 10, borderRadius: "50%", background: color, boxShadow: `0 0 6px ${color}` }} />
                   <span style={{ fontSize: 12, color: "var(--text-sub)" }}>{sector}</span>
@@ -666,8 +743,8 @@ export default function MapPage() {
               ))}
         </div>
 
-        {/* Selected Project / District Hierarchy Drawer Panel */}
-        {(selectedProject || selectedState !== "all") && (
+        {/* Selected Project / State / District Drawer Panel */}
+        {(selectedProject || allProjects.length > 0) && (
           <div
             className="animate-fade map-drawer-panel"
             style={{
@@ -675,7 +752,7 @@ export default function MapPage() {
               top: 16,
               right: 16,
               bottom: 16,
-              width: 390,
+              width: 410,
               maxWidth: "92vw",
               backdropFilter: "blur(16px)",
               border: "1px solid var(--border-2)",
@@ -687,76 +764,75 @@ export default function MapPage() {
               overflowY: "auto",
             }}
           >
-            {/* Drawer Tab Switcher when a state is active */}
-            {selectedState !== "all" && (
-              <div style={{ display: "flex", gap: 4, marginBottom: 14, background: "var(--surface-2)", padding: 3, borderRadius: 8 }}>
-                <button
-                  onClick={() => setDrawerTab("project")}
-                  style={{
-                    flex: 1,
-                    padding: "5px 6px",
-                    borderRadius: 6,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    border: "none",
-                    cursor: "pointer",
-                    background: drawerTab === "project" ? "var(--accent)" : "transparent",
-                    color: drawerTab === "project" ? "#ffffff" : "var(--text-sub)",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  Project Details
-                </button>
-                <button
-                  onClick={() => setDrawerTab("projects")}
-                  style={{
-                    flex: 1,
-                    padding: "5px 6px",
-                    borderRadius: 6,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    border: "none",
-                    cursor: "pointer",
-                    background: drawerTab === "projects" ? "var(--accent)" : "transparent",
-                    color: drawerTab === "projects" ? "#ffffff" : "var(--text-sub)",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  Projects ({filteredProjects.length})
-                </button>
-                <button
-                  onClick={() => setDrawerTab("districts")}
-                  style={{
-                    flex: 1,
-                    padding: "5px 6px",
-                    borderRadius: 6,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    border: "none",
-                    cursor: "pointer",
-                    background: drawerTab === "districts" ? "var(--accent)" : "transparent",
-                    color: drawerTab === "districts" ? "#ffffff" : "var(--text-sub)",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  Districts ({districtSummaries.length})
-                </button>
-              </div>
-            )}
+            {/* Drawer Tab Switcher */}
+            <div style={{ display: "flex", gap: 4, marginBottom: 14, background: "var(--surface-2)", padding: 3, borderRadius: 8 }}>
+              <button
+                onClick={() => setDrawerTab("project")}
+                style={{
+                  flex: 1,
+                  padding: "6px 6px",
+                  borderRadius: 6,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  border: "none",
+                  cursor: "pointer",
+                  background: drawerTab === "project" ? "var(--accent)" : "transparent",
+                  color: drawerTab === "project" ? "#ffffff" : "var(--text-sub)",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                Project Details
+              </button>
+              <button
+                onClick={() => setDrawerTab("projects")}
+                style={{
+                  flex: 1,
+                  padding: "6px 6px",
+                  borderRadius: 6,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  border: "none",
+                  cursor: "pointer",
+                  background: drawerTab === "projects" ? "var(--accent)" : "transparent",
+                  color: drawerTab === "projects" ? "#ffffff" : "var(--text-sub)",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                Projects ({filteredProjects.length})
+              </button>
+              <button
+                onClick={() => setDrawerTab("breakdown")}
+                style={{
+                  flex: 1,
+                  padding: "6px 6px",
+                  borderRadius: 6,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  border: "none",
+                  cursor: "pointer",
+                  background: drawerTab === "breakdown" ? "var(--accent)" : "transparent",
+                  color: drawerTab === "breakdown" ? "#ffffff" : "var(--text-sub)",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                {selectedState !== "all" ? `Districts (${districtSummaries.length})` : `States (${stateSummaries.length})`}
+              </button>
+            </div>
 
-            {drawerTab === "projects" && selectedState !== "all" ? (
+            {/* TAB 2: PROJECTS LIST */}
+            {drawerTab === "projects" ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, overflowY: "auto" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    {selectedState} MoSPI Projects ({filteredProjects.length})
+                    {selectedState !== "all" ? selectedState : "All India"} Projects ({filteredProjects.length})
                   </span>
                   <span style={{ fontSize: 10, color: "var(--text-muted)" }}>
-                    April 2026 Dataset
+                    April 2026 Real Dataset
                   </span>
                 </div>
 
                 <div style={{ fontSize: 11, color: "var(--text-sub)", lineHeight: 1.4 }}>
-                  Select any April 2026 project to view its executive briefing and pinpoint on map:
+                  Click any project to focus on map and view full AI mitigation analysis:
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -788,7 +864,13 @@ export default function MapPage() {
                           <RiskBadge tier={p.risk_tier || "low"} />
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text-sub)" }}>
-                          <span>📍 {p.place || p.district || selectedState}</span>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                              <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            {p.place || p.district || p.state}
+                          </span>
                           <span style={{ color: "var(--accent)", fontWeight: 600 }}>
                             {p.revised_cost_cr != null ? `₹${p.revised_cost_cr.toLocaleString("en-IN")} Cr` : "—"}
                           </span>
@@ -802,97 +884,162 @@ export default function MapPage() {
                   })}
                 </div>
               </div>
-            ) : drawerTab === "districts" && selectedState !== "all" ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, overflowY: "auto" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    {selectedState} Districts ({districtSummaries.length})
-                  </span>
-                  {(selectedDistrict !== "all" || selectedPlace !== "all") && (
-                    <button
-                      onClick={() => {
-                        setSelectedDistrict("all");
-                        setSelectedPlace("all");
-                      }}
-                      style={{ background: "transparent", border: "none", color: "var(--text-muted)", fontSize: 11, cursor: "pointer", textDecoration: "underline" }}
-                    >
-                      Reset Filters
-                    </button>
-                  )}
-                </div>
-
-                <div style={{ fontSize: 11, color: "var(--text-sub)", lineHeight: 1.4 }}>
-                  Click any district to filter local infrastructure and zoom directly into verified municipal territory:
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {districtSummaries.map((d) => {
-                    const isSelected = selectedDistrict === d.district;
-                    return (
-                      <div
-                        key={d.district}
+            ) : drawerTab === "breakdown" ? (
+              /* TAB 3: DISTRICT OR STATE BREAKDOWN */
+              selectedState !== "all" ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, overflowY: "auto" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      {selectedState} Districts ({districtSummaries.length})
+                    </span>
+                    {(selectedDistrict !== "all" || selectedPlace !== "all") && (
+                      <button
                         onClick={() => {
-                          setSelectedDistrict(isSelected ? "all" : d.district);
+                          setSelectedDistrict("all");
+                          setSelectedPlace("all");
+                        }}
+                        style={{ background: "transparent", border: "none", color: "var(--text-muted)", fontSize: 11, cursor: "pointer", textDecoration: "underline" }}
+                      >
+                        Reset District
+                      </button>
+                    )}
+                  </div>
+
+                  <div style={{ fontSize: 11, color: "var(--text-sub)", lineHeight: 1.4 }}>
+                    Click any district to filter local infrastructure and zoom directly to district coordinates:
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {districtSummaries.map((d) => {
+                      const isSelected = selectedDistrict === d.district;
+                      return (
+                        <div
+                          key={d.district}
+                          onClick={() => {
+                            setSelectedDistrict(isSelected ? "all" : d.district);
+                            setSelectedPlace("all");
+                          }}
+                          style={{
+                            padding: "10px 12px",
+                            background: isSelected ? "rgba(6, 182, 212, 0.14)" : "var(--surface-2)",
+                            border: isSelected ? "1px solid var(--accent)" : "1px solid var(--border)",
+                            borderRadius: 8,
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: isSelected ? "var(--accent)" : "var(--text)" }}>
+                              {d.district}
+                            </span>
+                            <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(255,255,255,0.08)", padding: "2px 8px", borderRadius: 9999, color: "var(--text)" }}>
+                              {d.projectCount} {d.projectCount === 1 ? "project" : "projects"}
+                            </span>
+                          </div>
+
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text-sub)", marginTop: 4 }}>
+                            <span>Outlay: <strong style={{ color: "var(--text)" }}>₹{d.totalCostCr.toLocaleString("en-IN")} Cr</strong></span>
+                            <span>Avg Progress: <strong style={{ color: "#10b981" }}>{d.avgProgress}%</strong></span>
+                          </div>
+
+                          {/* Places under this district */}
+                          <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 6, display: "flex", flexWrap: "wrap", gap: 4 }}>
+                            {d.places.slice(0, 3).map((pl) => (
+                              <span key={pl} style={{ background: "rgba(255,255,255,0.04)", padding: "1px 5px", borderRadius: 3, display: "inline-flex", alignItems: "center", gap: 2 }}>
+                                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                {pl.split("(")[0].trim()}
+                              </span>
+                            ))}
+                          </div>
+
+                          <div style={{ display: "flex", gap: 6, marginTop: 6, fontSize: 10 }}>
+                            {d.criticalCount > 0 && (
+                              <span style={{ background: "rgba(244, 63, 94, 0.15)", color: "#f43f5e", padding: "1px 6px", borderRadius: 4, fontWeight: 600 }}>
+                                {d.criticalCount} Critical
+                              </span>
+                            )}
+                            {d.highCount > 0 && (
+                              <span style={{ background: "rgba(245, 158, 11, 0.15)", color: "#f59e0b", padding: "1px 6px", borderRadius: 4, fontWeight: 600 }}>
+                                {d.highCount} High Risk
+                              </span>
+                            )}
+                            {d.lowCount > 0 && (
+                              <span style={{ background: "rgba(16, 185, 129, 0.15)", color: "#10b981", padding: "1px 6px", borderRadius: 4, fontWeight: 600 }}>
+                                {d.lowCount} On Track
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, overflowY: "auto" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      All States & UTs Portfolio ({stateSummaries.length})
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: 11, color: "var(--text-sub)", lineHeight: 1.4 }}>
+                    Click any state to isolate and zoom into its projects & district hierarchy:
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {stateSummaries.map((s) => (
+                      <div
+                        key={s.state}
+                        onClick={() => {
+                          setSelectedState(s.state);
+                          setSelectedDistrict("all");
                           setSelectedPlace("all");
                         }}
                         style={{
                           padding: "10px 12px",
-                          background: isSelected ? "rgba(6, 182, 212, 0.14)" : "var(--surface-2)",
-                          border: isSelected ? "1px solid var(--accent)" : "1px solid var(--border)",
+                          background: "var(--surface-2)",
+                          border: "1px solid var(--border)",
                           borderRadius: 8,
                           cursor: "pointer",
                           transition: "all 0.15s ease",
                         }}
                       >
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: isSelected ? "var(--accent)" : "var(--text)" }}>
-                            {d.district}
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
+                            {s.state}
                           </span>
-                          <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(255,255,255,0.08)", padding: "2px 8px", borderRadius: 9999, color: "var(--text)" }}>
-                            {d.projectCount} {d.projectCount === 1 ? "project" : "projects"}
+                          <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(6,182,212,0.12)", color: "var(--accent)", padding: "2px 8px", borderRadius: 9999 }}>
+                            {s.projectCount} {s.projectCount === 1 ? "project" : "projects"}
                           </span>
                         </div>
 
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text-sub)", marginTop: 4 }}>
-                          <span>Outlay: <strong style={{ color: "var(--text)" }}>₹{d.totalCostCr.toLocaleString("en-IN")} Cr</strong></span>
-                          <span>Avg Progress: <strong style={{ color: "#10b981" }}>{d.avgProgress}%</strong></span>
-                        </div>
-
-                        {/* Inland Places list under this district */}
-                        <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 6, display: "flex", flexWrap: "wrap", gap: 4 }}>
-                          {d.places.slice(0, 3).map((pl) => (
-                            <span key={pl} style={{ background: "rgba(255,255,255,0.04)", padding: "1px 5px", borderRadius: 3 }}>
-                              📍 {pl.split("(")[0].trim()}
-                            </span>
-                          ))}
+                          <span>Outlay: <strong style={{ color: "var(--text)" }}>₹{s.totalCostCr.toLocaleString("en-IN")} Cr</strong></span>
+                          <span>Avg Progress: <strong style={{ color: "#10b981" }}>{s.avgProgress}%</strong></span>
                         </div>
 
                         <div style={{ display: "flex", gap: 6, marginTop: 6, fontSize: 10 }}>
-                          {d.criticalCount > 0 && (
+                          {s.criticalCount > 0 && (
                             <span style={{ background: "rgba(244, 63, 94, 0.15)", color: "#f43f5e", padding: "1px 6px", borderRadius: 4, fontWeight: 600 }}>
-                              {d.criticalCount} Critical
+                              {s.criticalCount} Critical
                             </span>
                           )}
-                          {d.highCount > 0 && (
+                          {s.highCount > 0 && (
                             <span style={{ background: "rgba(245, 158, 11, 0.15)", color: "#f59e0b", padding: "1px 6px", borderRadius: 4, fontWeight: 600 }}>
-                              {d.highCount} High Risk
-                            </span>
-                          )}
-                          {d.lowCount > 0 && (
-                            <span style={{ background: "rgba(16, 185, 129, 0.15)", color: "#10b981", padding: "1px 6px", borderRadius: 4, fontWeight: 600 }}>
-                              {d.lowCount} On Track
+                              {s.highCount} High Risk
                             </span>
                           )}
                         </div>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )
             ) : selectedProject ? (
+              /* TAB 1: ACTIVE PROJECT DETAILS */
               <>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
-                  <RiskBadge tier={selectedProject.risk_tier || "low"} suffix={selectedProject.composite_risk_score != null ? ` (${(selectedProject.composite_risk_score * 100).toFixed(0)}%)` : ""} />
+                  <RiskBadge tier={selectedProject.risk_tier || "low"} suffix={selectedProject.composite_risk_score != null ? ` (${(selectedProject.composite_risk_score * 100).toFixed(0)}% Index)` : ""} />
                   <span style={{ fontSize: 11, color: "var(--accent)", fontWeight: 600 }}>Active Selection</span>
                 </div>
 
@@ -904,7 +1051,10 @@ export default function MapPage() {
                 <div style={{ background: "var(--surface-2)", padding: "10px 12px", borderRadius: 8, marginBottom: 14, border: "1px solid var(--border)" }}>
                   <div style={{ fontSize: 11, color: "var(--text-sub)", marginBottom: 4 }}>
                     <strong style={{ color: "var(--text)" }}>Place:</strong>{" "}
-                    <span style={{ color: "#10b981", fontWeight: 600 }}>📍 {selectedProject.place}</span>
+                    <span style={{ color: "#10b981", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 3 }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                      {selectedProject.place}
+                    </span>
                   </div>
                   <div style={{ fontSize: 11, color: "var(--text-sub)", marginBottom: 4 }}>
                     <strong style={{ color: "var(--text)" }}>District:</strong> {selectedProject.district} • <strong style={{ color: "var(--text)" }}>State:</strong> {selectedProject.state}
@@ -914,22 +1064,52 @@ export default function MapPage() {
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16, background: "var(--surface-2)", padding: 12, borderRadius: 8 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12, background: "var(--surface-2)", padding: 12, borderRadius: 8, border: "1px solid var(--border)" }}>
                   <div>
-                    <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>Revised Cost</div>
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Revised Outlay</div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--accent)" }}>
-                      {selectedProject.revised_cost_cr != null ? `₹${selectedProject.revised_cost_cr.toLocaleString("en-IN")} Cr` : "—"}
+                      {selectedProject.revised_cost_cr != null ? `₹${selectedProject.revised_cost_cr.toLocaleString("en-IN")} Cr` : selectedProject.original_cost_cr != null ? `₹${selectedProject.original_cost_cr.toLocaleString("en-IN")} Cr` : "—"}
                     </div>
+                    {selectedProject.original_cost_cr != null && selectedProject.revised_cost_cr != null && selectedProject.revised_cost_cr > selectedProject.original_cost_cr && (
+                      <div style={{ fontSize: 10, color: "#f43f5e", fontWeight: 600 }}>
+                        +₹{(selectedProject.revised_cost_cr - selectedProject.original_cost_cr).toFixed(1)} Cr Escalation
+                      </div>
+                    )}
                   </div>
                   <div>
-                    <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>Physical Progress</div>
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Physical Progress</div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--low)" }}>
                       {selectedProject.physical_progress_pct != null ? `${selectedProject.physical_progress_pct.toFixed(0)}%` : "—"}
+                    </div>
+                    <div style={{ fontSize: 10, color: "var(--text-muted)" }}>
+                      {selectedProject.burn_progress_gap != null ? `Variance Gap: ${selectedProject.burn_progress_gap > 0 ? `+${selectedProject.burn_progress_gap.toFixed(1)}%` : `${selectedProject.burn_progress_gap.toFixed(1)}%`}` : "On Baseline"}
                     </div>
                   </div>
                 </div>
 
-                {/* PRISM AI Executive Briefing Card (Human-Readable, Professional Format) */}
+                {/* Real AI ML Prediction Metrics Grid */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14, background: "rgba(6, 182, 212, 0.06)", padding: "10px 12px", borderRadius: 8, border: "1px solid rgba(6, 182, 212, 0.2)" }}>
+                  <div>
+                    <div style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Delay Risk</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: (selectedProject.delay_probability || 0) > 0.5 ? "#f43f5e" : "#10b981" }}>
+                      {selectedProject.delay_probability != null ? `${(selectedProject.delay_probability * 100).toFixed(0)}%` : "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Cost Risk</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: (selectedProject.cost_overrun_probability || 0) > 0.5 ? "#f43f5e" : "#10b981" }}>
+                      {selectedProject.cost_overrun_probability != null ? `${(selectedProject.cost_overrun_probability * 100).toFixed(0)}%` : "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Risk Index</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>
+                      {selectedProject.composite_risk_score != null ? `${(selectedProject.composite_risk_score * 100).toFixed(0)}%` : "—"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* PRISM AI Executive Briefing Card */}
                 {(() => {
                   const briefing = getExecutiveAiBriefing(selectedProject);
                   return (
@@ -943,8 +1123,15 @@ export default function MapPage() {
                     >
                       {/* Card Header with Status Tag */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ fontSize: 13 }}>🤖</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div
+                            style={{
+                              width: 18, height: 18, borderRadius: 4, overflow: "hidden", flexShrink: 0,
+                              border: "1px solid var(--accent-glow)",
+                            }}
+                          >
+                            <img src="/logo.jpg" alt="PRISM AI" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          </div>
                           <span className="executive-advisory-title" style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                             PRISM AI Executive Briefing
                           </span>
@@ -982,7 +1169,7 @@ export default function MapPage() {
                         }}
                       >
                         <strong className="map-briefing-action-label" style={{ display: "block", marginBottom: 2, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                          ⚡ Recommended Strategic Action:
+                          Recommended Strategic Action:
                         </strong>
                         {briefing.action}
                       </div>

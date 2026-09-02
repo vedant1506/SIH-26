@@ -107,7 +107,13 @@ export default function ProjectDetailPage() {
         <TopBar title="Project Record Status" subtitle="MoSPI PAIMANA Infrastructure Intelligence" />
         <div style={{ padding: "40px 24px", maxWidth: 640, margin: "0 auto", textAlign: "center" }}>
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 32 }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
             <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>
               Project Record Not Located
             </h2>
@@ -116,10 +122,10 @@ export default function ProjectDetailPage() {
             </p>
             <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
               <Link href="/map" className="btn btn-primary" style={{ textDecoration: "none" }}>
-                🗺 Return to Geospatial Map
+                Return to Geospatial Map
               </Link>
               <Link href="/projects" className="btn" style={{ textDecoration: "none", background: "var(--surface-2)", border: "1px solid var(--border)" }}>
-                📋 Browse All Projects
+                Browse All Projects
               </Link>
             </div>
           </div>
@@ -137,8 +143,13 @@ export default function ProjectDetailPage() {
               <Link href="/projects" style={{ fontSize: 12, color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
                 ← Back to Risk Matrix
               </Link>
-              <Link href="/map" style={{ fontSize: 12, color: "var(--text-sub)", textDecoration: "none", fontWeight: 500 }}>
-                🗺 View on Map
+              <Link href="/map" style={{ fontSize: 12, color: "var(--text-sub)", textDecoration: "none", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                  <line x1="9" y1="3" x2="9" y2="18"/>
+                  <line x1="15" y1="6" x2="15" y2="21"/>
+                </svg>
+                View on Map
               </Link>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
@@ -159,7 +170,7 @@ export default function ProjectDetailPage() {
                 setMitigationText(text);
                 setMitigationModel(model);
               }}
-              label="📄 Export Executive PDF Report"
+              label="Export Executive PDF Report"
               className="btn btn-secondary"
             />
           </div>
@@ -168,7 +179,13 @@ export default function ProjectDetailPage() {
         {/* Timing & Schedule Row */}
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
-            <span>📅</span> Project Timeline & Schedule Details
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Project Timeline & Schedule Details
           </div>
           <div className="responsive-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
             <KpiCard
@@ -219,7 +236,12 @@ export default function ProjectDetailPage() {
         {/* Financial & Physical Progress Row */}
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
-            <span>📊</span> Financial & Execution Progress
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            Financial & Execution Progress
           </div>
           <div className="responsive-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
             <KpiCard
@@ -252,10 +274,16 @@ export default function ProjectDetailPage() {
         {/* XGBoost AI Models Inference Outputs Row */}
         <div style={{ marginBottom: 24 }}>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
-            <span>⚡</span> XGBoost AI Models Inference Outputs
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            XGBoost AI Models Inference Outputs
             {predicting && (
-              <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, color: "#f59e0b", background: "rgba(245,158,11,0.12)", borderRadius: 6, padding: "2px 8px", animation: "pulse 1.2s ease-in-out infinite" }}>
-                🔄 Running AI Model...
+              <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, color: "#f59e0b", background: "rgba(245,158,11,0.12)", borderRadius: 6, padding: "2px 8px", animation: "pulse 1.2s ease-in-out infinite", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "spin 1s linear infinite" }}>
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                Running AI Model...
               </span>
             )}
           </div>
@@ -332,8 +360,15 @@ export default function ProjectDetailPage() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 16 }}>🏛️</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{
+                      width: 24, height: 24, borderRadius: 6, overflow: "hidden", flexShrink: 0,
+                      border: "1px solid var(--accent-glow)",
+                    }}
+                  >
+                    <img src="/logo.jpg" alt="MoSPI" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
                   <span className="executive-advisory-title" style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                     MoSPI PAIMANA Executive Risk Assessment
                   </span>
@@ -349,8 +384,8 @@ export default function ProjectDetailPage() {
                       const key = pt.substring(0, colonIdx).trim();
                       const val = pt.substring(colonIdx + 1);
                       return (
-                        <div key={idx} style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                          <span style={{ color: "var(--accent)", fontSize: 10 }}>●</span>
+                        <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--accent)", display: "inline-block", flexShrink: 0, marginTop: 7 }} />
                           <div style={{ flex: 1 }}>
                             <strong style={{ color: "var(--text)", fontWeight: 600 }}>{key}:</strong>
                             <span style={{ color: "var(--text-sub)", marginLeft: 6 }}>{val}</span>
@@ -359,8 +394,8 @@ export default function ProjectDetailPage() {
                       );
                     }
                     return (
-                      <div key={idx} style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                        <span style={{ color: "var(--accent)", fontSize: 10 }}>●</span>
+                      <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                        <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--accent)", display: "inline-block", flexShrink: 0, marginTop: 7 }} />
                         <div style={{ flex: 1, color: "var(--text-sub)" }}>{pt}</div>
                       </div>
                     );
@@ -401,10 +436,18 @@ export default function ProjectDetailPage() {
           <div className="card animate-fade" style={{ marginBottom: 24, background: "var(--surface)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)", display: "flex", alignItems: "center", gap: 8 }}>
-                <span>🤖</span> AI-Generated Mitigation Plan
+                <div
+                  style={{
+                    width: 20, height: 20, borderRadius: 5, overflow: "hidden", flexShrink: 0,
+                    border: "1px solid var(--accent-glow)",
+                  }}
+                >
+                  <img src="/logo.jpg" alt="PRISM AI" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+                AI-Generated Mitigation Plan
                 {mitigationModel && (
                   <span style={{ fontSize: 10, padding: "2px 8px", background: "rgba(99, 102, 241, 0.15)", color: "#818cf8", borderRadius: 12, border: "1px solid rgba(99, 102, 241, 0.3)", textTransform: "none", letterSpacing: "normal", fontWeight: 500 }}>
-                    ⚡ {mitigationModel}
+                    {mitigationModel}
                   </span>
                 )}
               </div>
@@ -418,7 +461,7 @@ export default function ProjectDetailPage() {
                       setMitigationText(text);
                       setMitigationModel(model);
                     }}
-                    label="📄 Export PDF with AI Plan"
+                    label="Export PDF with AI Plan"
                     className="btn btn-secondary animate-fade"
                   />
                 )}
@@ -444,9 +487,19 @@ export default function ProjectDetailPage() {
                   style={{ fontSize: 12, padding: "8px 16px", display: "flex", alignItems: "center", gap: 6 }}
                 >
                   {mitigationLoading ? (
-                    <><span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⚙️</span> Generating Plan...</>
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "spin 1s linear infinite" }}>
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                      </svg>
+                      Generating Plan...
+                    </>
                   ) : (
-                    <><span>⚡</span> {mitigationText ? "Regenerate AI Mitigation Plan" : "Generate AI Mitigation Plan"}</>
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                      </svg>
+                      {mitigationText ? "Regenerate AI Mitigation Plan" : "Generate AI Mitigation Plan"}
+                    </>
                   )}
                 </button>
               </div>
@@ -455,7 +508,7 @@ export default function ProjectDetailPage() {
             {/* Loading state */}
             {mitigationLoading && (
               <div style={{ padding: "24px 0", textAlign: "center" }}>
-                <div style={{ fontSize: 13, color: "var(--text-sub)", marginBottom: 8 }}>🧠 AI Model is analysing this project...</div>
+                <div style={{ fontSize: 13, color: "var(--text-sub)", marginBottom: 8 }}>AI Model is analysing this project...</div>
                 <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Analyzing project parameters and generating customized mitigation actions.</div>
                 <div style={{ marginTop: 16, height: 4, background: "var(--surface-2)", borderRadius: 2, overflow: "hidden" }}>
                   <div style={{ height: "100%", width: "100%", background: "linear-gradient(90deg, var(--accent) 0%, #a855f7 50%, var(--accent) 100%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s ease-in-out infinite" }} />
@@ -465,7 +518,14 @@ export default function ProjectDetailPage() {
 
             {/* Error state */}
             {mitigationError && !mitigationLoading && (
-              <div style={{ color: "#f43f5e", fontSize: 12, padding: "8px 0" }}>⚠️ {mitigationError}</div>
+              <div style={{ color: "#f43f5e", fontSize: 12, padding: "8px 0", display: "flex", alignItems: "center", gap: 6 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                {mitigationError}
+              </div>
             )}
 
             {/* Generated output */}

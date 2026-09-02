@@ -71,10 +71,14 @@ export interface ProjectListItem {
   district?: string | null;
   place?: string | null;
   category?: string | null;
+  agency?: string | null;
   latitude: number | null;
   longitude: number | null;
   original_cost_cr: number;
   revised_cost_cr: number | null;
+  cumulative_expenditure_cr?: number | null;
+  burn_rate_pct?: number | null;
+  time_elapsed_ratio?: number | null;
   physical_progress_pct: number | null;
   project_scale: "mega" | "major" | "other" | null;
   burn_progress_gap: number | null;

@@ -79,7 +79,9 @@ class ProjectListItem(BaseModel):
     longitude: Optional[float] = None
     original_cost_cr: float
     revised_cost_cr: Optional[float] = None
-
+    cumulative_expenditure_cr: Optional[float] = None
+    burn_rate_pct: Optional[float] = None
+    time_elapsed_ratio: Optional[float] = None
     physical_progress_pct: Optional[float] = None
     project_scale: Optional[str] = None
     burn_progress_gap: Optional[float] = None
