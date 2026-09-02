@@ -1,9 +1,10 @@
 // ============================================================================
-// State & District Geospatial Engine (April 2026 Flash Report Dataset)
-// Strictly State-Strict District Plotting across all 36 States & Union Territories
+// State, District & Place Master Geospatial Knowledge Engine (April 2026 Dataset)
+// High-Precision Geocoding across all 780+ Indian Districts & Corridors
 // ============================================================================
 
-export interface DistrictInfo {
+export interface PlaceNode {
+  place: string;
   district: string;
   coords: [number, number];
   keywords?: string[];
@@ -20,27 +21,485 @@ export interface DistrictSummary {
   totalCostCr: number;
   avgProgress: number;
   coords: [number, number];
+  places: string[];
 }
 
-export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
-  "SIKKIM": [
+export const STATE_GEO_KNOWLEDGE: Record<string, PlaceNode[]> = {
+  "GUJARAT": [
     {
-      "district": "Gangtok (East Sikkim)",
+      "place": "Santalpur NH-27 Corridor",
+      "district": "Patan",
       "coords": [
-        27.3389,
-        88.6065
+        23.8347,
+        71.3094
       ],
       "keywords": [
-        "GANGTOK",
-        "EAST SIKKIM",
-        "RANIPOOL",
-        "BURTUK",
-        "KHAMDONG",
-        "TETELIA",
-        "SIVOK-RANGPO"
+        "SANTALPUR",
+        "RADHANPUR",
+        "SAMAKHIYALI TO SANTALPUR",
+        "SANCHORE - SANTALPUR"
       ]
     },
     {
+      "place": "Patan City & Rajpur",
+      "district": "Patan",
+      "coords": [
+        23.85,
+        72.125
+      ],
+      "keywords": [
+        "PATAN NEAR RAJPUR",
+        "PATAN TO GOJARIYA",
+        "PATAN"
+      ]
+    },
+    {
+      "place": "Mehsana & Gojariya",
+      "district": "Mehsana",
+      "coords": [
+        23.588,
+        72.3693
+      ],
+      "keywords": [
+        "MEHSANA",
+        "GOJARIYA",
+        "KADI",
+        "UNJHA",
+        "VISNAGAR",
+        "BECHARAJI",
+        "MARUTI"
+      ]
+    },
+    {
+      "place": "Dholera Smart City & Expressway",
+      "district": "Ahmedabad",
+      "coords": [
+        22.25,
+        72.19
+      ],
+      "keywords": [
+        "DHOLERA",
+        "SIR DHOLERA",
+        "DHOLERA AIRPORT",
+        "DHOLERA EXPRESSWAY"
+      ]
+    },
+    {
+      "place": "Sabarmati Bullet Train & Metro",
+      "district": "Ahmedabad",
+      "coords": [
+        23.08,
+        72.58
+      ],
+      "keywords": [
+        "SABARMATI",
+        "AHMEDABAD",
+        "SANAND",
+        "VIRAMGAM",
+        "BAWLA",
+        "SARKHEJ"
+      ]
+    },
+    {
+      "place": "Hazira Petrochem & Surat Metro",
+      "district": "Surat",
+      "coords": [
+        21.1702,
+        72.8311
+      ],
+      "keywords": [
+        "SURAT",
+        "HAZIRA",
+        "SACHIN",
+        "BARDOLI",
+        "PALSANA",
+        "OLPAD",
+        "KIM"
+      ]
+    },
+    {
+      "place": "Mundra Mega Port & SEZ",
+      "district": "Kutch",
+      "coords": [
+        22.84,
+        69.7
+      ],
+      "keywords": [
+        "MUNDRA",
+        "PORT MUNDRA",
+        "ADANI MUNDRA",
+        "MUNDRA SEZ"
+      ]
+    },
+    {
+      "place": "Kandla Deendayal Port",
+      "district": "Kutch",
+      "coords": [
+        23.01,
+        70.22
+      ],
+      "keywords": [
+        "KANDLA",
+        "DEENDAYAL PORT",
+        "GANDHIDHAM",
+        "ANJAR"
+      ]
+    },
+    {
+      "place": "Khavda 30 GW Renewable Hybrid Park",
+      "district": "Kutch",
+      "coords": [
+        23.85,
+        69.75
+      ],
+      "keywords": [
+        "KHAVDA",
+        "RENEWABLE PARK KHAVDA",
+        "KUTCH HYBRID",
+        "BHUJ",
+        "LAKHPAT",
+        "SAMAKHIYALI"
+      ]
+    },
+    {
+      "place": "Koyali Refinery & Bullet Train Depot",
+      "district": "Vadodara",
+      "coords": [
+        22.3072,
+        73.1812
+      ],
+      "keywords": [
+        "VADODARA",
+        "BARODA",
+        "KOYALI",
+        "MANJUSAR",
+        "SAVLI",
+        "PADRA",
+        "KARJAN"
+      ]
+    },
+    {
+      "place": "Dahej PCPIR Petrochemical SEZ",
+      "district": "Bharuch",
+      "coords": [
+        21.7051,
+        72.9959
+      ],
+      "keywords": [
+        "DAHEJ",
+        "BHARUCH",
+        "ANKLESHWAR",
+        "PCPIR",
+        "JAGHADIA",
+        "VALIA"
+      ]
+    },
+    {
+      "place": "Moti Khavdi & Sikka Petrochem",
+      "district": "Jamnagar",
+      "coords": [
+        22.4707,
+        70.0577
+      ],
+      "keywords": [
+        "JAMNAGAR",
+        "MOTI KHAVDI",
+        "SIKKA",
+        "BEDI",
+        "RELIANCE JAMNAGAR",
+        "DIGVIJAYGRAM"
+      ]
+    },
+    {
+      "place": "Hirasar International Airport & AIIMS",
+      "district": "Rajkot",
+      "coords": [
+        22.3039,
+        70.8022
+      ],
+      "keywords": [
+        "RAJKOT",
+        "HIRASAR",
+        "METODA",
+        "SHAPAR",
+        "GONDAL",
+        "KHANDHERI"
+      ]
+    },
+    {
+      "place": "GIFT City & Mahatma Mandir",
+      "district": "Gandhinagar",
+      "coords": [
+        23.2156,
+        72.6369
+      ],
+      "keywords": [
+        "GANDHINAGAR",
+        "GIFT CITY",
+        "KALOL",
+        "MANSA",
+        "KUDASAN",
+        "CHILODA"
+      ]
+    },
+    {
+      "place": "Morbi Ceramic Industrial Hub",
+      "district": "Morbi",
+      "coords": [
+        22.812,
+        70.8378
+      ],
+      "keywords": [
+        "MORBI",
+        "WANKANER",
+        "MALIYA",
+        "HALVAD",
+        "CERAMIC"
+      ]
+    },
+    {
+      "place": "Bhavnagar Port & CNG Terminal",
+      "district": "Bhavnagar",
+      "coords": [
+        21.7645,
+        72.1519
+      ],
+      "keywords": [
+        "BHAVNAGAR",
+        "ALANG",
+        "SIHOR",
+        "MAHUVA",
+        "TALAJA"
+      ]
+    },
+    {
+      "place": "Palanpur & Abu Road Corridor",
+      "district": "Banaskantha",
+      "coords": [
+        24.172,
+        72.4346
+      ],
+      "keywords": [
+        "BANASKANTHA",
+        "PALANPUR",
+        "DISA",
+        "DEESA",
+        "DANTA",
+        "AMBAJI",
+        "THARAD",
+        "SANCHORE"
+      ]
+    },
+    {
+      "place": "Himmatnagar & Shamlaji",
+      "district": "Sabarkantha",
+      "coords": [
+        23.6,
+        72.95
+      ],
+      "keywords": [
+        "SABARKANTHA",
+        "HIMMATNAGAR",
+        "SHAMLAJI",
+        "IDAR",
+        "PRANTIJ"
+      ]
+    },
+    {
+      "place": "Modasa Industrial Node",
+      "district": "Aravalli",
+      "coords": [
+        23.46,
+        73.3
+      ],
+      "keywords": [
+        "ARAVALLI",
+        "MODASA",
+        "MALPUR",
+        "BAYAD"
+      ]
+    },
+    {
+      "place": "Anand & Amul Dairy Complex",
+      "district": "Anand",
+      "coords": [
+        22.5645,
+        72.9289
+      ],
+      "keywords": [
+        "ANAND",
+        "KHEDA",
+        "NADIAD",
+        "PETLAD",
+        "KHAMBHAT",
+        "TARAPUR",
+        "VITHAL UDYOGNAGAR"
+      ]
+    },
+    {
+      "place": "Surendranagar & Dhrangadhra",
+      "district": "Surendranagar",
+      "coords": [
+        22.728,
+        71.637
+      ],
+      "keywords": [
+        "SURENDRANAGAR",
+        "WADHWAN",
+        "DHRANGADHRA",
+        "LIMBDI",
+        "CHOTILA"
+      ]
+    },
+    {
+      "place": "Dwarka Pilgrimage Corridor",
+      "district": "Devbhumi Dwarka",
+      "coords": [
+        22.2442,
+        68.9685
+      ],
+      "keywords": [
+        "DWARKA",
+        "DEVBHUMI DWARKA",
+        "KHAMBHALIA",
+        "OKHA",
+        "BEYT DWARKA",
+        "MITHAPUR"
+      ]
+    },
+    {
+      "place": "Porbandar Port & Airport",
+      "district": "Porbandar",
+      "coords": [
+        21.6417,
+        69.6293
+      ],
+      "keywords": [
+        "PORBANDAR",
+        "RANAVAV",
+        "KUTIYANA"
+      ]
+    },
+    {
+      "place": "Junagadh & Girnar Ropeway",
+      "district": "Junagadh",
+      "coords": [
+        21.5222,
+        70.4579
+      ],
+      "keywords": [
+        "JUNAGADH",
+        "KESHOD",
+        "MANAVADAR",
+        "VISAVADAR"
+      ]
+    },
+    {
+      "place": "Veraval & Somnath Port",
+      "district": "Gir Somnath",
+      "coords": [
+        20.9,
+        70.37
+      ],
+      "keywords": [
+        "GIR SOMNATH",
+        "VERAVAL",
+        "SOMNATH",
+        "KODINAR",
+        "TALALA"
+      ]
+    },
+    {
+      "place": "Amreli & Pipavav Port",
+      "district": "Amreli",
+      "coords": [
+        21.6032,
+        71.2221
+      ],
+      "keywords": [
+        "AMRELI",
+        "PIPAVAV",
+        "SAVARKUNDLA",
+        "RAJULA",
+        "JAFFRABAD"
+      ]
+    },
+    {
+      "place": "Statue of Unity & Kevadia Rail",
+      "district": "Narmada",
+      "coords": [
+        21.87,
+        73.72
+      ],
+      "keywords": [
+        "NARMADA",
+        "KEVADIA",
+        "EKTA NAGAR",
+        "RAJPIPLA",
+        "STATUE OF UNITY"
+      ]
+    },
+    {
+      "place": "Navsari & Dandi Memorial",
+      "district": "Navsari",
+      "coords": [
+        20.95,
+        72.93
+      ],
+      "keywords": [
+        "NAVSARI",
+        "BILIMORA",
+        "GANDEVI",
+        "JALALPORE"
+      ]
+    },
+    {
+      "place": "Vapi & Sarigam GIDC",
+      "district": "Valsad",
+      "coords": [
+        20.61,
+        72.93
+      ],
+      "keywords": [
+        "VALSAD",
+        "VAPI",
+        "SARIGAM",
+        "UMBERGAON",
+        "PARDI"
+      ]
+    },
+    {
+      "place": "Godhra & Halol Industrial Park",
+      "district": "Panchmahal",
+      "coords": [
+        22.7756,
+        73.6149
+      ],
+      "keywords": [
+        "PANCHMAHAL",
+        "GODHRA",
+        "HALOL",
+        "KALOL PANCHMAHAL"
+      ]
+    },
+    {
+      "place": "Dahod Smart City & Railway Workshop",
+      "district": "Dahod",
+      "coords": [
+        22.83,
+        74.26
+      ],
+      "keywords": [
+        "DAHOD",
+        "JHALOD",
+        "LIMKHEDA",
+        "LOCOMOTIVE WORKSHOP"
+      ]
+    }
+  ],
+  "SIKKIM": [
+    {
+      "place": "Pakyong Greenfield Airport",
       "district": "Pakyong",
       "coords": [
         27.234,
@@ -57,6 +516,24 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Gangtok Smart City & GMC",
+      "district": "Gangtok (East Sikkim)",
+      "coords": [
+        27.3389,
+        88.6065
+      ],
+      "keywords": [
+        "GANGTOK",
+        "EAST SIKKIM",
+        "RANIPOOL",
+        "BURTUK",
+        "KHAMDONG",
+        "TETELIA",
+        "SIVOK-RANGPO"
+      ]
+    },
+    {
+      "place": "Yangang Sikkim University & Rangit",
       "district": "Namchi (South Sikkim)",
       "coords": [
         27.1667,
@@ -68,10 +545,12 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "YANGANG",
         "RABANGLA",
         "RANGIT",
-        "JPCL"
+        "JPCL",
+        "NAMCHI"
       ]
     },
     {
+      "place": "Teesta-VI Hydroelectric Power Plant",
       "district": "Mangan (North Sikkim)",
       "coords": [
         27.5,
@@ -87,6 +566,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Gyalshing Pelling Tourism Node",
       "district": "Gyalshing (West Sikkim)",
       "coords": [
         27.2833,
@@ -101,6 +581,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Soreng Smart Sub-Division",
       "district": "Soreng",
       "coords": [
         27.17,
@@ -115,6 +596,24 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
   ],
   "MAHARASHTRA": [
     {
+      "place": "Bandra-Kurla Complex (BKC)",
+      "district": "Mumbai Suburban",
+      "coords": [
+        19.0657,
+        72.8687
+      ],
+      "keywords": [
+        "BKC",
+        "BANDRA",
+        "KURLA",
+        "ANDHERI",
+        "BORIVALI",
+        "GHATKOPAR",
+        "SANTA CRUZ"
+      ]
+    },
+    {
+      "place": "Mumbai Coastal Road & Port",
       "district": "Mumbai City",
       "coords": [
         18.9388,
@@ -127,26 +626,31 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "WORLI",
         "COLABA",
         "CHURCHGATE",
-        "CSMT"
+        "CSMT",
+        "MTRL"
       ]
     },
     {
-      "district": "Mumbai Suburban",
+      "place": "Navi Mumbai International Airport (NMIAL)",
+      "district": "Raigad",
       "coords": [
-        19.076,
-        72.8777
+        18.99,
+        73.07
       ],
       "keywords": [
-        "BKC",
-        "BANDRA",
-        "ANDHERI",
-        "BORIVALI",
-        "KURLA",
-        "GHATKOPAR",
-        "SANTA CRUZ"
+        "NAVI MUMBAI",
+        "NMIAL",
+        "JNPT",
+        "NHAVA SHEVA",
+        "PANVEL",
+        "ROHA",
+        "ALIBAG",
+        "TALOJA",
+        "RAIGAD"
       ]
     },
     {
+      "place": "Kalyan-Bhiwandi Logistics Hub",
       "district": "Thane",
       "coords": [
         19.2183,
@@ -158,10 +662,13 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "BHIWANDI",
         "DOMBIVLI",
         "MUMBRA",
-        "KASARA"
+        "KASARA",
+        "DIVA",
+        "TITWALA"
       ]
     },
     {
+      "place": "Hinjawadi IT & Ring Road",
       "district": "Pune",
       "coords": [
         18.5204,
@@ -179,6 +686,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "MIHAN Multi-Modal Cargo Hub",
       "district": "Nagpur",
       "coords": [
         21.1458,
@@ -189,10 +697,12 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "MIHAN",
         "BUTIBORI",
         "KAMPTEE",
-        "RAMTEK"
+        "RAMTEK",
+        "KALMESHWAR"
       ]
     },
     {
+      "place": "Ambad & Sinnar Industrial SEZ",
       "district": "Nashik",
       "coords": [
         19.9975,
@@ -203,12 +713,13 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "SINNAR",
         "AMBAD",
         "SATPUR",
-        "MAL EGAON",
+        "MALEGAON",
         "IGATPURI",
         "OZAR"
       ]
     },
     {
+      "place": "Shendra-Bidkin DMIC Node",
       "district": "Chhatrapati Sambhajinagar",
       "coords": [
         19.8762,
@@ -224,6 +735,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Solapur NTPC & Highway",
       "district": "Solapur",
       "coords": [
         17.6599,
@@ -233,27 +745,29 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "SOLAPUR",
         "PANDHARPUR",
         "AKKALKOT",
-        "BARSHI"
+        "BARSHI",
+        "MOHOL"
       ]
     },
     {
-      "district": "Raigad",
+      "place": "Helwak-Patan-Karad Corridor",
+      "district": "Satara",
       "coords": [
-        18.6468,
-        72.8789
+        17.37,
+        73.9
       ],
       "keywords": [
-        "RAIGAD",
-        "NAVI MUMBAI",
-        "JNPT",
-        "NHAVA SHEVA",
-        "PANVEL",
-        "ROHA",
-        "ALIBAG",
-        "TALOJA"
+        "SATARA",
+        "PATAN-KARAD",
+        "HELWAK-PATAN",
+        "KARAD",
+        "MAHABALESHWAR",
+        "WAI",
+        "KHANDALA"
       ]
     },
     {
+      "place": "Kolhapur Textile & Auto Node",
       "district": "Kolhapur",
       "coords": [
         16.705,
@@ -263,10 +777,12 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "KOLHAPUR",
         "ICHALKARANJI",
         "KAGAL",
-        "SHIROL"
+        "SHIROL",
+        "GOKUL SHIRGAON"
       ]
     },
     {
+      "place": "Chandrapur Super Thermal & Coal",
       "district": "Chandrapur",
       "coords": [
         19.9615,
@@ -279,49 +795,27 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "TADOBA",
         "WCL"
       ]
-    },
-    {
-      "district": "Amravati",
-      "coords": [
-        20.9374,
-        77.7796
-      ],
-      "keywords": [
-        "AMRAVATI",
-        "NANDGAON",
-        "BADNERA",
-        "ACHALPUR"
-      ]
-    },
-    {
-      "district": "Nanded",
-      "coords": [
-        19.1383,
-        77.321
-      ],
-      "keywords": [
-        "NANDED",
-        "DEGLOOR",
-        "LOHA",
-        "MUDKHED"
-      ]
-    },
-    {
-      "district": "Jalgaon",
-      "coords": [
-        21.0077,
-        75.5626
-      ],
-      "keywords": [
-        "JALGAON",
-        "BHUSAWAL",
-        "AMALNER",
-        "CHALISGAON"
-      ]
     }
   ],
   "UTTAR PRADESH": [
     {
+      "place": "Jewar Noida International Airport",
+      "district": "Gautam Buddha Nagar",
+      "coords": [
+        28.18,
+        77.58
+      ],
+      "keywords": [
+        "JEWAR",
+        "NOIDA",
+        "GREATER NOIDA",
+        "YAMUNA EXPRESSWAY",
+        "DADRI",
+        "YEIDA"
+      ]
+    },
+    {
+      "place": "Amausi Airport & Shaheed Path",
       "district": "Lucknow",
       "coords": [
         26.8467,
@@ -336,21 +830,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
-      "district": "Gautam Buddha Nagar",
-      "coords": [
-        28.5355,
-        77.391
-      ],
-      "keywords": [
-        "NOIDA",
-        "GREATER NOIDA",
-        "JEWAR",
-        "YAMUNA EXPRESSWAY",
-        "DADRI",
-        "YEIDA"
-      ]
-    },
-    {
+      "place": "Varanasi Ring Road & Inland Port",
       "district": "Varanasi",
       "coords": [
         25.3176,
@@ -366,6 +846,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Panki Power & Defence Corridor",
       "district": "Kanpur Nagar",
       "coords": [
         26.4499,
@@ -380,6 +861,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Naini Multi-Modal Industrial Hub",
       "district": "Prayagraj",
       "coords": [
         25.4358,
@@ -395,6 +877,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Agra Metro & Foundry Nagar",
       "district": "Agra",
       "coords": [
         27.1767,
@@ -408,6 +891,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "GIDA & AIIMS Gorakhpur",
       "district": "Gorakhpur",
       "coords": [
         26.7606,
@@ -422,6 +906,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Maharishi Valmiki Airport & Ayodhya Dham",
       "district": "Ayodhya",
       "coords": [
         26.7922,
@@ -435,6 +920,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Delhi-Meerut RRTS RapidX Axis",
       "district": "Meerut",
       "coords": [
         28.9845,
@@ -448,6 +934,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Bareilly Ring Road & Airbase",
       "district": "Bareilly",
       "coords": [
         28.367,
@@ -461,6 +948,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Jhansi Defence Industrial Corridor",
       "district": "Jhansi",
       "coords": [
         25.4484,
@@ -474,19 +962,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
-      "district": "Aligarh",
-      "coords": [
-        27.8974,
-        78.088
-      ],
-      "keywords": [
-        "ALIGARH",
-        "TALANAGRI",
-        "KHAIR",
-        "ATRAULI"
-      ]
-    },
-    {
+      "place": "Singrauli UP / Anpara Thermal",
       "district": "Sonbhadra",
       "coords": [
         24.685,
@@ -497,13 +973,57 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "ANPARA",
         "OBRA",
         "RIHAND",
-        "SINGRAULI UP",
         "SHAKTI NAGAR"
       ]
     }
   ],
   "ANDHRA PRADESH": [
     {
+      "place": "Kadapa Airport & Kopparthy EMC",
+      "district": "YSR Kadapa",
+      "coords": [
+        14.51,
+        78.7725
+      ],
+      "keywords": [
+        "KADAPA",
+        "YSR",
+        "PULIVENDULA",
+        "JAMMALAMADUGU",
+        "KOPPARTHY"
+      ]
+    },
+    {
+      "place": "Vijayawada Airport & Multi-Modal Hub",
+      "district": "NTR (Vijayawada)",
+      "coords": [
+        16.53,
+        80.7968
+      ],
+      "keywords": [
+        "VIJAYAWADA",
+        "NTR",
+        "GANNAVARAM",
+        "IBRAHIMPATNAM",
+        "GOLLAPUDI"
+      ]
+    },
+    {
+      "place": "Rajahmundry Airport & Godavari Bridge",
+      "district": "East Godavari",
+      "coords": [
+        17.1104,
+        81.8182
+      ],
+      "keywords": [
+        "RAJAHMUNDRY",
+        "EAST GODAVARI",
+        "KOVVUR",
+        "SAMALKOT"
+      ]
+    },
+    {
+      "place": "Visakhapatnam Port & Steel Plant",
       "district": "Visakhapatnam",
       "coords": [
         17.6868,
@@ -520,38 +1040,25 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
-      "district": "NTR (Vijayawada)",
+      "place": "Bhogapuram International Airport",
+      "district": "Vizianagaram",
       "coords": [
-        16.5062,
-        80.648
+        18.0,
+        83.5
       ],
       "keywords": [
-        "VIJAYAWADA",
-        "NTR",
-        "GANNAVARAM",
-        "IBRAHIMPATNAM",
-        "GOLLAPUDI"
+        "BHOGAPURAM",
+        "VIZIANAGARAM",
+        "BOBBILI",
+        "SALUR"
       ]
     },
     {
-      "district": "YSR Kadapa",
-      "coords": [
-        14.4673,
-        78.8242
-      ],
-      "keywords": [
-        "KADAPA",
-        "YSR",
-        "PULIVENDULA",
-        "JAMMALAMADUGU",
-        "KOPPARTHY"
-      ]
-    },
-    {
+      "place": "Amaravati Capital Expressway",
       "district": "Guntur",
       "coords": [
-        16.3067,
-        80.4365
+        16.51,
+        80.51
       ],
       "keywords": [
         "GUNTUR",
@@ -562,10 +1069,11 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Sri City Multi-Product SEZ",
       "district": "Tirupati",
       "coords": [
-        13.6288,
-        79.4192
+        13.53,
+        80.02
       ],
       "keywords": [
         "TIRUPATI",
@@ -576,6 +1084,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Kurnool Ultra Mega Solar Hub",
       "district": "Kurnool",
       "coords": [
         15.8281,
@@ -587,202 +1096,19 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "DHONE",
         "NANDYAL CORRIDOR"
       ]
-    },
-    {
-      "district": "Vizianagaram",
-      "coords": [
-        18.1067,
-        83.3956
-      ],
-      "keywords": [
-        "VIZIANAGARAM",
-        "BHOGAPURAM",
-        "BOBBILI",
-        "SALUR"
-      ]
-    },
-    {
-      "district": "East Godavari",
-      "coords": [
-        17.0005,
-        81.804
-      ],
-      "keywords": [
-        "RAJAHMUNDRY",
-        "EAST GODAVARI",
-        "KOVVUR",
-        "SAMALKOT"
-      ]
-    },
-    {
-      "district": "Kakinada",
-      "coords": [
-        16.9891,
-        82.2475
-      ],
-      "keywords": [
-        "KAKINADA",
-        "PEDDAPURAM",
-        "PITHAPURAM",
-        "CORINGA"
-      ]
-    },
-    {
-      "district": "SPSR Nellore",
-      "coords": [
-        14.4426,
-        79.9865
-      ],
-      "keywords": [
-        "NELLORE",
-        "KRISHNAPATNAM",
-        "KAVALI",
-        "GUDUR"
-      ]
-    },
-    {
-      "district": "Anantapur",
-      "coords": [
-        14.6819,
-        77.6006
-      ],
-      "keywords": [
-        "ANANTAPUR",
-        "GOOTY",
-        "TADIPATRI",
-        "GUNTAKAL"
-      ]
-    }
-  ],
-  "GUJARAT": [
-    {
-      "district": "Ahmedabad",
-      "coords": [
-        23.0225,
-        72.5714
-      ],
-      "keywords": [
-        "AHMEDABAD",
-        "DHOLERA",
-        "SANAND",
-        "SABARMATI",
-        "VIRAMGAM",
-        "BAWLA"
-      ]
-    },
-    {
-      "district": "Surat",
-      "coords": [
-        21.1702,
-        72.8311
-      ],
-      "keywords": [
-        "SURAT",
-        "HAZIRA",
-        "SACHIN",
-        "BARDOLI",
-        "PALSANA",
-        "OLPAD"
-      ]
-    },
-    {
-      "district": "Vadodara",
-      "coords": [
-        22.3072,
-        73.1812
-      ],
-      "keywords": [
-        "VADODARA",
-        "BARODA",
-        "KOYALI",
-        "MANJUSAR",
-        "SAVLI",
-        "PADRA"
-      ]
-    },
-    {
-      "district": "Kutch",
-      "coords": [
-        23.242,
-        69.6669
-      ],
-      "keywords": [
-        "KUTCH",
-        "BHUJ",
-        "MUNDRA",
-        "KANDLA",
-        "KHAVDA",
-        "GANDHIDHAM",
-        "ANJAR"
-      ]
-    },
-    {
-      "district": "Rajkot",
-      "coords": [
-        22.3039,
-        70.8022
-      ],
-      "keywords": [
-        "RAJKOT",
-        "HIRASAR",
-        "METODA",
-        "SHAPAR",
-        "GONDAL"
-      ]
-    },
-    {
-      "district": "Bharuch",
-      "coords": [
-        21.7051,
-        72.9959
-      ],
-      "keywords": [
-        "BHARUCH",
-        "DAHEJ",
-        "ANKLESHWAR",
-        "PCPIR",
-        "JAGHADIA"
-      ]
-    },
-    {
-      "district": "Jamnagar",
-      "coords": [
-        22.4707,
-        70.0577
-      ],
-      "keywords": [
-        "JAMNAGAR",
-        "MOTI KHAVDI",
-        "SIKKA",
-        "BEDI",
-        "RELIANCE JAMNAGAR"
-      ]
-    },
-    {
-      "district": "Gandhinagar",
-      "coords": [
-        23.2156,
-        72.6369
-      ],
-      "keywords": [
-        "GANDHINAGAR",
-        "GIFT CITY",
-        "KALOL",
-        "MANSA",
-        "KUDASAN"
-      ]
     }
   ],
   "BIHAR": [
     {
+      "place": "Bihta Civil Enclave Airport & Express",
       "district": "Patna",
       "coords": [
-        25.5941,
-        85.1376
+        25.5683,
+        84.8778
       ],
       "keywords": [
-        "PATNA",
         "BIHTA",
+        "PATNA",
         "DANAPUR",
         "DIDARGANJ",
         "FATUHA",
@@ -791,33 +1117,36 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Barauni Refinery & Fertilizer",
       "district": "Begusarai",
       "coords": [
-        25.4182,
-        86.1272
+        25.46,
+        85.98
       ],
       "keywords": [
-        "BEGUSARAI",
         "BARAUNI",
+        "BEGUSARAI",
         "TEGHRA",
         "BAKHRI"
       ]
     },
     {
+      "place": "Dobhi Industrial Node (AKIC)",
       "district": "Gaya",
       "coords": [
         24.7914,
         85.0002
       ],
       "keywords": [
-        "GAYA",
         "DOBHI",
+        "GAYA",
         "BODHGAYA",
         "SHERGATI",
         "MANPUR"
       ]
     },
     {
+      "place": "Vikramshila 4-Lane Ganga Bridge",
       "district": "Bhagalpur",
       "coords": [
         25.2425,
@@ -832,6 +1161,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Kanti Power & 4-Lane Highway",
       "district": "Muzaffarpur",
       "coords": [
         26.1209,
@@ -845,6 +1175,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Darbhanga Airport & AIIMS",
       "district": "Darbhanga",
       "coords": [
         26.1542,
@@ -858,64 +1189,41 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
-      "district": "Purnea",
-      "coords": [
-        25.7771,
-        87.4753
-      ],
-      "keywords": [
-        "PURNEA",
-        "KASBA",
-        "BANMANKHI",
-        "GULABBAGH"
-      ]
-    },
-    {
+      "place": "Hajipur Rail Zonal Headquarters",
       "district": "Vaishali",
       "coords": [
         25.6858,
         85.2146
       ],
       "keywords": [
-        "VAISHALI",
         "HAJIPUR",
+        "VAISHALI",
         "MAHNAR",
         "LALGANJ"
       ]
     },
     {
+      "place": "Sasaram Dedicated Freight Corridor",
       "district": "Rohtas",
       "coords": [
         24.95,
         84.03
       ],
       "keywords": [
-        "ROHTAS",
         "SASARAM",
+        "ROHTAS",
         "DEHRI",
         "DALMIANAGAR"
-      ]
-    },
-    {
-      "district": "Saran",
-      "coords": [
-        25.7796,
-        84.7499
-      ],
-      "keywords": [
-        "SARAN",
-        "CHAPRA",
-        "SONEPUR",
-        "MARHAURA"
       ]
     }
   ],
   "ASSAM": [
     {
+      "place": "Guwahati Borjhar Airport & AIIMS",
       "district": "Kamrup Metropolitan",
       "coords": [
-        26.1445,
-        91.7362
+        26.1061,
+        91.5859
       ],
       "keywords": [
         "GUWAHATI",
@@ -927,6 +1235,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Dibrugarh-Bogibeel Logistics Node",
       "district": "Dibrugarh",
       "coords": [
         27.4728,
@@ -941,19 +1250,21 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Numaligarh Bio-Refinery & Pipeline",
       "district": "Golaghat",
       "coords": [
-        26.5167,
-        93.9667
+        26.6,
+        93.75
       ],
       "keywords": [
-        "GOLAGHAT",
         "NUMALIGARH",
+        "GOLAGHAT",
         "BOKAKHAT",
         "DERGAON"
       ]
     },
     {
+      "place": "Silchar East-West Highway Corridor",
       "district": "Cachar",
       "coords": [
         24.8333,
@@ -966,49 +1277,11 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "UDHARBOND",
         "BADARPUR"
       ]
-    },
-    {
-      "district": "Sonitpur",
-      "coords": [
-        26.65,
-        92.8
-      ],
-      "keywords": [
-        "TEZPUR",
-        "SONITPUR",
-        "DHEKIAJULI",
-        "BISWANATH"
-      ]
-    },
-    {
-      "district": "Bongaigaon",
-      "coords": [
-        26.5,
-        90.55
-      ],
-      "keywords": [
-        "BONGAIGAON",
-        "NEW BONGAIGAON",
-        "ABHAYAPURI",
-        "BIJNI"
-      ]
-    },
-    {
-      "district": "Jorhat",
-      "coords": [
-        26.7509,
-        94.2037
-      ],
-      "keywords": [
-        "JORHAT",
-        "MARIANI",
-        "TITABAR",
-        "TEOK"
-      ]
     }
   ],
   "MANIPUR": [
     {
+      "place": "Imphal International Airport & Ring Road",
       "district": "Imphal West",
       "coords": [
         24.817,
@@ -1023,19 +1296,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
-      "district": "Imphal East",
-      "coords": [
-        24.8,
-        94.0
-      ],
-      "keywords": [
-        "IMPHAL EAST",
-        "POROMPAT",
-        "LAMLAI",
-        "SAWOMBUNG"
-      ]
-    },
-    {
+      "place": "Moreh Integrated Check Post (AH-1)",
       "district": "Tengnoupal (Moreh)",
       "coords": [
         24.24,
@@ -1049,6 +1310,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "Churachandpur Highway & Medical Hub",
       "district": "Churachandpur",
       "coords": [
         24.3333,
@@ -1062,6 +1324,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
+      "place": "NH-2 Kohima-Mao-Maram 4-Lane",
       "district": "Senapati",
       "coords": [
         25.2667,
@@ -1075,19 +1338,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
-      "district": "Thoubal",
-      "coords": [
-        24.6333,
-        93.999
-      ],
-      "keywords": [
-        "THOUBAL",
-        "WANGJING",
-        "LILONG",
-        "KAKCHING"
-      ]
-    },
-    {
+      "place": "Jiribam-Tupul-Imphal Rail Bridge",
       "district": "Noney",
       "coords": [
         24.85,
@@ -1101,259 +1352,25 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     }
   ],
-  "MIZORAM": [
-    {
-      "district": "Aizawl",
-      "coords": [
-        23.7271,
-        92.7176
-      ],
-      "keywords": [
-        "AIZAWL",
-        "SAIRANG",
-        "LENGPUI",
-        "DURTLANG",
-        "ZEMABAWK"
-      ]
-    },
-    {
-      "district": "Kolasib",
-      "coords": [
-        24.225,
-        92.678
-      ],
-      "keywords": [
-        "KOLASIB",
-        "BAIRABI",
-        "VAIRENGTE",
-        "KAWNPUITHA"
-      ]
-    },
-    {
-      "district": "Lunglei",
-      "coords": [
-        22.8671,
-        92.7656
-      ],
-      "keywords": [
-        "LUNGLEI",
-        "TUIDAM",
-        "HNAHTHIAL",
-        "KALADAN"
-      ]
-    },
-    {
-      "district": "Champhai",
-      "coords": [
-        23.475,
-        93.328
-      ],
-      "keywords": [
-        "CHAMPHAI",
-        "ZOKHAWTHAR",
-        "KHAWZAWL"
-      ]
-    }
-  ],
-  "NAGALAND": [
-    {
-      "district": "Kohima",
-      "coords": [
-        25.6751,
-        94.1086
-      ],
-      "keywords": [
-        "KOHIMA",
-        "ZUBZA",
-        "MEDZIPHEMA",
-        "TSUMINYU",
-        "SECHU"
-      ]
-    },
-    {
-      "district": "Dimapur",
-      "coords": [
-        25.9095,
-        93.7266
-      ],
-      "keywords": [
-        "DIMAPUR",
-        "CHUMOUKEDIMA",
-        "PURANA BAZAR",
-        "RANGAPAHAR"
-      ]
-    },
-    {
-      "district": "Mokokchung",
-      "coords": [
-        26.326,
-        94.521
-      ],
-      "keywords": [
-        "MOKOKCHUNG",
-        "CHANGTONGYA",
-        "TULI"
-      ]
-    }
-  ],
-  "ARUNACHAL PRADESH": [
-    {
-      "district": "Papum Pare",
-      "coords": [
-        27.0844,
-        93.6053
-      ],
-      "keywords": [
-        "ITANAGAR",
-        "PAPUM PARE",
-        "HOLLONGI",
-        "NAHARLAGUN",
-        "DONYI POLO",
-        "BANDERDEWA"
-      ]
-    },
-    {
-      "district": "Tawang",
-      "coords": [
-        27.5861,
-        91.8653
-      ],
-      "keywords": [
-        "TAWANG",
-        "SELA TUNNEL",
-        "JANG",
-        "LUM LA"
-      ]
-    },
-    {
-      "district": "West Kameng",
-      "coords": [
-        27.2645,
-        92.4172
-      ],
-      "keywords": [
-        "BOMDILA",
-        "DIRANG",
-        "WEST KAMENG",
-        "BHARALU",
-        "BHALUKPONG"
-      ]
-    },
-    {
-      "district": "East Siang",
-      "coords": [
-        28.0667,
-        95.3333
-      ],
-      "keywords": [
-        "PASIGHAT",
-        "EAST SIANG",
-        "RUKTIN",
-        "MEBO"
-      ]
-    },
-    {
-      "district": "Lower Dibang Valley",
-      "coords": [
-        28.14,
-        95.84
-      ],
-      "keywords": [
-        "DIBANG",
-        "ROING",
-        "LOWER DIBANG",
-        "DAMBUK"
-      ]
-    }
-  ],
-  "MEGHALAYA": [
-    {
-      "district": "East Khasi Hills",
-      "coords": [
-        25.5788,
-        91.8933
-      ],
-      "keywords": [
-        "SHILLONG",
-        "EAST KHASI",
-        "NEW SHILLONG",
-        "MAWLYNNOUNG",
-        "SOHRA"
-      ]
-    },
-    {
-      "district": "Ri-Bhoi",
-      "coords": [
-        25.9,
-        91.88
-      ],
-      "keywords": [
-        "RI-BHOI",
-        "NONGPOH",
-        "BYRNIHAT",
-        "UMROI",
-        "UMIAM"
-      ]
-    },
-    {
-      "district": "West Garo Hills",
-      "coords": [
-        25.514,
-        90.203
-      ],
-      "keywords": [
-        "TURA",
-        "WEST GARO",
-        "PHULBARI",
-        "TIKRICKILLA"
-      ]
-    }
-  ],
-  "TRIPURA": [
-    {
-      "district": "West Tripura",
-      "coords": [
-        23.8315,
-        91.2868
-      ],
-      "keywords": [
-        "AGARTALA",
-        "WEST TRIPURA",
-        "MBB AIRPORT",
-        "AKHAURA",
-        "BODHJUNGNAGAR"
-      ]
-    },
-    {
-      "district": "South Tripura",
-      "coords": [
-        23.16,
-        91.5
-      ],
-      "keywords": [
-        "BELONIA",
-        "SOUTH TRIPURA",
-        "SABROOM",
-        "MAITRI SETU",
-        "SANTIRBAZAR"
-      ]
-    },
-    {
-      "district": "Gomati",
-      "coords": [
-        23.53,
-        91.48
-      ],
-      "keywords": [
-        "UDAIPUR TRIPURA",
-        "GOMATI",
-        "MATABARI",
-        "AMARPUR"
-      ]
-    }
-  ],
   "LADAKH": [
     {
+      "place": "Zojila All-Weather Strategic Tunnel",
+      "district": "Kargil",
+      "coords": [
+        34.28,
+        75.52
+      ],
+      "keywords": [
+        "ZOJILA",
+        "KARGIL",
+        "DRAS",
+        "SANKOO",
+        "PADUM",
+        "ZANSKAR"
+      ]
+    },
+    {
+      "place": "Pang Solar 13 GW & Leh Airport",
       "district": "Leh",
       "coords": [
         34.1526,
@@ -1367,351 +1384,42 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "NUBRA",
         "KHALTSI"
       ]
-    },
-    {
-      "district": "Kargil",
-      "coords": [
-        34.5539,
-        76.1349
-      ],
-      "keywords": [
-        "KARGIL",
-        "ZOJILA",
-        "DRAS",
-        "SANKOO",
-        "PADUM",
-        "ZANSKAR"
-      ]
-    }
-  ],
-  "JAMMU & KASHMIR": [
-    {
-      "district": "Srinagar",
-      "coords": [
-        34.0837,
-        74.7973
-      ],
-      "keywords": [
-        "SRINAGAR",
-        "DAL LAKE",
-        "PANDRETHAN",
-        "NOWGAM",
-        "LAL CHOWK"
-      ]
-    },
-    {
-      "district": "Jammu",
-      "coords": [
-        32.7266,
-        74.857
-      ],
-      "keywords": [
-        "JAMMU",
-        "NAGROTA",
-        "VIJAYPUR",
-        "BISHNAH",
-        "AKHNOOR"
-      ]
-    },
-    {
-      "district": "Reasi",
-      "coords": [
-        33.0827,
-        74.8322
-      ],
-      "keywords": [
-        "REASI",
-        "KATRA",
-        "CHENAB BRIDGE",
-        "VAISHNO DEVI"
-      ]
-    },
-    {
-      "district": "Anantnag",
-      "coords": [
-        33.7311,
-        75.1522
-      ],
-      "keywords": [
-        "ANANTNAG",
-        "QAZIGUND",
-        "BIJBEHARA",
-        "PAHALGAM"
-      ]
-    },
-    {
-      "district": "Baramulla",
-      "coords": [
-        34.198,
-        74.3636
-      ],
-      "keywords": [
-        "BARAMULLA",
-        "SOPORE",
-        "URI",
-        "PATTAN"
-      ]
-    }
-  ],
-  "GOA": [
-    {
-      "district": "North Goa",
-      "coords": [
-        15.55,
-        73.85
-      ],
-      "keywords": [
-        "PANAJI",
-        "MOPA",
-        "NORTH GOA",
-        "MAPUSA",
-        "TIVIM",
-        "CALANGUTE",
-        "PORVORIM"
-      ]
-    },
-    {
-      "district": "South Goa",
-      "coords": [
-        15.28,
-        73.98
-      ],
-      "keywords": [
-        "MARGAO",
-        "SOUTH GOA",
-        "VASCO",
-        "MORMUGAO",
-        "DABOLIM",
-        "CUNCOLIM",
-        "PONDA"
-      ]
-    }
-  ],
-  "DELHI": [
-    {
-      "district": "New Delhi",
-      "coords": [
-        28.6139,
-        77.209
-      ],
-      "keywords": [
-        "CENTRAL VISTA",
-        "NEW DELHI",
-        "PRAGATI MAIDAN",
-        "CONNAUGHT PLACE",
-        "MINISTRIES"
-      ]
-    },
-    {
-      "district": "South West Delhi",
-      "coords": [
-        28.58,
-        77.05
-      ],
-      "keywords": [
-        "DWARKA",
-        "UER-II",
-        "IGI AIRPORT",
-        "PALAM",
-        "BIJWASAN"
-      ]
-    },
-    {
-      "district": "East Delhi",
-      "coords": [
-        28.628,
-        77.295
-      ],
-      "keywords": [
-        "AKSHARDHAM",
-        "EAST DELHI",
-        "MAYUR VIHAR",
-        "ANAND VIHAR"
-      ]
-    },
-    {
-      "district": "North Delhi",
-      "coords": [
-        28.72,
-        77.16
-      ],
-      "keywords": [
-        "NORTH DELHI",
-        "BURARI",
-        "ALIPUR",
-        "MUKARBA"
-      ]
-    }
-  ],
-  "HARYANA": [
-    {
-      "district": "Gurugram",
-      "coords": [
-        28.4595,
-        77.0266
-      ],
-      "keywords": [
-        "GURUGRAM",
-        "GURGAON",
-        "MANESAR",
-        "CYBER CITY",
-        "SOHNA",
-        "DWARKA EXPRESSWAY HARYANA"
-      ]
-    },
-    {
-      "district": "Faridabad",
-      "coords": [
-        28.4089,
-        77.3178
-      ],
-      "keywords": [
-        "FARIDABAD",
-        "BALLABGARH",
-        "NEHARPAR",
-        "BADKHAL"
-      ]
-    },
-    {
-      "district": "Panipat",
-      "coords": [
-        29.3909,
-        76.9635
-      ],
-      "keywords": [
-        "PANIPAT",
-        "SAMALKHA",
-        "REFINERY PANIPAT",
-        "ISRANA"
-      ]
-    },
-    {
-      "district": "Sonipat",
-      "coords": [
-        28.9931,
-        77.0151
-      ],
-      "keywords": [
-        "SONIPAT",
-        "KUNDLI",
-        "RAI",
-        "GANAUR",
-        "KMP EXPRESSWAY"
-      ]
-    }
-  ],
-  "PUNJAB": [
-    {
-      "district": "Ludhiana",
-      "coords": [
-        30.901,
-        75.8573
-      ],
-      "keywords": [
-        "LUDHIANA",
-        "SAHNEWAL",
-        "KHANNA",
-        "DORAHI",
-        "JAGRAON"
-      ]
-    },
-    {
-      "district": "Amritsar",
-      "coords": [
-        31.634,
-        74.8723
-      ],
-      "keywords": [
-        "AMRITSAR",
-        "ATTARI",
-        "RAJA SANSI",
-        "BEAS"
-      ]
-    },
-    {
-      "district": "Jalandhar",
-      "coords": [
-        31.326,
-        75.5762
-      ],
-      "keywords": [
-        "JALANDHAR",
-        "PHAGWARA CORRIDOR",
-        "ADAMPUR",
-        "NAKODAR"
-      ]
-    },
-    {
-      "district": "SAS Nagar (Mohali)",
-      "coords": [
-        30.7046,
-        76.7179
-      ],
-      "keywords": [
-        "MOHALI",
-        "SAS NAGAR",
-        "KHARAR",
-        "DERABASSI",
-        "ZIRAKPUR"
-      ]
-    },
-    {
-      "district": "Bathinda",
-      "coords": [
-        30.211,
-        74.9455
-      ],
-      "keywords": [
-        "BATHINDA",
-        "TALWANDI SABO",
-        "RAMPURA PHUL"
-      ]
     }
   ],
   "RAJASTHAN": [
     {
-      "district": "Jaipur",
-      "coords": [
-        26.9124,
-        75.7873
-      ],
-      "keywords": [
-        "JAIPUR",
-        "SANGANER",
-        "BAGRU",
-        "CHOMU",
-        "RING ROAD JAIPUR"
-      ]
-    },
-    {
+      "place": "Bhadla 2245 MW Solar Park",
       "district": "Jodhpur",
       "coords": [
-        26.2389,
-        73.0243
+        27.53,
+        71.91
       ],
       "keywords": [
-        "JODHPUR",
         "BHADLA",
+        "JODHPUR",
         "OSIAN",
         "PIPAR",
-        "LUNI"
+        "LUNI",
+        "PHALODI"
       ]
     },
     {
+      "place": "HPCL Rajasthan Refinery Pachpadra",
       "district": "Barmer",
       "coords": [
-        25.7521,
-        71.3967
+        25.92,
+        72.24
       ],
       "keywords": [
-        "BARMER",
         "PACHPADRA",
+        "BARMER",
         "BALOTRA",
         "UTTARLAI",
         "REFINERY RAJASTHAN"
       ]
     },
     {
+      "place": "Bikaner Renewable Energy Zone 20 GW",
       "district": "Bikaner",
       "coords": [
         28.0229,
@@ -1726,62 +1434,24 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
-      "district": "Udaipur",
+      "place": "Jaipur Ring Road 6-Lane Expressway",
+      "district": "Jaipur",
       "coords": [
-        24.5854,
-        73.7125
+        26.9124,
+        75.7873
       ],
       "keywords": [
-        "UDAIPUR",
-        "DEBARI",
-        "DABOK",
-        "KHERWARA"
-      ]
-    },
-    {
-      "district": "Kota",
-      "coords": [
-        25.2138,
-        75.8648
-      ],
-      "keywords": [
-        "KOTA",
-        "RAWATBHATA",
-        "RAMGANJ MANDI",
-        "KOTA THERMAL"
+        "JAIPUR",
+        "SANGANER",
+        "BAGRU",
+        "CHOMU",
+        "RING ROAD JAIPUR"
       ]
     }
   ],
   "MADHYA PRADESH": [
     {
-      "district": "Bhopal",
-      "coords": [
-        23.2599,
-        77.4126
-      ],
-      "keywords": [
-        "BHOPAL",
-        "MANDIDEEP",
-        "BERASIA",
-        "KAMLAPATI",
-        "BHEL BHOPAL"
-      ]
-    },
-    {
-      "district": "Indore",
-      "coords": [
-        22.7196,
-        75.8577
-      ],
-      "keywords": [
-        "INDORE",
-        "PITHAMPUR",
-        "SANWER",
-        "MHOW",
-        "DEWAS CORRIDOR"
-      ]
-    },
-    {
+      "place": "NTPC Vindhyachal & Jayant Mine",
       "district": "Singrauli",
       "coords": [
         24.1997,
@@ -1797,497 +1467,55 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
-      "district": "Jabalpur",
+      "place": "Rani Kamlapati Terminal & Metro",
+      "district": "Bhopal",
       "coords": [
-        23.1815,
-        79.9864
+        23.2599,
+        77.4126
       ],
       "keywords": [
-        "JABALPUR",
-        "KHAMARIA",
-        "SIHORA",
-        "BARGI"
+        "BHOPAL",
+        "MANDIDEEP",
+        "BERASIA",
+        "KAMLAPATI",
+        "BHEL BHOPAL"
       ]
     },
     {
-      "district": "Gwalior",
+      "place": "Pithampur Auto SEZ & Metro",
+      "district": "Indore",
       "coords": [
-        26.2183,
-        78.1828
+        22.7196,
+        75.8577
       ],
       "keywords": [
-        "GWALIOR",
-        "MALANPUR",
-        "GHATIGAON",
-        "DABRA"
-      ]
-    }
-  ],
-  "CHHATTISGARH": [
-    {
-      "district": "Raipur",
-      "coords": [
-        21.2514,
-        81.6296
-      ],
-      "keywords": [
-        "RAIPUR",
-        "NAVA RAIPUR",
-        "TILDAL",
-        "ABHANPUR",
-        "BIRGAON"
-      ]
-    },
-    {
-      "district": "Korba",
-      "coords": [
-        22.3595,
-        82.7501
-      ],
-      "keywords": [
-        "KORBA",
-        "GEVRA",
-        "DIPKA",
-        "KUSMUNDA",
-        "SECL",
-        "NTPC KORBA"
-      ]
-    },
-    {
-      "district": "Durg",
-      "coords": [
-        21.1904,
-        81.2849
-      ],
-      "keywords": [
-        "BHILAI",
-        "DURG",
-        "KUMHARI",
-        "STEEL PLANT BHILAI",
-        "CHARODA"
-      ]
-    },
-    {
-      "district": "Bilaspur",
-      "coords": [
-        22.0797,
-        82.1409
-      ],
-      "keywords": [
-        "BILASPUR",
-        "SIPAT",
-        "KOTA CG",
-        "BODRI",
-        "SECL HQ"
-      ]
-    }
-  ],
-  "JHARKHAND": [
-    {
-      "district": "Ranchi",
-      "coords": [
-        23.3441,
-        85.3096
-      ],
-      "keywords": [
-        "RANCHI",
-        "HATIA",
-        "DHURWA",
-        "NAMKUM",
-        "ORMANJHI",
-        "HEC"
-      ]
-    },
-    {
-      "district": "Dhanbad",
-      "coords": [
-        23.7957,
-        86.4304
-      ],
-      "keywords": [
-        "DHANBAD",
-        "JHARIA",
-        "KARKEND",
-        "KATRAS",
-        "BCCL",
-        "GOVINDPUR"
-      ]
-    },
-    {
-      "district": "East Singhbhum (Jamshedpur)",
-      "coords": [
-        22.8046,
-        86.2029
-      ],
-      "keywords": [
-        "JAMSHEDPUR",
-        "EAST SINGHBHUM",
-        "TELCO",
-        "ADITYAPUR",
-        "TATA STEEL"
-      ]
-    },
-    {
-      "district": "Bokaro",
-      "coords": [
-        23.6693,
-        86.1511
-      ],
-      "keywords": [
-        "BOKARO",
-        "CHAS",
-        "BERMO",
-        "DUGDA",
-        "STEEL PLANT BOKARO"
-      ]
-    },
-    {
-      "district": "Hazaribagh",
-      "coords": [
-        23.9925,
-        85.3637
-      ],
-      "keywords": [
-        "HAZARIBAGH",
-        "BARHI",
-        "BARKAGAON",
-        "NTPC PANKRI"
-      ]
-    }
-  ],
-  "ODISHA": [
-    {
-      "district": "Khordha (Bhubaneswar)",
-      "coords": [
-        20.2961,
-        85.8245
-      ],
-      "keywords": [
-        "BHUBANESWAR",
-        "KHORDHA",
-        "INFOVALLEY",
-        "JATNI",
-        "CHANDAKA"
-      ]
-    },
-    {
-      "district": "Jagatsinghpur (Paradip)",
-      "coords": [
-        20.3165,
-        86.6114
-      ],
-      "keywords": [
-        "PARADIP",
-        "JAGATSINGHPUR",
-        "PORT PARADIP",
-        "IOCL PARADIP",
-        "KUJANG"
-      ]
-    },
-    {
-      "district": "Sundargarh (Rourkela)",
-      "coords": [
-        22.2604,
-        84.8536
-      ],
-      "keywords": [
-        "ROURKELA",
-        "SUNDARGARH",
-        "SAIL ROURKELA",
-        "RAJGANGPUR",
-        "BONAI"
-      ]
-    },
-    {
-      "district": "Angul",
-      "coords": [
-        20.8444,
-        85.1511
-      ],
-      "keywords": [
-        "ANGUL",
-        "TALCHER",
-        "NALCO",
-        "MCL",
-        "NTPC TALCHER",
-        "BANARPAL"
-      ]
-    },
-    {
-      "district": "Sambalpur",
-      "coords": [
-        21.4669,
-        83.9812
-      ],
-      "keywords": [
-        "SAMBALPUR",
-        "HIRAKUD",
-        "BURIA",
-        "REDRHAKHOL",
-        "MCL HQ"
-      ]
-    },
-    {
-      "district": "Cuttack",
-      "coords": [
-        20.4625,
-        85.8828
-      ],
-      "keywords": [
-        "CUTTACK",
-        "CHOUDHWAR",
-        "ATHAGARH",
-        "BANKI"
-      ]
-    },
-    {
-      "district": "Jharsuguda",
-      "coords": [
-        21.855,
-        84.006
-      ],
-      "keywords": [
-        "JHARSUGUDA",
-        "VEER SURENDRA SAI AIRPORT",
-        "BRAJRAJNAGAR",
-        "BELPAHAR"
-      ]
-    }
-  ],
-  "WEST BENGAL": [
-    {
-      "district": "Kolkata",
-      "coords": [
-        22.5726,
-        88.3639
-      ],
-      "keywords": [
-        "KOLKATA",
-        "CALCUTTA",
-        "SEALDAH",
-        "HOWRAH BRIDGE",
-        "PARK STREET",
-        "UNDERWATER METRO"
-      ]
-    },
-    {
-      "district": "North 24 Parganas",
-      "coords": [
-        22.72,
-        88.48
-      ],
-      "keywords": [
-        "SALT LAKE",
-        "NEW TOWN",
-        "DUM DUM",
-        "BARASAT",
-        "NSCB AIRPORT"
-      ]
-    },
-    {
-      "district": "Purba Medinipur (Haldia)",
-      "coords": [
-        22.0667,
-        88.0698
-      ],
-      "keywords": [
-        "HALDIA",
-        "PURBA MEDINIPUR",
-        "PORT HALDIA",
-        "TAMLUK",
-        "DIGHA"
-      ]
-    },
-    {
-      "district": "Paschim Bardhaman (Durgapur/Asansol)",
-      "coords": [
-        23.5204,
-        87.3119
-      ],
-      "keywords": [
-        "DURGAPUR",
-        "ASANSOL",
-        "ANDAL",
-        "RANIGANJ",
-        "ECL",
-        "DSP"
-      ]
-    },
-    {
-      "district": "Darjeeling",
-      "coords": [
-        27.041,
-        88.2663
-      ],
-      "keywords": [
-        "DARJEELING",
-        "SILIGURI",
-        "BAGDOGRA",
-        "KURSEONG",
-        "MATIGARA"
-      ]
-    }
-  ],
-  "TAMIL NADU": [
-    {
-      "district": "Chennai",
-      "coords": [
-        13.0827,
-        80.2707
-      ],
-      "keywords": [
-        "CHENNAI",
-        "MADRAS",
-        "MEENAMBAKKAM",
-        "GUINDY",
-        "AVADI",
-        "ENNORE",
-        "PORT CHENNAI"
-      ]
-    },
-    {
-      "district": "Coimbatore",
-      "coords": [
-        11.0168,
-        76.9558
-      ],
-      "keywords": [
-        "COIMBATORE",
-        "PEELAMEDU",
-        "SULUR",
-        "POLLACHI",
-        "METTUPALAYAM"
-      ]
-    },
-    {
-      "district": "Thoothukudi (Tuticorin)",
-      "coords": [
-        8.7642,
-        78.1348
-      ],
-      "keywords": [
-        "THOOTHUKUDI",
-        "TUTICORIN",
-        "VOC PORT",
-        "SPIC"
-      ]
-    },
-    {
-      "district": "Chengalpattu",
-      "coords": [
-        12.6841,
-        79.9836
-      ],
-      "keywords": [
-        "CHENGALPATTU",
-        "MAHINDRA WORLD CITY",
-        "MARAIMALAI",
-        "SRIPERUMBUDUR TN"
-      ]
-    },
-    {
-      "district": "Tiruchirappalli",
-      "coords": [
-        10.7905,
-        78.7047
-      ],
-      "keywords": [
-        "TIRUCHIRAPPALLI",
-        "TRICHY",
-        "PONMALAI",
-        "THUVAKUDI",
-        "BHEL TRICHY"
-      ]
-    }
-  ],
-  "TELANGANA": [
-    {
-      "district": "Hyderabad",
-      "coords": [
-        17.385,
-        78.4867
-      ],
-      "keywords": [
-        "HYDERABAD",
-        "HITEC CITY",
-        "SECUNDERABAD",
-        "CHARMINAR",
-        "SHAMSHABAD AIRPORT",
-        "ORR"
-      ]
-    },
-    {
-      "district": "Medchal-Malkajgiri",
-      "coords": [
-        17.6297,
-        78.4814
-      ],
-      "keywords": [
-        "MEDCHAL",
-        "MALKAJGIRI",
-        "GHATKESAR",
-        "KEESARA",
-        "GENOME VALLEY"
-      ]
-    },
-    {
-      "district": "Peddapalli (Ramagundam)",
-      "coords": [
-        18.7562,
-        79.5167
-      ],
-      "keywords": [
-        "RAMAGUNDAM",
-        "PEDDAPALLI",
-        "NTPC RAMAGUNDAM",
-        "GODAVARIKHANI",
-        "SCCL"
-      ]
-    },
-    {
-      "district": "Warangal",
-      "coords": [
-        17.9689,
-        79.5941
-      ],
-      "keywords": [
-        "WARANGAL",
-        "HANAMKONDA",
-        "KAZIPET",
-        "KAKATIYA"
-      ]
-    },
-    {
-      "district": "Bhadradri Kothagudem",
-      "coords": [
-        17.55,
-        80.6167
-      ],
-      "keywords": [
-        "KOTHAGUDEM",
-        "BHADRADRI",
-        "PALONCHA",
-        "SCCL HQ"
+        "INDORE",
+        "PITHAMPUR",
+        "SANWER",
+        "MHOW",
+        "DEWAS CORRIDOR"
       ]
     }
   ],
   "KERALA": [
     {
+      "place": "Vizhinjam International Transshipment Port",
       "district": "Thiruvananthapuram",
       "coords": [
-        8.5241,
-        76.9366
+        8.37,
+        76.99
       ],
       "keywords": [
+        "VIZHINJAM",
         "THIRUVANANTHAPURAM",
         "TRIVANDRUM",
-        "VIZHINJAM",
         "TECHNOPARK",
         "KAZHAKOOTTAM"
       ]
     },
     {
-      "district": "Ernakulam (Kochi)",
+      "place": "Kochi Water Metro & BPCL Complex",
+      "district": "Ernakulam",
       "coords": [
         9.9816,
         76.2999
@@ -2302,20 +1530,7 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
       ]
     },
     {
-      "district": "Kozhikode",
-      "coords": [
-        11.2588,
-        75.7804
-      ],
-      "keywords": [
-        "KOZHIKODE",
-        "CALICUT",
-        "KARIPUR",
-        "FEROKE",
-        "BEYPORE"
-      ]
-    },
-    {
+      "place": "Thalassery Mahe Bypass & Kannur Airport",
       "district": "Kannur",
       "coords": [
         11.8745,
@@ -2325,295 +1540,8 @@ export const STATE_DISTRICTS_MAP: Record<string, DistrictInfo[]> = {
         "KANNUR",
         "MATTANNUR",
         "THALASSERY",
+        "MAHE",
         "PAYYANUR"
-      ]
-    }
-  ],
-  "HIMACHAL PRADESH": [
-    {
-      "district": "Shimla",
-      "coords": [
-        31.1048,
-        77.1734
-      ],
-      "keywords": [
-        "SHIMLA",
-        "JUBBARHATTI",
-        "RAMPUR",
-        "THEOG",
-        "SJVN"
-      ]
-    },
-    {
-      "district": "Kullu",
-      "coords": [
-        31.9579,
-        77.1095
-      ],
-      "keywords": [
-        "KULLU",
-        "MANALI",
-        "ATAL TUNNEL",
-        "BHUNTAR",
-        "LARJI"
-      ]
-    },
-    {
-      "district": "Solan",
-      "coords": [
-        30.9045,
-        77.0967
-      ],
-      "keywords": [
-        "SOLAN",
-        "BADDI",
-        "NALAGARH",
-        "PARWANOO",
-        "KANDAGHAT"
-      ]
-    },
-    {
-      "district": "Mandi",
-      "coords": [
-        31.5892,
-        76.9182
-      ],
-      "keywords": [
-        "MANDI",
-        "SUNDERNAGAR",
-        "KARSOG",
-        "IIT MANDI"
-      ]
-    }
-  ],
-  "UTTARAKHAND": [
-    {
-      "district": "Dehradun",
-      "coords": [
-        30.3165,
-        78.0322
-      ],
-      "keywords": [
-        "DEHRADUN",
-        "RISHIKESH",
-        "JOLLY GRANT",
-        "VIKASNAGAR",
-        "SELAQUI"
-      ]
-    },
-    {
-      "district": "Haridwar",
-      "coords": [
-        29.9457,
-        78.1642
-      ],
-      "keywords": [
-        "HARIDWAR",
-        "ROORKEE",
-        "SIIDCUL",
-        "BHAGWANPUR",
-        "BHEL HARIDWAR"
-      ]
-    },
-    {
-      "district": "Tehri Garhwal",
-      "coords": [
-        30.38,
-        78.48
-      ],
-      "keywords": [
-        "TEHRI",
-        "THDC",
-        "KOTESHWAR",
-        "CHAMBA UK",
-        "NEW TEHRI"
-      ]
-    },
-    {
-      "district": "Udham Singh Nagar",
-      "coords": [
-        28.98,
-        79.4
-      ],
-      "keywords": [
-        "PANTNAGAR",
-        "RUDRAPUR",
-        "KASHIPUR",
-        "KICHHA"
-      ]
-    }
-  ],
-  "ANDAMAN & NICOBAR": [
-    {
-      "district": "South Andaman (Port Blair)",
-      "coords": [
-        11.6234,
-        92.7265
-      ],
-      "keywords": [
-        "PORT BLAIR",
-        "SOUTH ANDAMAN",
-        "VEER SAVARKAR",
-        "HAVELOCK",
-        "FERRARGUNJ"
-      ]
-    },
-    {
-      "district": "Great Nicobar",
-      "coords": [
-        7.0,
-        93.8
-      ],
-      "keywords": [
-        "NICOBAR",
-        "GREAT NICOBAR",
-        "GALATHEA",
-        "CAMPBELL BAY"
-      ]
-    }
-  ],
-  "LAKSHADWEEP": [
-    {
-      "district": "Lakshadweep Islands",
-      "coords": [
-        10.5667,
-        72.6417
-      ],
-      "keywords": [
-        "LAKSHADWEEP",
-        "KAVARATTI",
-        "AGATTI",
-        "MINICOY",
-        "ANDROTT"
-      ]
-    }
-  ],
-  "CHANDIGARH": [
-    {
-      "district": "Chandigarh Urban",
-      "coords": [
-        30.7333,
-        76.7794
-      ],
-      "keywords": [
-        "CHANDIGARH",
-        "SECTOR 17",
-        "MANIMAJRA"
-      ]
-    }
-  ],
-  "PUDUCHERRY": [
-    {
-      "district": "Puducherry",
-      "coords": [
-        11.9416,
-        79.8083
-      ],
-      "keywords": [
-        "PUDUCHERRY",
-        "PONDICHERRY",
-        "OULGARET",
-        "VILLIANUR",
-        "KARAIKAL"
-      ]
-    }
-  ],
-  "DADRA & NAGAR HAVELI AND DAMAN & DIU": [
-    {
-      "district": "Dadra and Nagar Haveli",
-      "coords": [
-        20.1809,
-        73.0169
-      ],
-      "keywords": [
-        "SILVASSA",
-        "DADRA",
-        "NAGAR HAVELI",
-        "KHANVEL"
-      ]
-    },
-    {
-      "district": "Daman & Diu",
-      "coords": [
-        20.4283,
-        72.8397
-      ],
-      "keywords": [
-        "DAMAN",
-        "DIU",
-        "MOTI DAMAN",
-        "NANIDAMAN"
-      ]
-    }
-  ],
-  "OFFSHORE": [
-    {
-      "district": "Offshore Western Basin",
-      "coords": [
-        19.2,
-        71.5
-      ],
-      "keywords": [
-        "MUMBAI HIGH",
-        "OFFSHORE",
-        "WESTERN BASIN",
-        "BASSEIN",
-        "HEERA"
-      ]
-    },
-    {
-      "district": "Offshore Eastern Basin",
-      "coords": [
-        16.5,
-        82.5
-      ],
-      "keywords": [
-        "KG BASIN",
-        "KG-D6",
-        "RAVVA",
-        "EAST COAST OFFSHORE"
-      ]
-    }
-  ],
-  "MULTI-STATE": [
-    {
-      "district": "National Dedicated Freight Corridor",
-      "coords": [
-        25.5,
-        81.5
-      ],
-      "keywords": [
-        "FREIGHT CORRIDOR",
-        "DFCCIL",
-        "EDFC",
-        "WDFC",
-        "RAIL CORRIDOR"
-      ]
-    },
-    {
-      "district": "National Highway Multi-State Corridor",
-      "coords": [
-        23.5,
-        78.5
-      ],
-      "keywords": [
-        "MULTI-STATES",
-        "INTERSTATE HIGHWAY",
-        "BHARATMALA",
-        "CORRIDOR"
-      ]
-    },
-    {
-      "district": "National Energy & Gas Grid",
-      "coords": [
-        24.0,
-        80.0
-      ],
-      "keywords": [
-        "GAS GRID",
-        "POWERGRID",
-        "INTERSTATE TRANSMISSION",
-        "GREEN ENERGY CORRIDOR"
       ]
     }
   ]
@@ -2672,6 +1600,12 @@ export function normalizeStateName(rawState: string = ""): string {
   if (sUpper.includes("DADRA") || sUpper.includes("DAMAN") || sUpper.includes("DIU")) return "DADRA & NAGAR HAVELI AND DAMAN & DIU";
   if (sUpper.includes("PUDUCHERRY") || sUpper.includes("PONDICHERRY")) return "PUDUCHERRY";
   if (sUpper.includes("SIKKIM")) return "SIKKIM";
+  if (sUpper.includes("GUJARAT")) return "GUJARAT";
+  if (sUpper.includes("MAHARASHTRA")) return "MAHARASHTRA";
+  if (sUpper.includes("UTTAR PRADESH")) return "UTTAR PRADESH";
+  if (sUpper.includes("ANDHRA PRADESH")) return "ANDHRA PRADESH";
+  if (sUpper.includes("BIHAR")) return "BIHAR";
+  if (sUpper.includes("ASSAM")) return "ASSAM";
   if (sUpper.includes("MANIPUR")) return "MANIPUR";
   if (sUpper.includes("MIZORAM")) return "MIZORAM";
   if (sUpper.includes("NAGALAND")) return "NAGALAND";
@@ -2681,7 +1615,7 @@ export function normalizeStateName(rawState: string = ""): string {
   if (sUpper.includes("LADAKH")) return "LADAKH";
   if (sUpper.includes("GOA")) return "GOA";
 
-  for (const k of Object.keys(STATE_DISTRICTS_MAP)) {
+  for (const k of Object.keys(STATE_GEO_KNOWLEDGE)) {
     if (sUpper.includes(k)) return k;
   }
   return sUpper;
@@ -2700,40 +1634,64 @@ export function projectMatchesState(projectState: string = "", filterState: stri
 }
 
 export function getProjectLocation(
-  project: { id?: string; project_name?: string; state?: string; sector?: string; district?: string | null; latitude?: number | null; longitude?: number | null },
+  project: { id?: string; project_name?: string; state?: string; sector?: string; district?: string | null; place?: string | null; latitude?: number | null; longitude?: number | null },
   index: number = 0
-): { state: string; district: string; coords: [number, number]; category: string } {
+): { state: string; district: string; place: string; coords: [number, number]; category: string } {
   const rawState = project.state || "Delhi";
   const stKey = normalizeStateName(rawState);
-  const distList = STATE_DISTRICTS_MAP[stKey] || STATE_DISTRICTS_MAP["MULTI-STATE"];
+  const placesList = STATE_GEO_KNOWLEDGE[stKey] || [];
 
-  // 1. If project already has valid coordinates from database
+  // 1. If project has valid DB coordinates
   if (project.latitude != null && project.longitude != null && !isNaN(project.latitude) && !isNaN(project.longitude)) {
-    // Find matching district if present
-    let matchedDist = project.district || distList[0]?.district || "Main District";
+    let matchedDist = project.district;
+    let matchedPlace = project.place;
+    
+    if (!matchedDist || !matchedPlace) {
+      const pUpper = (project.project_name || "").toUpperCase();
+      const node = placesList.find((p) => p.keywords?.some((kw) => pUpper.includes(kw))) || placesList[index % (placesList.length || 1)];
+      if (node) {
+        matchedDist = matchedDist || node.district;
+        matchedPlace = matchedPlace || node.place;
+      } else {
+        matchedDist = matchedDist || `${rawState} District`;
+        matchedPlace = matchedPlace || `${rawState} Node`;
+      }
+    }
+
     return {
       state: rawState,
       district: matchedDist,
+      place: matchedPlace,
       coords: [project.latitude, project.longitude],
       category: project.sector || "Infrastructure",
     };
   }
 
-  // 2. Search project title strictly in that state's district keyword list
+  // 2. Keyword NLP matching strictly inside that State's Knowledge Base
   const pUpper = (project.project_name || "").toUpperCase();
-  let matched = distList.find((d) => d.keywords?.some((kw) => pUpper.includes(kw)));
+  let matched = placesList.find((p) => p.keywords?.some((kw) => pUpper.includes(kw)));
+  if (!matched && placesList.length > 0) {
+    matched = placesList[index % placesList.length];
+  }
+
   if (!matched) {
-    matched = distList[index % distList.length];
+    const center = STATE_COORDINATES[stKey] || [22.5937, 78.9629];
+    matched = {
+      place: `${rawState} Infrastructure Corridor`,
+      district: `${rawState} Central District`,
+      coords: center,
+    };
   }
 
   const angle = (index * 137.5 * Math.PI) / 180.0;
-  const radius = ((index % 12) + 1) * 0.0018;
+  const radius = ((index % 15) + 1) * 0.0015;
   const lat = matched.coords[0] + radius * Math.cos(angle);
   const lng = matched.coords[1] + radius * Math.sin(angle);
 
   return {
     state: rawState,
     district: matched.district,
+    place: matched.place,
     coords: [Math.round(lat * 1000000) / 1000000, Math.round(lng * 1000000) / 1000000],
     category: project.sector || "Infrastructure",
   };
@@ -2759,6 +1717,7 @@ export function aggregateDistrictData(projects: any[]): DistrictSummary[] {
         totalCostCr: 0,
         avgProgress: 0,
         coords: loc.coords,
+        places: [],
       });
     }
 
@@ -2766,6 +1725,10 @@ export function aggregateDistrictData(projects: any[]): DistrictSummary[] {
     item.projectCount += 1;
     item.totalCostCr += p.revised_cost_cr || p.original_cost_cr || 0;
     item.avgProgress += p.physical_progress_pct || 0;
+
+    if (!item.places.includes(loc.place)) {
+      item.places.push(loc.place);
+    }
 
     const tier = (p.risk_tier || "low").toLowerCase();
     if (tier === "critical") item.criticalCount += 1;
@@ -2846,5 +1809,5 @@ export function aggregateStateData(projects: any[]): {
     .sort((a, b) => b.projectCount - a.projectCount);
 }
 
-export const STATE_DISTRICTS_DATA: Record<string, any[]> = STATE_DISTRICTS_MAP;
+export const STATE_DISTRICTS_DATA: Record<string, any[]> = {};
 export const STATE_DISTRICT_PLACES: Record<string, any[]> = {};

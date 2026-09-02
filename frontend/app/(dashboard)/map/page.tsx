@@ -11,7 +11,7 @@ import {
   aggregateStateData,
   normalizeStateName,
   projectMatchesState,
-  STATE_DISTRICTS_MAP,
+  STATE_GEO_KNOWLEDGE,
   STATE_COORDINATES,
 } from "@/lib/districtData";
 
@@ -73,6 +73,7 @@ function getExecutiveAiBriefing(project: ProjectListItem) {
   const sector = project.category || project.sector || "Infrastructure";
   const state = project.state || "State";
   const district = project.district || "District";
+  const place = project.place || "Key Infrastructure Corridor";
   const origCost = project.original_cost_cr || 0;
   const revCost = project.revised_cost_cr || origCost;
   const costEsc = revCost > origCost ? revCost - origCost : 0;
@@ -83,27 +84,27 @@ function getExecutiveAiBriefing(project: ProjectListItem) {
 
   if (tier === "critical") {
     statusBadge = { label: "Critical Escalation", color: "#f43f5e", bg: "rgba(244, 63, 94, 0.16)" };
-    narrative = `This ${sector} asset in ${district} (${state}) displays acute fiscal distortion. Financial disbursements currently lead certified physical progress by ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}${costEsc > 0 ? ` with cost escalation of ₹${costEsc.toFixed(1)} Cr` : ""}, signaling heightened project exposure requiring emergency ministry intervention.`;
-    action = "Mandate an emergency joint MoSPI-Ministry site inspection within 48 hours, freeze non-verified contractor milestone invoices, and institute daily physical progress velocity monitoring.";
+    narrative = `This ${sector} undertaking in ${place}, ${district} (${state}) displays acute fiscal distortion. Financial disbursements lead certified physical progress by ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}${costEsc > 0 ? ` with cost escalation of ₹${costEsc.toFixed(1)} Cr` : ""}, signaling heightened project exposure requiring emergency ministry intervention.`;
+    action = "Mandate an emergency joint MoSPI-Ministry site audit within 48 hours, freeze non-verified contractor milestone invoices, and institute daily physical progress velocity monitoring.";
   } else if (tier === "high") {
     statusBadge = { label: "High Variance", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.16)" };
-    narrative = `Located in ${district} (${state}), this ${sector} facility is encountering measurable execution friction. Capital expenditure leads on-ground physical delivery by ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}, primarily driven by Right-of-Way (ROW) access hurdles, forest clearances, or contractor utility shifting.`;
+    narrative = `Located in ${place}, ${district} (${state}), this ${sector} facility is encountering measurable execution friction. Capital expenditure leads on-ground physical delivery by ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}, primarily driven by Right-of-Way (ROW) access hurdles, forest clearances, or contractor utility shifting.`;
     action = "Convene an inter-ministerial coordination review within 7 business days to clear statutory bottlenecks and mandate dual-shift contractor workforce deployment.";
   } else if (tier === "medium") {
     statusBadge = { label: "Moderate Risk", color: "#3b82f6", bg: "rgba(59, 130, 246, 0.16)" };
-    narrative = `Stationed across ${district} (${state}), development progress is tracking near baseline with a modest budget variance gap of ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}. Physical milestones remain within recoverable operational tolerance.`;
+    narrative = `Stationed across ${place} in ${district} (${state}), development progress is tracking near baseline with a modest budget variance gap of ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}. Physical milestones remain within recoverable operational tolerance.`;
     action = "Enforce fortnightly contractor milestone compliance tracking and institute value-engineering reviews on upcoming procurement packages.";
   } else {
     statusBadge = { label: "Optimal Trajectory", color: "#10b981", bg: "rgba(16, 185, 129, 0.16)" };
     if (gap <= 0) {
-      narrative = `Located in ${district} (${state}), this ${sector} project demonstrates exemplary operational discipline. Certified physical execution (${progress != null ? `${progress.toFixed(0)}%` : "on schedule"}) is leading cumulative disbursements by a favorable ${Math.abs(gap).toFixed(1)}%, indicating strong contractor momentum and zero cost-overrun exposure.`;
+      narrative = `Located in ${place}, ${district} (${state}), this ${sector} project demonstrates exemplary operational discipline. Certified physical execution (${progress != null ? `${progress.toFixed(0)}%` : "on schedule"}) is leading cumulative disbursements by a favorable ${Math.abs(gap).toFixed(1)}%, indicating strong contractor momentum and zero cost-overrun exposure.`;
     } else {
-      narrative = `Located in ${district} (${state}), this ${sector} project is maintaining steady delivery cadence (${progress != null ? `${progress.toFixed(0)}%` : "on track"}) with capital expenditure tightly aligned to verified ground completion (+${gap.toFixed(1)}% variance).`;
+      narrative = `Located in ${place}, ${district} (${state}), this ${sector} project is maintaining steady delivery cadence (${progress != null ? `${progress.toFixed(0)}%` : "on track"}) with capital expenditure tightly aligned to verified ground completion (+${gap.toFixed(1)}% variance).`;
     }
     action = "Project execution satisfies all MoSPI benchmark criteria. Maintain routine monthly milestone audits and standard progress-linked disbursement tranches.";
   }
 
-  return { cleanName, statusBadge, narrative, action, sector, district, state };
+  return { cleanName, statusBadge, narrative, action, sector, place, district, state };
 }
 
 export default function MapPage() {
@@ -160,6 +161,7 @@ export default function MapPage() {
           ...p,
           state: p.state || loc.state,
           district: p.district || loc.district,
+          place: p.place || loc.place,
           category: p.sector || loc.category,
           latitude: p.latitude ?? loc.coords[0],
           longitude: p.longitude ?? loc.coords[1],
@@ -168,7 +170,7 @@ export default function MapPage() {
       .filter((p) => {
         if (qLower) {
           const tokens = qLower.split(/\s+/).filter((t) => t.length > 1);
-          const fullText = `${p.project_name || ""} ${p.sector || ""} ${p.state || ""} ${p.district || ""} ${p.ministry || ""}`.toLowerCase();
+          const fullText = `${p.project_name || ""} ${p.sector || ""} ${p.state || ""} ${p.district || ""} ${p.place || ""} ${p.ministry || ""}`.toLowerCase();
           const matchAll = tokens.every((t) => fullText.includes(t));
           if (!matchAll) return false;
         }
@@ -211,7 +213,7 @@ export default function MapPage() {
       .sort((a, b) => b.count - a.count);
   }, [allProjects]);
 
-  // Districts for selected state with project counts
+  // Districts for selected state with exact project counts
   const districtOptionsWithCount = useMemo(() => {
     if (selectedState === "all") return [];
     const normSt = normalizeStateName(selectedState);
@@ -224,8 +226,8 @@ export default function MapPage() {
       map.set(d, (map.get(d) || 0) + 1);
     });
 
-    // Also include any registered districts for that state even if count is 0
-    const registered = STATE_DISTRICTS_MAP[normSt] || [];
+    // Also include any registered districts for that state
+    const registered = STATE_GEO_KNOWLEDGE[normSt] || [];
     registered.forEach((r) => {
       if (!map.has(r.district)) {
         map.set(r.district, 0);
@@ -364,9 +366,10 @@ export default function MapPage() {
             <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:4px;line-height:1.3">${p.project_name}</div>
             <div style="font-size:11px;color:#475569;margin-bottom:8px;line-height:1.6">
               <span style="display:inline-block;padding:1px 6px;background:#e0f2fe;color:#0369a1;border-radius:4px;font-weight:700;font-size:10px;margin-bottom:4px">
-                <svg style="display:inline-block;vertical-align:middle;margin-right:2px" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${p.district || p.state}
+                <svg style="display:inline-block;vertical-align:middle;margin-right:2px" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${p.place || p.district}
               </span><br/>
-              <strong>State:</strong> ${p.state} • <strong>Category:</strong> ${p.category || p.sector}<br/>
+              <strong>District:</strong> ${p.district} • <strong>State:</strong> ${p.state}<br/>
+              <strong>Category:</strong> ${p.category || p.sector}<br/>
               <strong>Outlay:</strong> ${p.revised_cost_cr != null ? `₹${p.revised_cost_cr.toLocaleString("en-IN")} Cr` : "—"} • <strong>Progress:</strong> ${p.physical_progress_pct != null ? `${p.physical_progress_pct.toFixed(0)}%` : "—"}
             </div>
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
@@ -409,7 +412,8 @@ export default function MapPage() {
       // Camera Zoom based on state & district selection
       if (selectedDistrict !== "all") {
         const normSt = normalizeStateName(selectedState);
-        const distDef = STATE_DISTRICTS_MAP[normSt]?.find((d) => d.district.toUpperCase() === selectedDistrict.toUpperCase());
+        const placesList = STATE_GEO_KNOWLEDGE[normSt] || [];
+        const distDef = placesList.find((d) => d.district.toUpperCase() === selectedDistrict.toUpperCase());
         if (distDef) {
           map.setView(distDef.coords, 10, { animate: true, duration: 0.8 });
         } else if (markersRef.current.length > 0) {
@@ -464,7 +468,7 @@ export default function MapPage() {
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
       <TopBar
         title="Geospatial Infrastructure Intelligence Map"
-        subtitle="MoSPI PAIMANA · April 2026 National Portfolio (1,981 Real Infrastructure Projects) · State & District Intelligence"
+        subtitle="MoSPI PAIMANA · April 2026 National Portfolio (1,981 Real Infrastructure Projects) · All-India District & Place Intelligence"
       />
 
       {/* Filter Bar with State, District (belonging strictly to selected state), Category, Risk Tier */}
@@ -492,7 +496,7 @@ export default function MapPage() {
             </span>
             <input
               type="text"
-              placeholder="Search project, state, district..."
+              placeholder="Search project, place, district..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="input"
@@ -824,7 +828,7 @@ export default function MapPage() {
                               <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
                               <circle cx="12" cy="10" r="3"/>
                             </svg>
-                            {p.district ? `${p.district}, ${p.state}` : p.state}
+                            {p.place ? `${p.place} (${p.district})` : p.district ? `${p.district}, ${p.state}` : p.state}
                           </span>
                           <span style={{ color: "var(--accent)", fontWeight: 600 }}>
                             {p.revised_cost_cr != null ? `₹${p.revised_cost_cr.toLocaleString("en-IN")} Cr` : "—"}
@@ -990,12 +994,14 @@ export default function MapPage() {
                 {/* State & District Metadata Card */}
                 <div style={{ background: "var(--surface-2)", padding: "10px 12px", borderRadius: 8, marginBottom: 14, border: "1px solid var(--border)" }}>
                   <div style={{ fontSize: 11, color: "var(--text-sub)", marginBottom: 4 }}>
-                    <strong style={{ color: "var(--text)" }}>District:</strong>{" "}
+                    <strong style={{ color: "var(--text)" }}>Place / Hub:</strong>{" "}
                     <span style={{ color: "#10b981", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 3 }}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                      {selectedProject.district || "District Hub"}
+                      {selectedProject.place || selectedProject.district || "Project Corridor"}
                     </span>
-                    {" "}• <strong style={{ color: "var(--text)" }}>State:</strong> {selectedProject.state}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-sub)", marginBottom: 4 }}>
+                    <strong style={{ color: "var(--text)" }}>District:</strong> {selectedProject.district || "District"} • <strong style={{ color: "var(--text)" }}>State:</strong> {selectedProject.state}
                   </div>
                   <div style={{ fontSize: 11, color: "var(--text-sub)" }}>
                     <strong style={{ color: "var(--text)" }}>Category:</strong> {selectedProject.category || selectedProject.sector} ({selectedProject.ministry})
