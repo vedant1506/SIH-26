@@ -75,6 +75,8 @@ class ProjectListItem(BaseModel):
     ministry: str
     sector: str
     state: str
+    district: Optional[str] = None
+    location_name: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     original_cost_cr: float

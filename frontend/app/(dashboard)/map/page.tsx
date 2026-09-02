@@ -6,13 +6,10 @@ import TopBar from "@/components/layout/TopBar";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import RiskBadge from "@/components/ui/RiskBadge";
 import {
-  getProjectLocation,
   aggregateDistrictData,
   aggregateStateData,
   normalizeStateName,
   projectMatchesState,
-  STATE_GEO_KNOWLEDGE,
-  STATE_COORDINATES,
 } from "@/lib/districtData";
 
 const TIER_COLOR: Record<string, string> = {
@@ -66,14 +63,13 @@ function normalizeGeoJsonState(s: string = ""): string {
 }
 
 function getExecutiveAiBriefing(project: ProjectListItem) {
-  const cleanName = (project.project_name || "").replace(/\s*\([A-Za-z\s&]+\)\s*$/, "");
   const tier = (project.risk_tier || "low").toLowerCase();
   const gap = project.burn_progress_gap != null ? project.burn_progress_gap : 0;
   const progress = project.physical_progress_pct != null ? project.physical_progress_pct : null;
   const sector = project.category || project.sector || "Infrastructure";
   const state = project.state || "State";
-  const district = project.district || "District";
-  const place = project.place || "Key Infrastructure Corridor";
+  const district = project.district || "District Hub";
+  const location = project.location_name || project.place || `${district} Site`;
   const origCost = project.original_cost_cr || 0;
   const revCost = project.revised_cost_cr || origCost;
   const costEsc = revCost > origCost ? revCost - origCost : 0;
@@ -84,27 +80,27 @@ function getExecutiveAiBriefing(project: ProjectListItem) {
 
   if (tier === "critical") {
     statusBadge = { label: "Critical Escalation", color: "#f43f5e", bg: "rgba(244, 63, 94, 0.16)" };
-    narrative = `This ${sector} undertaking in ${place}, ${district} (${state}) displays acute fiscal distortion. Financial disbursements lead certified physical progress by ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}${costEsc > 0 ? ` with cost escalation of ₹${costEsc.toFixed(1)} Cr` : ""}, signaling heightened project exposure requiring emergency ministry intervention.`;
+    narrative = `This ${sector} strategic asset in ${location}, ${district} (${state}) displays acute fiscal distortion. Financial disbursements currently lead certified physical progress by ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}${costEsc > 0 ? ` with cost escalation of ₹${costEsc.toFixed(1)} Cr` : ""}, signaling heightened exposure requiring emergency ministry intervention.`;
     action = "Mandate an emergency joint MoSPI-Ministry site audit within 48 hours, freeze non-verified contractor milestone invoices, and institute daily physical progress velocity monitoring.";
   } else if (tier === "high") {
     statusBadge = { label: "High Variance", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.16)" };
-    narrative = `Located in ${place}, ${district} (${state}), this ${sector} facility is encountering measurable execution friction. Capital expenditure leads on-ground physical delivery by ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}, primarily driven by Right-of-Way (ROW) access hurdles, forest clearances, or contractor utility shifting.`;
+    narrative = `Located in ${location}, ${district} (${state}), this ${sector} facility is encountering measurable execution friction. Capital expenditure leads on-ground physical delivery by ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}, primarily driven by Right-of-Way (ROW) clearances or contractor utility shifting.`;
     action = "Convene an inter-ministerial coordination review within 7 business days to clear statutory bottlenecks and mandate dual-shift contractor workforce deployment.";
   } else if (tier === "medium") {
     statusBadge = { label: "Moderate Risk", color: "#3b82f6", bg: "rgba(59, 130, 246, 0.16)" };
-    narrative = `Stationed across ${place} in ${district} (${state}), development progress is tracking near baseline with a modest budget variance gap of ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}. Physical milestones remain within recoverable operational tolerance.`;
+    narrative = `Stationed across ${location} in ${district} (${state}), development progress is tracking near baseline with a modest budget variance gap of ${gap > 0 ? `+${gap.toFixed(1)}%` : `${gap.toFixed(1)}%`}. Physical milestones remain within recoverable operational tolerance.`;
     action = "Enforce fortnightly contractor milestone compliance tracking and institute value-engineering reviews on upcoming procurement packages.";
   } else {
     statusBadge = { label: "Optimal Trajectory", color: "#10b981", bg: "rgba(16, 185, 129, 0.16)" };
     if (gap <= 0) {
-      narrative = `Located in ${place}, ${district} (${state}), this ${sector} project demonstrates exemplary operational discipline. Certified physical execution (${progress != null ? `${progress.toFixed(0)}%` : "on schedule"}) is leading cumulative disbursements by a favorable ${Math.abs(gap).toFixed(1)}%, indicating strong contractor momentum and zero cost-overrun exposure.`;
+      narrative = `Located in ${location}, ${district} (${state}), this ${sector} project demonstrates exemplary operational discipline. Certified physical execution (${progress != null ? `${progress.toFixed(0)}%` : "on schedule"}) is leading cumulative disbursements by a favorable ${Math.abs(gap).toFixed(1)}%, indicating strong contractor momentum and zero cost-overrun exposure.`;
     } else {
-      narrative = `Located in ${place}, ${district} (${state}), this ${sector} project is maintaining steady delivery cadence (${progress != null ? `${progress.toFixed(0)}%` : "on track"}) with capital expenditure tightly aligned to verified ground completion (+${gap.toFixed(1)}% variance).`;
+      narrative = `Located in ${location}, ${district} (${state}), this ${sector} project is maintaining steady delivery cadence (${progress != null ? `${progress.toFixed(0)}%` : "on track"}) with capital expenditure tightly aligned to verified ground completion (+${gap.toFixed(1)}% variance).`;
     }
     action = "Project execution satisfies all MoSPI benchmark criteria. Maintain routine monthly milestone audits and standard progress-linked disbursement tranches.";
   }
 
-  return { cleanName, statusBadge, narrative, action, sector, place, district, state };
+  return { statusBadge, narrative, action, sector, district, state, location };
 }
 
 export default function MapPage() {
@@ -119,7 +115,7 @@ export default function MapPage() {
   const [mapLoading, setMapLoading] = useState(true);
   const [geoJsonData, setGeoJsonData] = useState<any>(null);
 
-  // Filters: Search, State, District (belonging strictly to selected state), Sector, Risk Tier
+  // Filters: Search, State (Alphabetical), District, Sector, Risk Tier
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedState, setSelectedState] = useState<string>("all");
   const [selectedDistrict, setSelectedDistrict] = useState<string>("all");
@@ -149,94 +145,89 @@ export default function MapPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Filtered project list strictly mapped state-wise and district-wise
+  // Filtered project list strictly mapped by project_id and real database coordinates
   const filteredProjects = useMemo(() => {
     const qLower = searchQuery.trim().toLowerCase();
     const selDistNorm = selectedDistrict !== "all" ? selectedDistrict.trim().toUpperCase() : null;
 
-    return allProjects
-      .map((p, idx) => {
-        const loc = getProjectLocation(p, idx);
-        return {
-          ...p,
-          state: p.state || loc.state,
-          district: p.district || loc.district,
-          place: p.place || loc.place,
-          category: p.sector || loc.category,
-          latitude: p.latitude ?? loc.coords[0],
-          longitude: p.longitude ?? loc.coords[1],
-        };
-      })
-      .filter((p) => {
-        if (qLower) {
-          const tokens = qLower.split(/\s+/).filter((t) => t.length > 1);
-          const fullText = `${p.project_name || ""} ${p.sector || ""} ${p.state || ""} ${p.district || ""} ${p.place || ""} ${p.ministry || ""}`.toLowerCase();
-          const matchAll = tokens.every((t) => fullText.includes(t));
-          if (!matchAll) return false;
-        }
+    return allProjects.filter((p) => {
+      // Must have valid coordinates
+      if (p.latitude == null || p.longitude == null || isNaN(p.latitude) || isNaN(p.longitude)) {
+        return false;
+      }
 
-        // State matching
-        if (selectedState !== "all" && !projectMatchesState(p.state, selectedState)) {
-          return false;
-        }
+      if (qLower) {
+        const tokens = qLower.split(/\s+/).filter((t) => t.length > 1);
+        const fullText = `${p.project_name || ""} ${p.sector || ""} ${p.state || ""} ${p.district || ""} ${p.location_name || ""} ${p.ministry || ""}`.toLowerCase();
+        const matchAll = tokens.every((t) => fullText.includes(t));
+        if (!matchAll) return false;
+      }
 
-        // District matching (Strictly within selected state)
-        if (selDistNorm && (p.district || "").trim().toUpperCase() !== selDistNorm) {
-          return false;
-        }
+      // State matching (including multi-state associated states)
+      if (selectedState !== "all" && !projectMatchesState(p.state, selectedState)) {
+        return false;
+      }
 
-        // Sector / Category matching
-        if (selectedSector !== "all" && p.sector !== selectedSector && p.category !== selectedSector) {
-          return false;
-        }
+      // District matching
+      if (selDistNorm && (p.district || "").trim().toUpperCase() !== selDistNorm) {
+        return false;
+      }
 
-        // Risk tier matching
-        if (selectedTier !== "all" && p.risk_tier !== selectedTier) {
-          return false;
-        }
+      // Sector / Category matching
+      if (selectedSector !== "all" && p.sector !== selectedSector && p.category !== selectedSector) {
+        return false;
+      }
 
-        return true;
-      });
+      // Risk tier matching
+      if (selectedTier !== "all" && p.risk_tier !== selectedTier) {
+        return false;
+      }
+
+      return true;
+    });
   }, [allProjects, searchQuery, selectedState, selectedDistrict, selectedSector, selectedTier]);
 
-  // Clean State Options with exact project counts
-  const stateOptionsWithCount = useMemo(() => {
-    const map = new Map<string, number>();
+  // Alphabetical State Options with exact April 2026 project counts
+  const stateOptionsAlphabetical = useMemo(() => {
+    const countsMap = new Map<string, number>();
 
     allProjects.forEach((p) => {
       const st = p.state || "National / Pan-India";
-      map.set(st, (map.get(st) || 0) + 1);
+      countsMap.set(st, (countsMap.get(st) || 0) + 1);
     });
 
-    return Array.from(map.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
+    const standardStates: { name: string; count: number }[] = [];
+    const specialStates: { name: string; count: number }[] = [];
+
+    countsMap.forEach((count, name) => {
+      const upper = name.toUpperCase();
+      if (upper.includes("MULTI") || upper.includes("PAN INDIA") || upper.includes("OFFSHORE") || name.includes(",")) {
+        specialStates.push({ name, count });
+      } else {
+        standardStates.push({ name, count });
+      }
+    });
+
+    standardStates.sort((a, b) => a.name.localeCompare(b.name));
+    specialStates.sort((a, b) => b.count - a.count);
+
+    return [...standardStates, ...specialStates];
   }, [allProjects]);
 
   // Districts for selected state with exact project counts
   const districtOptionsWithCount = useMemo(() => {
     if (selectedState === "all") return [];
-    const normSt = normalizeStateName(selectedState);
     const stProjs = allProjects.filter((p) => projectMatchesState(p.state, selectedState));
 
     const map = new Map<string, number>();
-    stProjs.forEach((p, idx) => {
-      const loc = getProjectLocation(p, idx);
-      const d = p.district || loc.district;
+    stProjs.forEach((p) => {
+      const d = p.district || "Main District";
       map.set(d, (map.get(d) || 0) + 1);
-    });
-
-    // Also include any registered districts for that state
-    const registered = STATE_GEO_KNOWLEDGE[normSt] || [];
-    registered.forEach((r) => {
-      if (!map.has(r.district)) {
-        map.set(r.district, 0);
-      }
     });
 
     return Array.from(map.entries())
       .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [allProjects, selectedState]);
 
   // District summaries when a state is selected
@@ -246,7 +237,7 @@ export default function MapPage() {
     return aggregateDistrictData(stProjs);
   }, [allProjects, selectedState]);
 
-  // Nationwide State summaries for State Portfolio Tab
+  // Nationwide State summaries for Portfolio Tab
   const stateSummaries = useMemo(() => {
     return aggregateStateData(allProjects);
   }, [allProjects]);
@@ -260,7 +251,7 @@ export default function MapPage() {
     });
     return Array.from(map.entries())
       .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [allProjects]);
 
   useEffect(() => {
@@ -354,7 +345,7 @@ export default function MapPage() {
         geoJsonLayerRef.current = allStatesLayer;
       }
 
-      // Render circle markers for filtered projects
+      // Render circle markers for filtered projects (Strictly using project_id)
       filteredProjects.forEach((p) => {
         const color =
           colorMode === "sector"
@@ -366,9 +357,9 @@ export default function MapPage() {
             <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:4px;line-height:1.3">${p.project_name}</div>
             <div style="font-size:11px;color:#475569;margin-bottom:8px;line-height:1.6">
               <span style="display:inline-block;padding:1px 6px;background:#e0f2fe;color:#0369a1;border-radius:4px;font-weight:700;font-size:10px;margin-bottom:4px">
-                <svg style="display:inline-block;vertical-align:middle;margin-right:2px" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${p.place || p.district}
+                <svg style="display:inline-block;vertical-align:middle;margin-right:2px" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${p.location_name || p.district || p.state}
               </span><br/>
-              <strong>District:</strong> ${p.district} • <strong>State:</strong> ${p.state}<br/>
+              <strong>District:</strong> ${p.district || "District"} • <strong>State:</strong> ${p.state}<br/>
               <strong>Category:</strong> ${p.category || p.sector}<br/>
               <strong>Outlay:</strong> ${p.revised_cost_cr != null ? `₹${p.revised_cost_cr.toLocaleString("en-IN")} Cr` : "—"} • <strong>Progress:</strong> ${p.physical_progress_pct != null ? `${p.physical_progress_pct.toFixed(0)}%` : "—"}
             </div>
@@ -401,6 +392,7 @@ export default function MapPage() {
           this.setStyle({ fillOpacity: 0.92, weight: 2 });
         });
 
+        // Exact Project ID Binding on Click
         circle.on("click", () => {
           setSelectedProject(p);
           setDrawerTab("project");
@@ -409,30 +401,13 @@ export default function MapPage() {
         markersRef.current.push(circle);
       });
 
-      // Camera Zoom based on state & district selection
-      if (selectedDistrict !== "all") {
-        const normSt = normalizeStateName(selectedState);
-        const placesList = STATE_GEO_KNOWLEDGE[normSt] || [];
-        const distDef = placesList.find((d) => d.district.toUpperCase() === selectedDistrict.toUpperCase());
-        if (distDef) {
-          map.setView(distDef.coords, 10, { animate: true, duration: 0.8 });
-        } else if (markersRef.current.length > 0) {
-          const group = L.featureGroup(markersRef.current);
-          map.fitBounds(group.getBounds().pad(0.30), { animate: true, maxZoom: 11 });
-        }
-      } else if (selectedState !== "all" && !stateFeatureFound) {
-        const normSt = normalizeStateName(selectedState);
-        const center = STATE_COORDINATES[normSt];
-        if (center) {
-          map.setView(center, 8, { animate: true, duration: 0.8 });
-        } else if (markersRef.current.length > 0) {
-          const group = L.featureGroup(markersRef.current);
-          map.fitBounds(group.getBounds().pad(0.20), {
-            animate: true,
-            duration: 0.8,
-            maxZoom: 8,
-          });
-        }
+      // Camera Zoom based on filtered coordinates
+      if (markersRef.current.length > 0 && selectedDistrict !== "all") {
+        const group = L.featureGroup(markersRef.current);
+        map.fitBounds(group.getBounds().pad(0.30), { animate: true, maxZoom: 11 });
+      } else if (markersRef.current.length > 0 && selectedState !== "all" && !stateFeatureFound) {
+        const group = L.featureGroup(markersRef.current);
+        map.fitBounds(group.getBounds().pad(0.20), { animate: true, maxZoom: 8 });
       } else if (selectedState === "all") {
         if (markersRef.current.length > 0) {
           const group = L.featureGroup(markersRef.current);
@@ -471,7 +446,7 @@ export default function MapPage() {
         subtitle="MoSPI PAIMANA · April 2026 National Portfolio (1,981 Real Infrastructure Projects) · All-India District & Place Intelligence"
       />
 
-      {/* Filter Bar with State, District (belonging strictly to selected state), Category, Risk Tier */}
+      {/* Filter Bar with Alphabetical State, Dynamic District, Category, Risk Tier */}
       <div
         style={{
           padding: "10px 24px",
@@ -496,7 +471,7 @@ export default function MapPage() {
             </span>
             <input
               type="text"
-              placeholder="Search project, place, district..."
+              placeholder="Search project, district, state..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="input"
@@ -505,7 +480,7 @@ export default function MapPage() {
           </div>
         </div>
 
-        {/* 1. STATE SELECTOR */}
+        {/* 1. ALPHABETICAL STATE SELECTOR */}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>State:</span>
           <select
@@ -515,10 +490,10 @@ export default function MapPage() {
               setSelectedDistrict("all");
             }}
             className="input"
-            style={{ width: 180, padding: "4px 8px", fontSize: 12 }}
+            style={{ width: 195, padding: "4px 8px", fontSize: 12 }}
           >
             <option value="all">All India ({allProjects.length} Projects)</option>
-            {stateOptionsWithCount.map((st) => (
+            {stateOptionsAlphabetical.map((st) => (
               <option key={st.name} value={st.name}>{st.name} ({st.count})</option>
             ))}
           </select>
@@ -828,7 +803,7 @@ export default function MapPage() {
                               <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
                               <circle cx="12" cy="10" r="3"/>
                             </svg>
-                            {p.place ? `${p.place} (${p.district})` : p.district ? `${p.district}, ${p.state}` : p.state}
+                            {p.location_name ? `${p.location_name} (${p.district || p.state})` : p.district ? `${p.district}, ${p.state}` : p.state}
                           </span>
                           <span style={{ color: "var(--accent)", fontWeight: 600 }}>
                             {p.revised_cost_cr != null ? `₹${p.revised_cost_cr.toLocaleString("en-IN")} Cr` : "—"}
@@ -980,7 +955,7 @@ export default function MapPage() {
                 </div>
               )
             ) : selectedProject ? (
-              /* TAB 1: ACTIVE PROJECT DETAILS */
+              /* TAB 1: ACTIVE PROJECT DETAILS (Strictly Bound to selectedProject.id) */
               <>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
                   <RiskBadge tier={selectedProject.risk_tier || "low"} suffix={selectedProject.composite_risk_score != null ? ` (${(selectedProject.composite_risk_score * 100).toFixed(0)}% Index)` : ""} />
@@ -994,10 +969,10 @@ export default function MapPage() {
                 {/* State & District Metadata Card */}
                 <div style={{ background: "var(--surface-2)", padding: "10px 12px", borderRadius: 8, marginBottom: 14, border: "1px solid var(--border)" }}>
                   <div style={{ fontSize: 11, color: "var(--text-sub)", marginBottom: 4 }}>
-                    <strong style={{ color: "var(--text)" }}>Place / Hub:</strong>{" "}
+                    <strong style={{ color: "var(--text)" }}>Location / Hub:</strong>{" "}
                     <span style={{ color: "#10b981", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 3 }}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                      {selectedProject.place || selectedProject.district || "Project Corridor"}
+                      {selectedProject.location_name || selectedProject.place || selectedProject.district || "Project Corridor"}
                     </span>
                   </div>
                   <div style={{ fontSize: 11, color: "var(--text-sub)", marginBottom: 4 }}>
@@ -1065,7 +1040,6 @@ export default function MapPage() {
                         marginBottom: 16,
                       }}
                     >
-                      {/* Card Header with Status Tag */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <div
@@ -1095,12 +1069,10 @@ export default function MapPage() {
                         </span>
                       </div>
 
-                      {/* Natural, Professional Narrative */}
                       <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.6, marginBottom: 12 }}>
                         {briefing.narrative}
                       </div>
 
-                      {/* Strategic Action Recommendation Box */}
                       <div
                         className="map-briefing-action"
                         style={{

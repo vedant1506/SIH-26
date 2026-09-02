@@ -95,6 +95,8 @@ async def list_projects(
             ministry=p.ministry,
             sector=p.sector,
             state=p.state,
+            district=getattr(p, "district", None),
+            location_name=getattr(p, "location_name", None),
             latitude=float(p.latitude) if p.latitude is not None else None,
             longitude=float(p.longitude) if p.longitude is not None else None,
             original_cost_cr=p.original_cost_cr,
