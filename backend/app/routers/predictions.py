@@ -16,6 +16,7 @@ from app.schemas.mitigation import (
     MitigationPlanRequest,
     MitigationPlanResponse,
     ExportPdfRequest,
+    ModelMetadataSchema,
 )
 from app.services import ml_service, alert_service, qwen_service, llm_orchestrator, pdf_service
 
@@ -435,39 +436,144 @@ async def get_structured_mitigation_plan(
         "revised_completion_date": str(project.revised_completion_date) if project.revised_completion_date else None,
     }
 
+    milestones_list = []
+    if project.milestones:
+        for m in project.milestones:
+            milestones_list.append({
+                "milestone_name": m.milestone_name,
+                "scheduled_date": str(m.scheduled_date) if m.scheduled_date else None,
+                "actual_date": str(m.actual_date) if m.actual_date else None,
+                "is_completed": bool(m.is_completed),
+            })
+
     force = payload.force_regenerate if payload else False
-    plan, model_used, val_models = await asyncio.to_thread(
-        llm_orchestrator.generate_structured_mitigation_plan,
+    record = await asyncio.to_thread(
+        llm_orchestrator.generate_dynamic_mitigation_plan,
         project_dict=project_dict,
         prediction_dict=pred_dict,
+        milestones_list=milestones_list,
         force_regenerate=force,
     )
 
-    # Convert plan to readable text for legacy components
+    plan_obj = StructuredMitigationPlan(**record["plan"])
+    model_meta = ModelMetadataSchema(
+        primary_model=record["primary_model"],
+        models_used=record.get("models_used", [record["primary_model"]]),
+        models_attempted=record.get("models_attempted", [record["primary_model"]]),
+        models_successful=record.get("models_successful", [record["primary_model"]]),
+        models_failed=record.get("models_failed", []),
+        generation_mode=record.get("generation_mode", "Project-Specific Deep Risk Intelligence"),
+        status=record.get("status", "completed"),
+        validation_status=record.get("validation_status", "passed"),
+    )
+
+    # Convert plan to simple human readable text
     lines = [
-        f"EXECUTIVE MITIGATION STRATEGY: {plan.project_summary.project_name.upper()}",
-        f"Status: {plan.project_summary.risk_level.upper()} RISK | Risk Score: {plan.project_summary.overall_risk_score}%\n",
-        f"EXECUTIVE SUMMARY:\n{plan.executive_summary}\n",
-        "PHASE 1: IMMEDIATE MOBILIZATION & FIELD ACTIONS (0 - 30 DAYS)"
+        f"TRACE AI MITIGATION STRATEGY: {plan_obj.project_summary.project_name.upper()}",
+        f"Plan ID: {record['plan_id']} | Version: v{record.get('plan_version', 1)} | Hash: {record['plan_hash'][:16]}",
+        f"Risk Level: {plan_obj.project_summary.risk_level.upper()} | Composite Risk Score: {plan_obj.project_summary.risk_score}/100\n",
+        f"EXECUTIVE RECOMMENDATION:\n{plan_obj.executive_recommendation}\n",
+        "KEY RISK DRIVERS:"
     ]
-    for act in plan.immediate_actions:
-        lines.append(f"{act.priority}. {act.action}\n   - Target: {act.timeline} | Role: {act.responsible_role}\n   - Outcome: {act.expected_outcome}")
+    for d in plan_obj.risk_drivers:
+        lines.append(f"- {d.factor} ({d.impact}): {d.evidence}")
 
-    lines.append("\nPHASE 2: STATUTORY CLEARANCES & SCHEDULE ACCELERATION (30 - 90 DAYS)")
-    for act in plan.short_term_actions:
-        lines.append(f"{act.priority}. {act.action}\n   - Target: {act.timeline} | Role: {act.responsible_role}\n   - Outcome: {act.expected_outcome}")
-
-    lines.append("\nPHASE 3: FINANCIAL CONTROLS & ASSET HANDOVER (90 - 180 DAYS)")
-    for act in plan.medium_term_actions:
-        lines.append(f"{act.priority}. {act.action}\n   - Target: {act.timeline} | Role: {act.responsible_role}\n   - Outcome: {act.expected_outcome}")
+    lines.append("\nPRIORITY MITIGATION ACTIONS:")
+    for act in plan_obj.mitigation_actions:
+        lines.append(f"{act.priority}. [{act.severity}] {act.action}\n   - Target Timeline: {act.timeline} | Role: {act.responsible_role}\n   - Expected Outcome: {act.expected_outcome}\n   - Escalation: {act.escalation_trigger}")
 
     return MitigationPlanResponse(
         success=True,
-        model=model_used,
-        validation_models=val_models,
-        generated_at=datetime.utcnow().isoformat(),
-        plan=plan,
+        plan_id=record["plan_id"],
+        generation_id=record["generation_id"],
+        project_id=str(project.id),
+        plan_version=record.get("plan_version", 1),
+        plan_hash=record["plan_hash"],
+        risk_context_hash=record["risk_context_hash"],
+        generated_at=record["generated_at"],
+        model_metadata=model_meta,
+        plan=plan_obj,
         mitigation_text="\n".join(lines),
+    )
+
+
+@router.post("/{project_id}/mitigation-plan/generate")
+async def generate_mitigation_plan_named(
+    project_id: str,
+    payload: Optional[MitigationPlanRequest] = None,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_optional_user),
+):
+    """Named generation endpoint."""
+    return await get_structured_mitigation_plan(project_id=project_id, payload=payload, db=db, current_user=current_user)
+
+
+@router.get("/{project_id}/mitigation-plan/{plan_id}")
+async def get_stored_plan_by_id(
+    project_id: str,
+    plan_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_optional_user),
+):
+    """Retrieves a specific stored mitigation plan by plan_id."""
+    record = await asyncio.to_thread(llm_orchestrator.get_stored_mitigation_plan, plan_id=plan_id)
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Mitigation plan {plan_id} not found.")
+    
+    plan_obj = StructuredMitigationPlan(**record["plan"])
+    model_meta = ModelMetadataSchema(
+        primary_model=record["primary_model"],
+        models_used=record.get("models_used", [record["primary_model"]]),
+        models_attempted=record.get("models_attempted", [record["primary_model"]]),
+        models_successful=record.get("models_successful", [record["primary_model"]]),
+        models_failed=record.get("models_failed", []),
+        generation_mode=record.get("generation_mode", "Project-Specific Deep Risk Intelligence"),
+        status=record.get("status", "completed"),
+        validation_status=record.get("validation_status", "passed"),
+    )
+    return MitigationPlanResponse(
+        success=True,
+        plan_id=record["plan_id"],
+        generation_id=record["generation_id"],
+        project_id=str(record["project_id"]),
+        plan_version=record.get("plan_version", 1),
+        plan_hash=record["plan_hash"],
+        risk_context_hash=record["risk_context_hash"],
+        generated_at=record["generated_at"],
+        model_metadata=model_meta,
+        plan=plan_obj,
+    )
+
+
+@router.get("/{project_id}/mitigation-plan/{plan_id}/pdf")
+async def export_stored_plan_pdf_by_id(
+    project_id: str,
+    plan_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_optional_user),
+):
+    """Generates official PDF from the exact canonical plan_id stored in database."""
+    record = await asyncio.to_thread(llm_orchestrator.get_stored_mitigation_plan, plan_id=plan_id)
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Mitigation plan {plan_id} not found.")
+
+    plan_obj = StructuredMitigationPlan(**record["plan"])
+    pdf_bytes = await asyncio.to_thread(
+        pdf_service.generate_mitigation_pdf,
+        plan=plan_obj,
+        plan_id=record["plan_id"],
+        plan_hash=record["plan_hash"],
+        plan_version=record.get("plan_version", 1),
+        generated_at=record["generated_at"],
+        model_name=record["primary_model"],
+        validation_models=record.get("models_used", []),
+    )
+
+    filename = f"TRACE_AI_Mitigation_Plan_{plan_obj.project_summary.project_id}_{record['plan_id']}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=\"{filename}\""}
     )
 
 
@@ -478,31 +584,60 @@ async def export_mitigation_plan_pdf(
     db: Session = Depends(get_db),
     current_user=Depends(get_optional_user),
 ):
-    """
-    Renders an official, multi-page government PDF from the exact currently active plan JSON.
-    """
-    try:
-        plan = StructuredMitigationPlan(**payload.plan)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid plan JSON format: {str(e)}")
-
-    model_name = payload.model or "Qwen 2.5 (Primary) + Multi-LLM Validation"
+    """Renders an official government PDF from plan_id or payload plan JSON."""
+    plan_id = payload.plan_id
+    plan_hash = ""
+    plan_version = 1
+    generated_at = ""
+    model_name = payload.model or "Qwen 2.5"
     val_models = payload.validation_models or []
+
+    if plan_id:
+        record = await asyncio.to_thread(llm_orchestrator.get_stored_mitigation_plan, plan_id=plan_id)
+        if record:
+            plan = StructuredMitigationPlan(**record["plan"])
+            plan_hash = record["plan_hash"]
+            plan_version = record.get("plan_version", 1)
+            generated_at = record["generated_at"]
+            model_name = record["primary_model"]
+            val_models = record.get("models_used", [])
+        elif payload.plan:
+            plan = StructuredMitigationPlan(**payload.plan)
+        else:
+            raise HTTPException(status_code=404, detail=f"Mitigation plan {plan_id} not found.")
+    elif payload.plan:
+        plan = StructuredMitigationPlan(**payload.plan)
+        plan_id = f"MP-2026-{uuid.uuid4().hex[:8].upper()}"
+    else:
+        # Check latest stored plan
+        latest_record = await asyncio.to_thread(llm_orchestrator.get_latest_stored_plan_for_project, project_id=project_id)
+        if latest_record:
+            plan = StructuredMitigationPlan(**latest_record["plan"])
+            plan_id = latest_record["plan_id"]
+            plan_hash = latest_record["plan_hash"]
+            plan_version = latest_record.get("plan_version", 1)
+            generated_at = latest_record["generated_at"]
+            model_name = latest_record["primary_model"]
+            val_models = latest_record.get("models_used", [])
+        else:
+            raise HTTPException(status_code=400, detail="No plan found to export. Generate plan first.")
 
     pdf_bytes = await asyncio.to_thread(
         pdf_service.generate_mitigation_pdf,
         plan=plan,
+        plan_id=plan_id,
+        plan_hash=plan_hash,
+        plan_version=plan_version,
+        generated_at=generated_at,
         model_name=model_name,
         validation_models=val_models,
     )
 
-    filename = f"PRISM_AI_Mitigation_Plan_{plan.project_summary.project_id}.pdf"
+    filename = f"TRACE_AI_Mitigation_Plan_{plan.project_summary.project_id}_{plan_id}.pdf"
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={
-            "Content-Disposition": f"attachment; filename=\"{filename}\""
-        }
+        headers={"Content-Disposition": f"attachment; filename=\"{filename}\""}
     )
 
 
@@ -519,5 +654,7 @@ async def generate_mitigation_plan_legacy(
         "project_name": res.plan.project_summary.project_name,
         "mitigation_text": res.mitigation_text,
         "plan": res.plan.model_dump(),
-        "model": res.model,
+        "plan_id": res.plan_id,
+        "plan_hash": res.plan_hash,
+        "model": res.primary_model,
     }

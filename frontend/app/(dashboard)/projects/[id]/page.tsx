@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { getProject, predictProject, getProjectPredictions, generateMitigation } from "@/lib/api";
+import { getProject, predictProject, getProjectPredictions } from "@/lib/api";
 import type { Project, RiskPrediction } from "@/lib/types";
 import TopBar from "@/components/layout/TopBar";
 import RiskBadge from "@/components/ui/RiskBadge";
@@ -13,20 +13,13 @@ import ShapWaterfall from "@/components/charts/ShapWaterfall";
 import RiskTrendChart from "@/components/charts/RiskTrendChart";
 import BurnProgressGauge from "@/components/charts/BurnProgressGauge";
 import WhatIfPanel from "@/components/features/WhatIfPanel";
-import PdfExportButton from "@/components/features/PdfExportButton";
 import StructuredMitigationSection from "@/components/features/StructuredMitigationSection";
-
-
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [prediction, setPrediction] = useState<RiskPrediction | null>(null);
   const [history, setHistory] = useState<RiskPrediction[]>([]);
-  const [mitigationText, setMitigationText] = useState<string | null>(null);
-  const [mitigationModel, setMitigationModel] = useState<string>("");
-  const [mitigationLoading, setMitigationLoading] = useState(false);
-  const [mitigationError, setMitigationError] = useState("");
   const [loading, setLoading] = useState(true);
   const [predicting, setPredicting] = useState(false);
   const [error, setError] = useState("");
@@ -161,19 +154,6 @@ export default function ProjectDetailPage() {
                 </span>
               )}
             </div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <PdfExportButton
-              project={project}
-              prediction={prediction}
-              mitigationPlan={mitigationText}
-              onMitigationFetched={(text, model) => {
-                setMitigationText(text);
-                setMitigationModel(model);
-              }}
-              label="Export Executive PDF Report"
-              className="btn btn-secondary"
-            />
           </div>
         </div>
 
@@ -315,101 +295,6 @@ export default function ProjectDetailPage() {
             />
           </div>
         </div>
-
-        {/* Executive Risk Assessment & Policy Advisory Card (Human-Readable, Professional Format) */}
-        {prediction?.ai_risk_narrative && (() => {
-          const raw = prediction.ai_risk_narrative;
-          // 1. Strip technical AI/model prefixes
-          let clean = raw
-            .replace(/\[Qwen-2\.5\s*QLoRA\s*Executive\s*Briefing\]/gi, "")
-            .replace(/\[.*?Executive Briefing\]/gi, "")
-            .replace(/\[.*?Briefing\]/gi, "")
-            .trim();
-
-          // 2. Remove duplicate parenthetical state names like "(Gujarat) (Petroleum & Natural Gas, GUJARAT)"
-          clean = clean.replace(/\(([A-Za-z\s&]+)\)\s*\(([A-Za-z\s&]+),\s*\1\)/gi, "($2, $1)");
-
-          // 3. Fix negative schedule delays
-          clean = clean.replace(/projected schedule delay of -([0-9\.]+) months/gi, (match, m) => {
-            return `operating ${m} months ahead of schedule`;
-          });
-          clean = clean.replace(/projected schedule delay of 0(?:\.0)? months/gi, "milestone execution strictly on schedule");
-          clean = clean.replace(/projected schedule delay of ([0-9\.]+) months/gi, (match, m) => {
-            return `projected schedule lag of ${m} months`;
-          });
-
-          // 4. Extract clean narrative summary only (remove any attached mitigation plan from this card)
-          let narrativeText = clean;
-          const resMatch = clean.match(/(?:Recommended Resolution|Recommended Action Plan|EXECUTIVE MITIGATION PLAN|Mitigation Plan)[\s\S]*$/i);
-          if (resMatch) {
-            narrativeText = clean.replace(/(?:Recommended Resolution|Recommended Action Plan|EXECUTIVE MITIGATION PLAN|Mitigation Plan)[\s\S]*$/i, "").trim();
-          }
-
-          // 5. Parse points into distinct lines
-          const points = narrativeText
-            .split(/•\s*/)
-            .map(p => p.trim())
-            .filter(p => p.length > 0 && !p.startsWith("PROJECT RISK ASSESSMENT") && !p.startsWith("━") && !p.startsWith("─"));
-
-          return (
-            <div
-              className="card animate-fade executive-advisory-card"
-              style={{
-                marginBottom: 24,
-                borderRadius: 12,
-                padding: "20px 24px",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div
-                    style={{
-                      width: 24, height: 24, borderRadius: 6, overflow: "hidden", flexShrink: 0,
-                      border: "1px solid var(--accent-glow)",
-                    }}
-                  >
-                    <img src="/logo.jpg" alt="MoSPI" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  </div>
-                  <span className="executive-advisory-title" style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                    MoSPI PAIMANA Executive Risk Assessment
-                  </span>
-                </div>
-                <RiskBadge tier={prediction.risk_tier} suffix={prediction.composite_risk_score != null ? ` (${(prediction.composite_risk_score * 100).toFixed(0)}% Index)` : ""} />
-              </div>
-
-              {points.length > 1 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 13, lineHeight: 1.6 }}>
-                  {points.map((pt, idx) => {
-                    const colonIdx = pt.indexOf(":");
-                    if (colonIdx > 0 && colonIdx < 35) {
-                      const key = pt.substring(0, colonIdx).trim();
-                      const val = pt.substring(colonIdx + 1);
-                      return (
-                        <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--accent)", display: "inline-block", flexShrink: 0, marginTop: 7 }} />
-                          <div style={{ flex: 1 }}>
-                            <strong style={{ color: "var(--text)", fontWeight: 600 }}>{key}:</strong>
-                            <span style={{ color: "var(--text-sub)", marginLeft: 6 }}>{val}</span>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                        <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--accent)", display: "inline-block", flexShrink: 0, marginTop: 7 }} />
-                        <div style={{ flex: 1, color: "var(--text-sub)" }}>{pt}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div style={{ fontSize: 13, color: "var(--text-sub)", lineHeight: 1.7, fontWeight: 400 }}>
-                  {narrativeText}
-                </div>
-              )}
-            </div>
-          );
-        })()}
 
 
         {/* Middle Charts Grid */}

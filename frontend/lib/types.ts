@@ -131,35 +131,44 @@ export interface PredictRequest {
 export interface ProjectSummarySchema {
   project_name: string;
   project_id: string;
+  sector: string;
   risk_level: string;
-  overall_risk_score?: number | null;
+  risk_score?: number | null;
   cost_risk?: number | null;
   schedule_risk?: number | null;
 }
 
-export interface RiskAssessmentItem {
+export interface RiskDriverItem {
+  factor: string;
+  impact: string;
+  evidence: string;
+  source: string;
+}
+
+export interface RootCauseItem {
   risk: string;
-  severity: string;
-  evidence: string[];
-  root_cause: string;
-  shap_factors: string[];
+  cause: string;
+  evidence: string;
 }
 
 export interface MitigationActionItem {
   priority: number;
+  severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | string;
+  risk: string;
+  evidence?: string;
   action: string;
   reason: string;
   responsible_role: string;
   timeline: string;
   expected_outcome: string;
   monitoring_indicator: string;
-  escalation_condition: string;
+  escalation_trigger: string;
 }
 
 export interface MonitoringItem {
   indicator: string;
   current_value: string;
-  target_value: string;
+  target: string;
   frequency: string;
   responsible_role: string;
 }
@@ -173,20 +182,38 @@ export interface EscalationItem {
 
 export interface StructuredMitigationPlan {
   project_summary: ProjectSummarySchema;
-  risk_assessment: RiskAssessmentItem[];
-  immediate_actions: MitigationActionItem[];
-  short_term_actions: MitigationActionItem[];
-  medium_term_actions: MitigationActionItem[];
+  risk_drivers: RiskDriverItem[];
+  root_causes: RootCauseItem[];
+  mitigation_actions: MitigationActionItem[];
   monitoring_plan: MonitoringItem[];
   escalation_plan: EscalationItem[];
-  executive_summary: string;
+  executive_recommendation: string;
+export interface ModelMetadata {
+  primary_model: string;
+  models_used: string[];
+  models_attempted: string[];
+  models_successful: string[];
+  models_failed: string[];
+  generation_mode: string;
+  status: string;
+  validation_status: string;
 }
 
 export interface MitigationPlanResponse {
   success: boolean;
-  model: string;
-  validation_models: string[];
+  plan_id: string;
+  generation_id: string;
+  project_id: string;
+  plan_version: number;
+  plan_hash: string;
+  risk_context_hash?: string;
   generated_at: string;
+  model_metadata: ModelMetadata;
   plan: StructuredMitigationPlan;
   mitigation_text?: string | null;
+
+  // Convenience accessors
+  primary_model?: string;
+  additional_models?: string[];
+  generation_mode?: string;
 }

@@ -111,13 +111,22 @@ export async function generateMitigation(projectId: string): Promise<{ mitigatio
 }
 
 export async function generateMitigationPlan(projectId: string, forceRegenerate = false): Promise<MitigationPlanResponse> {
-  return request<MitigationPlanResponse>(`/projects/${projectId}/mitigation-plan`, {
+  return request<MitigationPlanResponse>(`/projects/${projectId}/mitigation-plan/generate`, {
     method: "POST",
     body: JSON.stringify({ project_id: projectId, force_regenerate: forceRegenerate }),
   });
 }
 
-export async function downloadMitigationPdf(projectId: string, plan: StructuredMitigationPlan, modelName?: string): Promise<Blob> {
+export async function getStoredMitigationPlan(projectId: string, planId: string): Promise<MitigationPlanResponse> {
+  return request<MitigationPlanResponse>(`/projects/${projectId}/mitigation-plan/${planId}`);
+}
+
+export async function downloadMitigationPdf(
+  projectId: string,
+  planId?: string,
+  plan?: StructuredMitigationPlan,
+  modelName?: string
+): Promise<Blob> {
   const token = typeof window !== "undefined" ? localStorage.getItem("prism_token") : null;
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
   const res = await fetch(`${baseUrl}/projects/${projectId}/mitigation-plan/pdf`, {
@@ -126,7 +135,7 @@ export async function downloadMitigationPdf(projectId: string, plan: StructuredM
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ project_id: projectId, plan, model: modelName }),
+    body: JSON.stringify({ project_id: projectId, plan_id: planId, plan, model: modelName }),
   });
   if (!res.ok) throw new Error("Failed to generate server PDF");
   return res.blob();
