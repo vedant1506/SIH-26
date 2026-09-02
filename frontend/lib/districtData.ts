@@ -1,6 +1,6 @@
 // ============================================================================
 // State, District & Place Master Geospatial Knowledge Engine (April 2026 Dataset)
-// High-Precision Geocoding across all 780+ Indian Districts & Corridors
+// High-Precision Geocoding across all 780+ Indian Districts & Interstate Corridors
 // ============================================================================
 
 export interface PlaceNode {
@@ -8,6 +8,14 @@ export interface PlaceNode {
   district: string;
   coords: [number, number];
   keywords?: string[];
+}
+
+export interface InterstateNode {
+  keywords: string[];
+  state: string;
+  district: string;
+  place: string;
+  coords: [number, number];
 }
 
 export interface DistrictSummary {
@@ -23,6 +31,439 @@ export interface DistrictSummary {
   coords: [number, number];
   places: string[];
 }
+
+export const INTERSTATE_CORRIDORS: InterstateNode[] = [
+  {
+    "keywords": [
+      "FAGNE",
+      "MAHARASHTRA/GUJARAT BORDER",
+      "GUJARAT/MAHARASHTRA",
+      "NAVAPUR",
+      "SONGADH",
+      "SURAT-DHULE",
+      "NH-53"
+    ],
+    "state": "Multi-States (Gujarat, Maharashtra)",
+    "district": "Dhule / Nandurbar / Tapi Border",
+    "place": "Fagne - Navapur - Songadh NH-53 Corridor",
+    "coords": [
+      21.05,
+      74.2
+    ]
+  },
+  {
+    "keywords": [
+      "VADODARA MUMBAI",
+      "MUMBAI-AHMEDABAD",
+      "TALSARI",
+      "KARVAD",
+      "JUJUWA",
+      "PALGHAR BORDER"
+    ],
+    "state": "Multi-States (Gujarat, Maharashtra)",
+    "district": "Valsad / Palghar Border",
+    "place": "Vadodara-Mumbai Expressway Border Node",
+    "coords": [
+      20.3,
+      72.95
+    ]
+  },
+  {
+    "keywords": [
+      "BELGAUM",
+      "SANKESHWAR",
+      "MH-KNT BORDER",
+      "MH/KN BORDER",
+      "KAGAL BORDER"
+    ],
+    "state": "Multi-States (Karnataka, Maharashtra)",
+    "district": "Kolhapur / Belagavi Border",
+    "place": "Belagavi - Kolhapur NH-48 Border Corridor",
+    "coords": [
+      16.25,
+      74.45
+    ]
+  },
+  {
+    "keywords": [
+      "AKKALKOT",
+      "SOLAPUR KN",
+      "AKKALKOT MH/KN",
+      "NH-150C"
+    ],
+    "state": "Multi-States (Karnataka, Maharashtra)",
+    "district": "Solapur / Kalaburagi Border",
+    "place": "Akkalkot - Kalaburagi NH-150C Corridor",
+    "coords": [
+      17.48,
+      76.22
+    ]
+  },
+  {
+    "keywords": [
+      "BELAGONDAPALLI",
+      "TN/KNT",
+      "STRR",
+      "HOSUR TO DHAMRAPURI",
+      "NERALURU",
+      "THORAPALLI"
+    ],
+    "state": "Multi-States (Karnataka, Tamil Nadu)",
+    "district": "Bengaluru Urban / Krishnagiri Border",
+    "place": "Bengaluru - Hosur Interstate Highway Corridor",
+    "coords": [
+      12.74,
+      77.82
+    ]
+  },
+  {
+    "keywords": [
+      "THALAPADDY",
+      "CHENGALA",
+      "KT/KL BORDER"
+    ],
+    "state": "Multi-States (Karnataka, Kerala)",
+    "district": "Dakshina Kannada / Kasaragod Border",
+    "place": "Thalapaddy - Kasaragod NH-66 Corridor",
+    "coords": [
+      12.78,
+      74.92
+    ]
+  },
+  {
+    "keywords": [
+      "THALASSERY MAHE",
+      "MAHE BYPASS",
+      "MAHE"
+    ],
+    "state": "Multi-States (Kerala, Puducherry)",
+    "district": "Kannur / Mahe Border",
+    "place": "Thalassery - Mahe Coastal Bypass (NH-66)",
+    "coords": [
+      11.7,
+      75.53
+    ]
+  },
+  {
+    "keywords": [
+      "SAHARANPUR BYPASS",
+      "DELHI- DEHRADUN",
+      "DELHI-DEHRADUN",
+      "GANESHPUR"
+    ],
+    "state": "Multi-States (Uttar Pradesh, Uttarakhand)",
+    "district": "Saharanpur / Dehradun Border",
+    "place": "Delhi - Dehradun Economic Expressway Corridor",
+    "coords": [
+      30.15,
+      77.85
+    ]
+  },
+  {
+    "keywords": [
+      "PILIBHIT - SITARGANJ",
+      "SITARGANJ"
+    ],
+    "state": "Multi-States (Uttar Pradesh, Uttarakhand)",
+    "district": "Pilibhit / Udham Singh Nagar Border",
+    "place": "Pilibhit - Sitarganj NH-30 Corridor",
+    "coords": [
+      28.85,
+      79.75
+    ]
+  },
+  {
+    "keywords": [
+      "RUDRAPUR BYPASS"
+    ],
+    "state": "Multi-States (Uttar Pradesh, Uttarakhand)",
+    "district": "Rampur / Udham Singh Nagar Border",
+    "place": "Rampur - Rudrapur Interstate Bypass",
+    "coords": [
+      28.98,
+      79.4
+    ]
+  },
+  {
+    "keywords": [
+      "KASHIPUR",
+      "MORADABAD-THAKURDWARA"
+    ],
+    "state": "Multi-States (Uttar Pradesh, Uttarakhand)",
+    "district": "Moradabad / Udham Singh Nagar Border",
+    "place": "Moradabad - Kashipur NH-734 Corridor",
+    "coords": [
+      29.15,
+      78.95
+    ]
+  },
+  {
+    "keywords": [
+      "HARIDWAR",
+      "MUZAFFARNAGARHARIDWAR",
+      "SPUR TO HARIDWAR",
+      "HARIDWAR-NAGINA"
+    ],
+    "state": "Multi-States (Uttar Pradesh, Uttarakhand)",
+    "district": "Muzaffarnagar / Haridwar Border",
+    "place": "Haridwar - Roorkee Highway Link",
+    "coords": [
+      29.85,
+      78.0
+    ]
+  },
+  {
+    "keywords": [
+      "ALIGARH-PALWAL",
+      "KURANA",
+      "EASTERN PERIPHERAL"
+    ],
+    "state": "Multi-States (Haryana, Uttar Pradesh)",
+    "district": "Palwal / Aligarh Border",
+    "place": "Palwal - Aligarh NH-334D Corridor",
+    "coords": [
+      28.05,
+      77.65
+    ]
+  },
+  {
+    "keywords": [
+      "SHAMLI -AMBALA",
+      "SHAMLI-AMBALA",
+      "RANIPUR BARSI",
+      "ADHOYA"
+    ],
+    "state": "Multi-States (Haryana, Uttar Pradesh)",
+    "district": "Shamli / Ambala Border",
+    "place": "Shamli - Ambala Greenfield Expressway",
+    "coords": [
+      29.8,
+      77.2
+    ]
+  },
+  {
+    "keywords": [
+      "JEWAR INTERNATIONAL AIRPORT",
+      "JEWAR AIRPORT",
+      "BALLABHGARH BYPASS",
+      "DND- FARIDABAD"
+    ],
+    "state": "Multi-States (Haryana, Uttar Pradesh)",
+    "district": "Faridabad / Gautam Buddha Nagar Border",
+    "place": "Faridabad - Jewar Airport Expressway Spur",
+    "coords": [
+      28.25,
+      77.45
+    ]
+  },
+  {
+    "keywords": [
+      "DELHI-AMRITSAR-KATRA",
+      "PATHANKOT- GURDASPUR",
+      "HIRANAGAR",
+      "GURHA BAILDARAN"
+    ],
+    "state": "Multi-States (Jammu and Kashmir, Punjab)",
+    "district": "Pathankot / Kathua Border",
+    "place": "Pathankot - Kathua - Hiranagar Expressway",
+    "coords": [
+      32.35,
+      75.5
+    ]
+  },
+  {
+    "keywords": [
+      "KHAJURI",
+      "WYNDHAMGANJ",
+      "NH-75"
+    ],
+    "state": "Multi-States (Jharkhand, Uttar Pradesh)",
+    "district": "Sonbhadra / Garhwa Border",
+    "place": "Sonbhadra - Garhwa NH-75 Border Corridor",
+    "coords": [
+      24.25,
+      83.42
+    ]
+  },
+  {
+    "keywords": [
+      "BARWA ADDA",
+      "PANAGARH",
+      "BARWA ADDA KM"
+    ],
+    "state": "Multi-States (Jharkhand, West Bengal)",
+    "district": "Dhanbad / Paschim Bardhaman Border",
+    "place": "Dhanbad - Asansol - Panagarh NH-19 Corridor",
+    "coords": [
+      23.75,
+      86.85
+    ]
+  },
+  {
+    "keywords": [
+      "VARANASI- RANCHI- KOLKATA",
+      "VARANASI - RANCHI - KOLKATA",
+      "LEPO",
+      "KAMLAPUR",
+      "JH/WB BORDER"
+    ],
+    "state": "Multi-States (Jharkhand, West Bengal)",
+    "district": "Bokaro / Purulia Border",
+    "place": "Varanasi - Ranchi - Kolkata Expressway Border",
+    "coords": [
+      23.45,
+      86.05
+    ]
+  },
+  {
+    "keywords": [
+      "PURULIA",
+      "CHANDIL",
+      "JH / WB BORDER",
+      "OLD NH-32"
+    ],
+    "state": "Multi-States (Jharkhand, West Bengal)",
+    "district": "Seraikela / Purulia Border",
+    "place": "Chandil - Purulia Interstate Highway",
+    "coords": [
+      23.1,
+      86.15
+    ]
+  },
+  {
+    "keywords": [
+      "MIRZA CHAUKI",
+      "FARAKKA",
+      "NH-80"
+    ],
+    "state": "Multi-States (Jharkhand, West Bengal)",
+    "district": "Sahibganj / Murshidabad Border",
+    "place": "Mirza Chauki - Farakka Ganga Corridor",
+    "coords": [
+      24.8,
+      87.9
+    ]
+  },
+  {
+    "keywords": [
+      "GOVINDPUR",
+      "CHAS",
+      "WB BORDER"
+    ],
+    "state": "Multi-States (Jharkhand, West Bengal)",
+    "district": "Dhanbad / Bokaro / Purulia Border",
+    "place": "Govindpur - Chas - Purulia Corridor",
+    "coords": [
+      23.65,
+      86.2
+    ]
+  },
+  {
+    "keywords": [
+      "MANGLOOR",
+      "RAJURA",
+      "KORPANA",
+      "ADILABAD",
+      "BAMNI",
+      "WARUR",
+      "DEVADA"
+    ],
+    "state": "Multi-States (Maharashtra, Telangana)",
+    "district": "Chandrapur / Adilabad Border",
+    "place": "Chandrapur - Adilabad Inter-State Highway",
+    "coords": [
+      19.75,
+      79.15
+    ]
+  },
+  {
+    "keywords": [
+      "SHAHPUR TO MUKTAINAGAR",
+      "MUKTAINAGAR",
+      "BOREGAON BUZURG"
+    ],
+    "state": "Multi-States (Madhya Pradesh, Maharashtra)",
+    "district": "Burhanpur / Jalgaon Border",
+    "place": "Burhanpur - Muktainagar NH-753L Corridor",
+    "coords": [
+      21.15,
+      76.05
+    ]
+  },
+  {
+    "keywords": [
+      "KEN-BETWA",
+      "KEN BETWA",
+      "DAUDHAN"
+    ],
+    "state": "Multi-States (Madhya Pradesh, Uttar Pradesh)",
+    "district": "Chhatarpur / Banda Border",
+    "place": "Ken-Betwa River Linkage Complex",
+    "coords": [
+      24.65,
+      79.85
+    ]
+  },
+  {
+    "keywords": [
+      "LALITPUR-SAGAR",
+      "LALITPUR",
+      "SAGAR- LAKHNADON"
+    ],
+    "state": "Multi-States (Madhya Pradesh, Uttar Pradesh)",
+    "district": "Lalitpur / Sagar Border",
+    "place": "Lalitpur - Sagar NH-44 North-South Corridor",
+    "coords": [
+      24.3,
+      78.6
+    ]
+  },
+  {
+    "keywords": [
+      "CHOWKA",
+      "KAIMAHA",
+      "MP/UP BORDER",
+      "CHHATARPUR BYPASS"
+    ],
+    "state": "Multi-States (Madhya Pradesh, Uttar Pradesh)",
+    "district": "Chhatarpur / Mahoba Border",
+    "place": "Chhatarpur - Mahoba NH-34 Corridor",
+    "coords": [
+      25.1,
+      79.7
+    ]
+  },
+  {
+    "keywords": [
+      "NORTH KOEL",
+      "KUTKU DAM",
+      "MOHAMMADGANJ"
+    ],
+    "state": "Multi-States (Bihar, Jharkhand)",
+    "district": "Palamu / Aurangabad Border",
+    "place": "North Koel Multi-Purpose Reservoir System",
+    "coords": [
+      24.1,
+      84.05
+    ]
+  },
+  {
+    "keywords": [
+      "VILUPPURAM",
+      "PUDUCHERRY KM",
+      "POONDIYANKUPPAM",
+      "SATTANATHAPURAM",
+      "NAGAPATTINAM"
+    ],
+    "state": "Multi-States (Puducherry, Tamil Nadu)",
+    "district": "Viluppuram / Puducherry / Cuddalore Border",
+    "place": "Viluppuram - Puducherry - Nagapattinam Coastal Corridor",
+    "coords": [
+      11.9,
+      79.78
+    ]
+  }
+];
 
 export const STATE_GEO_KNOWLEDGE: Record<string, PlaceNode[]> = {
   "GUJARAT": [
@@ -1459,37 +1900,39 @@ export function getProjectLocation(
   index: number = 0
 ): { state: string; district: string; place: string; coords: [number, number]; category: string } {
   const rawState = project.state || "Delhi";
-  const stKey = normalizeStateName(rawState);
-  const placesList = STATE_GEO_KNOWLEDGE[stKey] || [];
+  const pUpper = (project.project_name || "").toUpperCase();
 
   // 1. If project has valid DB coordinates
   if (project.latitude != null && project.longitude != null && !isNaN(project.latitude) && !isNaN(project.longitude)) {
-    let matchedDist = project.district;
-    let matchedPlace = project.place;
-    
-    if (!matchedDist || !matchedPlace) {
-      const pUpper = (project.project_name || "").toUpperCase();
-      const node = placesList.find((p) => p.keywords?.some((kw) => pUpper.includes(kw))) || placesList[index % (placesList.length || 1)];
-      if (node) {
-        matchedDist = matchedDist || node.district;
-        matchedPlace = matchedPlace || node.place;
-      } else {
-        matchedDist = matchedDist || `${rawState} District`;
-        matchedPlace = matchedPlace || `${rawState} Node`;
-      }
-    }
-
     return {
       state: rawState,
-      district: matchedDist,
-      place: matchedPlace,
+      district: project.district || `${rawState} District`,
+      place: project.place || `${rawState} Corridor`,
       coords: [project.latitude, project.longitude],
       category: project.sector || "Infrastructure",
     };
   }
 
-  // 2. Keyword NLP matching strictly inside that State's Knowledge Base
-  const pUpper = (project.project_name || "").toUpperCase();
+  // 2. Check Interstate Border Corridors
+  for (const ic of INTERSTATE_CORRIDORS) {
+    if (ic.keywords.some((kw) => pUpper.includes(kw))) {
+      const angle = (index * 137.5 * Math.PI) / 180.0;
+      const radius = ((index % 10) + 1) * 0.0012;
+      const lat = ic.coords[0] + radius * Math.cos(angle);
+      const lng = ic.coords[1] + radius * Math.sin(angle);
+      return {
+        state: rawState,
+        district: ic.district,
+        place: ic.place,
+        coords: [Math.round(lat * 1000000) / 1000000, Math.round(lng * 1000000) / 1000000],
+        category: project.sector || "Infrastructure",
+      };
+    }
+  }
+
+  // 3. State-level keyword matching
+  const stKey = normalizeStateName(rawState);
+  const placesList = STATE_GEO_KNOWLEDGE[stKey] || [];
   let matched = placesList.find((p) => p.keywords?.some((kw) => pUpper.includes(kw)));
   if (!matched && placesList.length > 0) {
     matched = placesList[index % placesList.length];
