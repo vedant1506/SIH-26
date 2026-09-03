@@ -8,6 +8,9 @@ interface TopBarProps {
   title: string;
   subtitle?: string;
   status?: "synced" | "inferencing" | "error";
+  hideGlobalProjectCount?: boolean;
+  customProjectCount?: number | null;
+  customProjectLabel?: string;
 }
 
 const BellIcon = () => (
@@ -33,7 +36,14 @@ const MoonIcon = () => (
   </svg>
 );
 
-export default function TopBar({ title, subtitle, status }: TopBarProps) {
+export default function TopBar({
+  title,
+  subtitle,
+  status,
+  hideGlobalProjectCount,
+  customProjectCount,
+  customProjectLabel,
+}: TopBarProps) {
   const [unread, setUnread] = useState(0);
   const [time, setTime] = useState<Date | null>(null);
   const [totalProjects, setTotalProjects] = useState<number | null>(null);
@@ -42,11 +52,13 @@ export default function TopBar({ title, subtitle, status }: TopBarProps) {
   useEffect(() => {
     setTime(new Date());
     listAlerts(true).then((a) => setUnread(a.length)).catch(() => {});
-    getPortfolioSummary().then((s) => setTotalProjects(s?.total_projects ?? null)).catch(() => {});
+    if (!hideGlobalProjectCount) {
+      getPortfolioSummary().then((s) => setTotalProjects(s?.total_projects ?? null)).catch(() => {});
+    }
     setTheme(getStoredTheme());
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [hideGlobalProjectCount]);
 
   const handleToggleTheme = () => {
     const next = toggleTheme();
@@ -148,23 +160,44 @@ export default function TopBar({ title, subtitle, status }: TopBarProps) {
         </div>
 
         {/* Projects count chip */}
-        {totalProjects !== null && (
-          <div
-            style={{
-              display: "flex", alignItems: "center", gap: 5,
-              padding: "4px 10px",
-              background: "var(--accent-glow-2)",
-              border: "1px solid var(--accent-glow)",
-              borderRadius: 999, flexShrink: 0,
-            }}
-          >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-            </svg>
-            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.05em" }}>
-              {totalProjects.toLocaleString("en-IN")} PROJECTS
-            </span>
-          </div>
+        {hideGlobalProjectCount ? (
+          customProjectCount !== undefined && customProjectCount !== null && (
+            <div
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                padding: "4px 10px",
+                background: "var(--accent-glow-2)",
+                border: "1px solid var(--accent-glow)",
+                borderRadius: 999, flexShrink: 0,
+              }}
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.05em" }}>
+                {customProjectCount === 0 ? "0 ANALYZED PROJECTS" : `${customProjectCount.toLocaleString("en-IN")} ${customProjectLabel || "ONGOING PROJECTS"}`}
+              </span>
+            </div>
+          )
+        ) : (
+          totalProjects !== null && (
+            <div
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                padding: "4px 10px",
+                background: "var(--accent-glow-2)",
+                border: "1px solid var(--accent-glow)",
+                borderRadius: 999, flexShrink: 0,
+              }}
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.05em" }}>
+                {totalProjects.toLocaleString("en-IN")} PROJECTS
+              </span>
+            </div>
+          )
         )}
       </div>
 

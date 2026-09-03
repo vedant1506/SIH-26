@@ -32,6 +32,18 @@ class Settings(BaseSettings):
     # ML
     ml_models_path: str = str(BACKEND_DIR.parent / "ml" / "SIH26103_ML_FINAL")
 
+    # Centralized AI Models & Multi-LLM Critic Settings
+    ai_primary_model: str = "Qwen2.5-Instruct (Local Transformer Model)"
+    ai_validator_model: str = "DeepSeek-R1 / Independent Policy Auditor"
+    ai_fallback_model: str = "Llama-3.3-70B-Instruct"
+    openrouter_api_key: str = ""
+    groq_api_key: str = ""
+    openai_api_key: str = ""
+    deepseek_api_key: str = ""
+    gemini_api_key: str = ""
+    ollama_base_url: str = "http://localhost:11434/v1"
+    preferred_llm_model: str = "auto"
+
     model_config = SettingsConfigDict(
         env_file=str(ENV_FILE),
         env_file_encoding="utf-8",

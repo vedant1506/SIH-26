@@ -8,7 +8,7 @@ import { getToken } from "./auth";
 import type {
   Project, ProjectListItem, RiskPrediction, Alert,
   PortfolioSummary, User, PredictRequest,
-  StructuredMitigationPlan, MitigationPlanResponse
+  StructuredMitigationPlan, MitigationPlanResponse, AvailableLlmModel
 } from "./types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -110,11 +110,25 @@ export async function generateMitigation(projectId: string): Promise<{ mitigatio
   });
 }
 
-export async function generateMitigationPlan(projectId: string, forceRegenerate = false): Promise<MitigationPlanResponse> {
+export async function generateMitigationPlan(
+  projectId: string,
+  forceRegenerate = false,
+  modelPreference = "auto",
+  apiKey?: string
+): Promise<MitigationPlanResponse> {
   return request<MitigationPlanResponse>(`/projects/${projectId}/mitigation-plan/generate`, {
     method: "POST",
-    body: JSON.stringify({ project_id: projectId, force_regenerate: forceRegenerate }),
+    body: JSON.stringify({
+      project_id: projectId,
+      force_regenerate: forceRegenerate,
+      model_preference: modelPreference,
+      api_key: apiKey,
+    }),
   });
+}
+
+export async function getAvailableLlmModels(): Promise<AvailableLlmModel[]> {
+  return request<AvailableLlmModel[]>("/projects/mitigation-models").catch(() => []);
 }
 
 export async function getStoredMitigationPlan(projectId: string, planId: string): Promise<MitigationPlanResponse> {
@@ -193,5 +207,63 @@ export async function generateLlmBriefing(payload: Record<string, any> = {}): Pr
     body: JSON.stringify(payload),
   });
 }
+
+// ============================================================
+// TEMPORARY MONTHLY PDF AI ANALYSIS & MITIGATION PIPELINE
+// ============================================================
+
+export async function uploadTemporaryMonthlyPdf(file: File): Promise<any> {
+  const token = getToken();
+  const formData = new FormData();
+  formData.append("file", file);
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${API}/temporary-analysis/upload`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  const body = await res.json().catch(() => ({ detail: res.statusText }));
+  if (!res.ok) {
+    const msg = typeof body.detail === "object" ? body.detail.detail || body.detail.error : body.detail;
+    throw new Error(msg || "Upload error");
+  }
+  return body;
+}
+
+export async function getTemporaryProjects(sessionId: string): Promise<any> {
+  return request<any>(`/temporary-analysis/${sessionId}/projects`);
+}
+
+export async function generateTemporaryMitigation(sessionId: string, projectId: string): Promise<any> {
+  return request<any>(`/temporary-analysis/${encodeURIComponent(sessionId)}/projects/${encodeURIComponent(projectId)}/mitigation`, {
+    method: "POST",
+  });
+}
+
+export function getTemporaryCsvUrl(sessionId: string): string {
+  return `${API}/temporary-analysis/${sessionId}/csv`;
+}
+
+export function getTemporaryRiskCsvUrl(sessionId: string): string {
+  return `${API}/temporary-analysis/${sessionId}/risk-csv`;
+}
+
+export function getTemporaryJsonUrl(sessionId: string): string {
+  return `${API}/temporary-analysis/${sessionId}/json`;
+}
+
+export async function deleteTemporarySession(sessionId: string): Promise<any> {
+  return request<any>(`/temporary-analysis/${sessionId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function getFileAnalysisModelStatuses(): Promise<any> {
+  return request<any>("/file-analysis/models/status").catch(() => null);
+}
+
 
 

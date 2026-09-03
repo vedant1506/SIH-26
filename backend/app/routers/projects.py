@@ -123,8 +123,9 @@ async def get_project(
     db: Session = Depends(get_db),
     current_user: Profile = Depends(get_current_user),
 ):
-    """Returns full project details including milestones. Resilient to UUID changes."""
+    """Returns full project details including milestones strictly matching the requested project."""
     import re
+    from sqlalchemy import text
     project = None
 
     # 1. Try querying by direct UUID match
@@ -139,11 +140,39 @@ async def get_project(
     except (ValueError, TypeError):
         pass
 
-    # 2. If not found by direct UUID, search by project number (e.g. 0950)
+    # 2. Check if project_id is an OCMS / PAIMANA numeric ID in project_geolocations
+    if not project:
+        clean_id = str(project_id).strip()
+        try:
+            row = db.execute(
+                text("SELECT project_name FROM project_geolocations WHERE project_id = :pid"),
+                {"pid": clean_id}
+            ).fetchone()
+            if row and row[0]:
+                project = (
+                    db.query(Project)
+                    .options(joinedload(Project.milestones))
+                    .filter(Project.project_name == row[0])
+                    .first()
+                )
+        except Exception:
+            pass
+
+    # 3. Search by exact or case-insensitive project name
+    if not project:
+        clean_id = str(project_id).strip()
+        project = (
+            db.query(Project)
+            .options(joinedload(Project.milestones))
+            .filter(Project.project_name.ilike(clean_id))
+            .first()
+        )
+
+    # 4. Search by numeric substring only if specific
     if not project:
         digits = re.findall(r"\d+", str(project_id))
         for d in digits:
-            if len(d) >= 3:
+            if len(d) >= 4:
                 project = (
                     db.query(Project)
                     .options(joinedload(Project.milestones))
@@ -153,12 +182,8 @@ async def get_project(
                 if project:
                     break
 
-    # 3. Fallback to active project if still not found
     if not project:
-        project = db.query(Project).options(joinedload(Project.milestones)).first()
-
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+        raise HTTPException(status_code=404, detail=f"Project '{project_id}' not found")
 
     return project
 

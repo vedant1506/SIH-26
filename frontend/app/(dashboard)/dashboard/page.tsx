@@ -94,14 +94,19 @@ export default function DashboardPage() {
         {/* Middle row */}
         <div className="animate-levitate responsive-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24, animationDelay: "150ms" }}>
 
-          <div className="card">
-            <div className="section-label" style={{ marginBottom: 16 }}>Portfolio Risk Distribution</div>
+          <div className="card" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div className="section-label">Portfolio Risk Distribution</div>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", background: "var(--surface-2)", padding: "3px 8px", borderRadius: 6, border: "1px solid var(--border)" }}>
+                {summary?.total_projects ? `${summary.total_projects.toLocaleString()} Projects` : "1,981 Projects"}
+              </span>
+            </div>
             {summary ? <RiskDistribution summary={summary} /> : (
-              <div style={{ height: 220, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 16, paddingBottom: 24 }}>
-                <div className="skeleton" style={{ width: 30, height: "60%" }} />
-                <div className="skeleton" style={{ width: 30, height: "85%" }} />
-                <div className="skeleton" style={{ width: 30, height: "40%" }} />
-                <div className="skeleton" style={{ width: 30, height: "70%" }} />
+              <div style={{ height: 280, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 16, paddingBottom: 24 }}>
+                <div className="skeleton" style={{ width: 40, height: "60%" }} />
+                <div className="skeleton" style={{ width: 40, height: "85%" }} />
+                <div className="skeleton" style={{ width: 40, height: "40%" }} />
+                <div className="skeleton" style={{ width: 40, height: "70%" }} />
               </div>
             )}
           </div>

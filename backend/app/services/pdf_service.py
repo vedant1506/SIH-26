@@ -11,6 +11,19 @@ from reportlab.pdfgen import canvas
 from app.schemas.mitigation import StructuredMitigationPlan
 
 
+def _clean_pdf_text(text) -> str:
+    """Sanitizes text for ReportLab PDF rendering, replacing Unicode Rupee symbol with 'Rs. '."""
+    if text is None:
+        return ""
+    s = str(text)
+    s = s.replace("₹", "Rs. ")
+    s = s.replace("\u20b9", "Rs. ")
+    s = s.replace("&#8377;", "Rs. ")
+    s = s.replace("&rupee;", "Rs. ")
+    s = s.replace("Rs.  ", "Rs. ")
+    return s
+
+
 class NumberedCanvas(canvas.Canvas):
     def __init__(self, *args, **kwargs):
         self.doc_plan_id = kwargs.pop("doc_plan_id", "MP-2026-AUTOGEN")
@@ -38,15 +51,15 @@ class NumberedCanvas(canvas.Canvas):
 
         # Header on later pages
         if self._pageNumber > 1:
-            proj_title = f" · {self.doc_project_name[:40]}" if getattr(self, 'doc_project_name', '') else ""
-            self.drawString(40, 800, f"TRACE | AI Mitigation Report{proj_title} · Plan ID: {getattr(self, 'doc_plan_id', 'MP-2026')}")
+            proj_title = f" · {_clean_pdf_text(self.doc_project_name)[:40]}" if getattr(self, 'doc_project_name', '') else ""
+            self.drawString(40, 800, f"TRACE | AI Mitigation Report{proj_title} · Plan ID: {_clean_pdf_text(getattr(self, 'doc_plan_id', 'MP-2026'))}")
             self.setStrokeColor(colors.HexColor("#e2e8f0"))
             self.setLineWidth(0.5)
             self.line(40, 792, 555, 792)
 
         # Running Footer
-        proj_foot = f" · {self.doc_project_name[:25]}" if getattr(self, 'doc_project_name', '') else ""
-        footer_left = f"MoSPI TRACE{proj_foot} · Plan ID: {getattr(self, 'doc_plan_id', 'MP-2026')} · Hash: {getattr(self, 'doc_plan_hash', '')[:16]}"
+        proj_foot = f" · {_clean_pdf_text(self.doc_project_name)[:25]}" if getattr(self, 'doc_project_name', '') else ""
+        footer_left = f"MoSPI TRACE{proj_foot} · Plan ID: {_clean_pdf_text(getattr(self, 'doc_plan_id', 'MP-2026'))} · Hash: {getattr(self, 'doc_plan_hash', '')[:16]}"
         footer_right = f"Page {self._pageNumber} of {page_count}"
         self.drawString(40, 30, footer_left)
         self.drawRightString(555, 30, footer_right)
@@ -183,7 +196,7 @@ def generate_mitigation_pdf(
     tier_name = p_sum.risk_level.upper()
     tier_color_hex = "#dc2626" if tier_name == "CRITICAL" else "#d97706" if tier_name == "HIGH" else "#0284c7"
 
-    meta_text = f"<b>Plan ID:</b> {plan_id} | <b>Version:</b> v{plan_version} | <b>Plan Hash:</b> {hash_short} | <b>Generated:</b> {gen_time_str}"
+    meta_text = f"<b>Plan ID:</b> {_clean_pdf_text(plan_id)} | <b>Version:</b> v{plan_version} | <b>Plan Hash:</b> {_clean_pdf_text(hash_short)} | <b>Generated:</b> {_clean_pdf_text(gen_time_str)}"
 
     if logo_path:
         try:
@@ -219,11 +232,11 @@ def generate_mitigation_pdf(
     # 2. Prominent Project Identification Banner Card
     banner_content = [
         [
-            Paragraph(f"<b>PROJECT:</b> {p_sum.project_name}", project_banner_title),
+            Paragraph(f"<b>PROJECT:</b> {_clean_pdf_text(p_sum.project_name)}", project_banner_title),
             Paragraph(f"<b>Risk Classification:</b> <font color='{tier_color_hex}'><b>[{tier_name}]</b></font>", project_banner_sub)
         ],
         [
-            Paragraph(f"<b>Sector:</b> {p_sum.sector} | <b>Project ID:</b> {p_sum.project_id}", project_banner_sub),
+            Paragraph(f"<b>Sector:</b> {_clean_pdf_text(p_sum.sector)} | <b>Project ID:</b> {_clean_pdf_text(p_sum.project_id)}", project_banner_sub),
             Paragraph(f"<b>Composite Risk Score:</b> <b>{p_sum.risk_score or 0.0}/100</b> (Schedule: {p_sum.schedule_risk or 0}% | Cost: {p_sum.cost_risk or 0}%)", project_banner_sub)
         ]
     ]
@@ -243,7 +256,7 @@ def generate_mitigation_pdf(
 
     # 3. Executive Recommendation Box
     story.append(Paragraph("1. Executive Recommendation", section_h1))
-    rec_box = Table([[Paragraph(plan.executive_recommendation, body_style)]], colWidths=[515])
+    rec_box = Table([[Paragraph(_clean_pdf_text(plan.executive_recommendation), body_style)]], colWidths=[515])
     rec_box.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#f0f9ff")),
         ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#bae6fd")),
@@ -260,10 +273,10 @@ def generate_mitigation_pdf(
         d_rows = [[Paragraph(f"<b>{h}</b>", table_cell_bold) for h in d_headers]]
         for d in plan.risk_drivers:
             d_rows.append([
-                Paragraph(d.factor, table_cell_bold),
-                Paragraph(d.impact, table_cell),
-                Paragraph(d.evidence, table_cell),
-                Paragraph(d.source, table_cell),
+                Paragraph(_clean_pdf_text(d.factor), table_cell_bold),
+                Paragraph(_clean_pdf_text(d.impact), table_cell),
+                Paragraph(_clean_pdf_text(d.evidence), table_cell),
+                Paragraph(_clean_pdf_text(d.source), table_cell),
             ])
         d_table = Table(d_rows, colWidths=[150, 95, 190, 80])
         d_table.setStyle(TableStyle([
@@ -280,9 +293,9 @@ def generate_mitigation_pdf(
         story.append(Paragraph("3. Why This Project Is At Risk (Root Cause Analysis)", section_h1))
         for rc in plan.root_causes:
             rc_data = [
-                [Paragraph(f"<b>Identified Risk:</b> {rc.risk}", table_cell_bold)],
-                [Paragraph(f"<b>Likely Root Cause:</b> {rc.cause}", table_cell)],
-                [Paragraph(f"<b>Observed Project Evidence:</b> {rc.evidence}", table_cell)],
+                [Paragraph(f"<b>Identified Risk:</b> {_clean_pdf_text(rc.risk)}", table_cell_bold)],
+                [Paragraph(f"<b>Likely Root Cause:</b> {_clean_pdf_text(rc.cause)}", table_cell)],
+                [Paragraph(f"<b>Observed Project Evidence:</b> {_clean_pdf_text(rc.evidence)}", table_cell)],
             ]
             rc_table = Table(rc_data, colWidths=[515])
             rc_table.setStyle(TableStyle([
@@ -301,13 +314,13 @@ def generate_mitigation_pdf(
         a_rows = [[Paragraph(f"<b>{h}</b>", table_cell_bold) for h in a_headers]]
         for act in plan.mitigation_actions:
             sev_badge = f"<font color='#dc2626'><b>[{act.severity}]</b></font>" if act.severity == "CRITICAL" else f"<font color='#d97706'><b>[{act.severity}]</b></font>"
-            ev_line = f"<br/><font color='#0284c7'><b>Evidence:</b> {act.evidence}</font>" if act.evidence else ""
+            ev_line = f"<br/><font color='#0284c7'><b>Evidence:</b> {_clean_pdf_text(act.evidence)}</font>" if act.evidence else ""
             a_rows.append([
                 Paragraph(f"<b>P{act.priority}</b>", table_cell_bold),
-                Paragraph(f"{sev_badge} <b>{act.action}</b>{ev_line}<br/><font color='#64748b'><b>Reason:</b> {act.reason}</font>", table_cell),
-                Paragraph(act.responsible_role, table_cell),
-                Paragraph(f"<b>{act.timeline}</b>", table_cell),
-                Paragraph(f"{act.expected_outcome}<br/><font color='#dc2626'><b>Escalate:</b> {act.escalation_trigger}</font>", table_cell),
+                Paragraph(f"{sev_badge} <b>{_clean_pdf_text(act.action)}</b>{ev_line}<br/><font color='#64748b'><b>Reason:</b> {_clean_pdf_text(act.reason)}</font>", table_cell),
+                Paragraph(_clean_pdf_text(act.responsible_role), table_cell),
+                Paragraph(f"<b>{_clean_pdf_text(act.timeline)}</b>", table_cell),
+                Paragraph(f"{_clean_pdf_text(act.expected_outcome)}<br/><font color='#dc2626'><b>Escalate:</b> {_clean_pdf_text(act.escalation_trigger)}</font>", table_cell),
             ])
         a_table = Table(a_rows, colWidths=[24, 186, 95, 75, 135])
         a_table.setStyle(TableStyle([
@@ -327,11 +340,11 @@ def generate_mitigation_pdf(
         m_rows = [[Paragraph(f"<b>{h}</b>", table_cell_bold) for h in m_headers]]
         for m in plan.monitoring_plan:
             m_rows.append([
-                Paragraph(m.indicator, table_cell),
-                Paragraph(m.current_value, table_cell),
-                Paragraph(m.target, table_cell_bold),
-                Paragraph(m.frequency, table_cell),
-                Paragraph(m.responsible_role, table_cell),
+                Paragraph(_clean_pdf_text(m.indicator), table_cell),
+                Paragraph(_clean_pdf_text(m.current_value), table_cell),
+                Paragraph(_clean_pdf_text(m.target), table_cell_bold),
+                Paragraph(_clean_pdf_text(m.frequency), table_cell),
+                Paragraph(_clean_pdf_text(m.responsible_role), table_cell),
             ])
         m_table = Table(m_rows, colWidths=[145, 95, 105, 70, 100])
         m_table.setStyle(TableStyle([
@@ -350,10 +363,10 @@ def generate_mitigation_pdf(
         e_rows = [[Paragraph(f"<b>{h}</b>", table_cell_bold) for h in e_headers]]
         for e in plan.escalation_plan:
             e_rows.append([
-                Paragraph(e.trigger, table_cell_bold),
-                Paragraph(e.threshold, table_cell),
-                Paragraph(e.escalate_to, table_cell_bold),
-                Paragraph(e.recommended_action, table_cell),
+                Paragraph(_clean_pdf_text(e.trigger), table_cell_bold),
+                Paragraph(_clean_pdf_text(e.threshold), table_cell),
+                Paragraph(_clean_pdf_text(e.escalate_to), table_cell_bold),
+                Paragraph(_clean_pdf_text(e.recommended_action), table_cell),
             ])
         e_table = Table(e_rows, colWidths=[120, 95, 115, 185])
         e_table.setStyle(TableStyle([
@@ -369,8 +382,8 @@ def generate_mitigation_pdf(
     # 9. AI Generation Provenance Box
     add_models_str = ", ".join(validation_models) if validation_models else "None (Single Model Mode)"
     provenance_text = (
-        f"<b>AI Provenance & Audit Verification:</b> Plan ID: <b>{plan_id}</b> | Version: <b>v{plan_version}</b> | "
-        f"Hash: <b>{hash_short}</b> | Primary Model: <b>{model_name}</b> | Generated: <b>{gen_time_str}</b>"
+        f"<b>AI Provenance & Audit Verification:</b> Plan ID: <b>{_clean_pdf_text(plan_id)}</b> | Version: <b>v{plan_version}</b> | "
+        f"Hash: <b>{_clean_pdf_text(hash_short)}</b> | Primary Model: <b>{_clean_pdf_text(model_name)}</b> | Generated: <b>{_clean_pdf_text(gen_time_str)}</b>"
     )
     story.append(Table([[Paragraph(provenance_text, body_style)]], colWidths=[515], style=[
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#f8fafc")),

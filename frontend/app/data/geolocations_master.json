@@ -11882,15 +11882,15 @@
   {
     "project_id": "705362",
     "project_name": "Jaynagar-Bijalpura, incl. extn. Bet, Bijalpura-Bardibas [Nepal]",
-    "state": "Offshore",
-    "district": "Offshore Energy Basin",
-    "location_name": "Offshore Continental Shelf Energy Block",
-    "latitude": 19.2,
-    "longitude": 71.5,
+    "state": "Bihar",
+    "district": "Madhubani",
+    "location_name": "Jaynagar (Madhubani) - Nepal Rail Corridor",
+    "latitude": 26.5878,
+    "longitude": 86.1325,
     "associated_states": [
-      "Offshore"
+      "Bihar"
     ],
-    "geocode_source": "MoSPI_Offshore_Basin_Registry",
+    "geocode_source": "MoSPI_India_Nepal_CrossBorder_Rail_Registry",
     "confidence": 1.0,
     "location_status": "VERIFIED",
     "location_verified": 1

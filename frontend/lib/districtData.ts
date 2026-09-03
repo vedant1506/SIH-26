@@ -35,6 +35,21 @@ export interface DistrictSummary {
 export const INTERSTATE_CORRIDORS: InterstateNode[] = [
   {
     "keywords": [
+      "JAYNAGAR",
+      "BIJALPURA",
+      "BARDIBAS",
+      "NEPAL"
+    ],
+    "state": "Bihar",
+    "district": "Madhubani",
+    "place": "Jaynagar (Madhubani) – Nepal Cross-Border Rail Corridor",
+    "coords": [
+      26.5878,
+      86.1325
+    ]
+  },
+  {
+    "keywords": [
       "FAGNE",
       "MAHARASHTRA/GUJARAT BORDER",
       "GUJARAT/MAHARASHTRA",
@@ -1682,6 +1697,21 @@ export const STATE_GEO_KNOWLEDGE: Record<string, PlaceNode[]> = {
       ]
     },
     {
+      "place": "Jaynagar (Madhubani) – Nepal Cross-Border Rail Corridor",
+      "district": "Madhubani",
+      "coords": [
+        26.5878,
+        86.1325
+      ],
+      "keywords": [
+        "JAYNAGAR",
+        "BIJALPURA",
+        "BARDIBAS",
+        "MADHUBANI",
+        "JAYNAGAR-BIJALPURA"
+      ]
+    },
+    {
       "place": "Hajipur Rail Zonal Headquarters",
       "district": "Vaishali",
       "coords": [
@@ -2073,5 +2103,52 @@ export function aggregateStateData(projects: any[]): {
     .sort((a, b) => b.projectCount - a.projectCount);
 }
 
+export const STATE_CORRIDORS: Record<string, string> = {
+  "MAHARASHTRA": "Mumbai - Pune - Nagpur Samruddhi Expressway & JNPT Maritime Freight Corridor",
+  "UTTAR PRADESH": "Ganga & Purvanchal Expressways, Jewar Noida International Airport & Varanasi Freight Grid",
+  "ANDHRA PRADESH": "Visakhapatnam - Vijayawada Coastal Industrial Corridor & Multi-Modal Port Infrastructure",
+  "GUJARAT": "Ahmedabad - Surat - Vadodara - Dholera SIR & Deendayal Kandla Port Corridor",
+  "BIHAR": "Patna - Gaya - Bhagalpur - Ganga River Multi-Lane Bridges & Rail Doubling Corridor",
+  "KARNATAKA": "Bengaluru - Mysuru - Hubballi - Belagavi Tech, Rail & Industrial Freight Belt",
+  "MADHYA PRADESH": "Bhopal - Indore Metro, Atal Progressway & Singrauli Energy-Coal Mining Hub",
+  "ODISHA": "Bhubaneswar - Paradip - Cuttack Coastal & Mineral Heavy Freight Belt",
+  "ASSAM": "Guwahati - Dibrugarh - Silchar Brahmaputra Economic Transit & Frontier Hub",
+  "JHARKHAND": "Ranchi - Dhanbad - Jamshedpur Steel & Mineral Freight Network",
+  "TELANGANA": "Hyderabad Regional Ring Road & Warangal Industrial Growth Corridor",
+  "CHHATTISGARH": "Raipur - Bilaspur - Korba Energy & Coal Evacuation Heavy Corridor",
+  "WEST BENGAL": "Kolkata - Durgapur - Siliguri Chicken's Neck Strategic Multi-Modal Gateway",
+  "RAJASTHAN": "Delhi-Mumbai Expressway, Bikaner 20 GW Solar Park & Barmer Refinery Corridor",
+  "TAMIL NADU": "Chennai - Coimbatore - Madurai Defense & Automobile Manufacturing Corridor",
+  "JAMMU AND KASHMIR": "Udhampur - Srinagar - Baramulla Strategic Rail Link & Ring Road Highway Corridors",
+  "UTTARAKHAND": "Rishikesh - Karnaprayag Strategic Rail & Char Dham All-Weather Highway",
+  "PUNJAB": "Amritsar - Ludhiana - Bathinda Delhi-Katra Expressway Network",
+  "MANIPUR": "Jiribam - Imphal Strategic Rail Link & Moreh Trans-Asian Border Trade Corridor",
+  "KERALA": "NH-66 Coastal Six-Lane Highway & Vizhinjam Deep Water International Transshipment Port",
+  "HIMACHAL PRADESH": "Kiratpur - Manali Four-Lane & Bhanupalli-Bilaspur Strategic Rail Link",
+  "HARYANA": "KMP Expressway, Dwarka Expressway & Western DFC Multimodal Logistics Hubs",
+  "MIZORAM": "Aizawl - Tuipang NH-54 Highway & Kaladan Multi-Modal Transit Transport Corridor",
+  "NAGALAND": "Dimapur - Kohima 4-Lane Road & Dhansiri-Zubza Strategic Rail Alignment",
+  "ARUNACHAL PRADESH": "Trans-Arunachal Frontier Strategic Highway & Hydro Power Evacuation Grid",
+  "DELHI": "Urban Extension Road-II, Dwarka Expressway & Metro Phase-IV Lines",
+  "MEGHALAYA": "Shillong Western Bypass & Dawki-Tamabil Indo-Bangladesh Trade Link",
+  "SIKKIM": "Sivok - Rangpo Strategic Railway Line & NH-717A Alternative Highway Corridor",
+  "TRIPURA": "Agartala - Akhaura Cross-Border Rail Link & Maitri Setu Feni River Bridge",
+  "GOA": "New Zuari Cable-Stayed Bridge, Mopa International Airport Highway & Konkan Maritime Link",
+  "LADAKH": "Zojila Tunnel, Leh-Manali Strategic Corridor & High-Altitude Border Infrastructure",
+  "ANDAMAN & NICOBAR": "Great Nicobar International Container Transshipment Port & Andaman Trunk Road",
+  "DADRA & NAGAR HAVELI AND DAMAN & DIU": "Daman Coastal Highway, Silvassa Industrial Belt & Diu Marine Drive",
+  "PUDUCHERRY": "Puducherry - Cuddalore Coastal Link & Karaikal Port Connectivity",
+  "CHANDIGARH": "Tricity Metro Transit Grid & Chandigarh-Ludhiana Economic Expressway",
+  "LAKSHADWEEP": "Agatti Airfield Expansion & Island Deep-Sea Maritime Jetty Network",
+  "MULTI-STATE": "Dedicated Freight Corridors (Western & Eastern DFC), Golden Quadrilateral Interstates",
+  "OFFSHORE": "Mumbai High, KG Basin Deep-Water Oil & Gas Exploration Fields",
+  "PAN INDIA": "National Smart Power Grid, Optical Fiber BharatNet & Central PM-GatiShakti Network",
+};
+
+export function getStateCorridor(stateName: string): string {
+  const norm = normalizeStateName(stateName);
+  return STATE_CORRIDORS[norm] || STATE_CORRIDORS[stateName.toUpperCase()] || `${stateName} Multi-Modal Industrial & Transport Corridor`;
+}
+
 export const STATE_DISTRICTS_DATA: Record<string, any[]> = {};
-export const STATE_DISTRICT_PLACES: Record<string, any[]> = {};
+export const STATE_DISTRICT_PLACES: Record<string, any[]> = STATE_GEO_KNOWLEDGE;

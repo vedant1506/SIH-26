@@ -732,7 +732,7 @@ clean_project_id,project_name,ministry,sector,state,original_cost_cr,revised_cos
 705742,Jeypore-Malkanagiri New Railway Line Project,Ministry of Railways,Railways,Odisha,2344.0,2344.0,549.72,23.1,23.45221843003413,0.352218430034128,0.0,0.381,0.3371,0.0021,0.1863,low
 706898,Khurda Road - Balangir Electrification of Railway Track Project,Ministry of Railways,Railways,Odisha,267.61,267.61,0.0,0.0,0.0,0.0,0.0,0.15,0.1414,0.0015,0.0784,low
 709811,GANDHAMARDAN IRON ORE MINES TO GOALDIH STATION/12.76kms,Ministry of Railways,Railways,Odisha,190.0,189.93,3.4,5.0,1.7901332069709892,-3.209866793029011,-0.036842105263154304,0.2,0.325,0.0016,0.1795,low
-705362,"Jaynagar-Bijalpura, incl. extn. Bet, Bijalpura-Bardibas [Nepal]",Ministry of Railways,Railways,Offshore,819.0,819.0,580.51,75.0,70.88034188034187,-4.119658119658126,0.0,0.9,0.2483,0.0025,0.1377,low
+705362,"Jaynagar-Bijalpura, incl. extn. Bet, Bijalpura-Bardibas [Nepal]",Ministry of Railways,Railways,Bihar,819.0,819.0,580.51,75.0,70.88034188034187,-4.119658119658126,0.0,0.9,0.2483,0.0025,0.1377,low
 705298,North Region Video Surveillance Project,Ministry of Railways,Railways,PAN India,274.39,274.39,0.0,48.0,0.0,-48.0,0.0,0.63,0.5631,0.0016,0.3104,medium
 607653,Ludhiana Mullanpur 21Km Doubling Railway project,Ministry of Railways,Railways,Punjab,234.78,234.78,10.0,0.0,4.25930658488798,4.25930658488798,0.0,0.15,0.1308,0.0015,0.0726,low
 705783,Ludhiana- Killa Raipur Railway Doubling Project,Ministry of Railways,Railways,Punjab,237.64,238.0,137.05,57.0,57.584033613445385,0.584033613445385,0.15148964820737826,0.72,0.2266,0.0022,0.1256,low

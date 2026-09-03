@@ -20,7 +20,7 @@ DEFAULT_DB_FILE = BACKEND_DIR / "sql_app.db"
 db_url = settings.database_url or f"sqlite:///{DEFAULT_DB_FILE.as_posix()}"
 
 if db_url.startswith("sqlite"):
-    engine = create_engine(db_url, connect_args={"check_same_thread": False})
+    engine = create_engine(db_url, connect_args={"check_same_thread": False, "timeout": 30})
     from sqlalchemy import event
     @event.listens_for(engine, "connect")
     def set_sqlite_pragma(dbapi_connection, connection_record):

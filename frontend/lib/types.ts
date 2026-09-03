@@ -87,6 +87,9 @@ export interface ProjectListItem {
   composite_risk_score: number | null;
   delay_probability: number | null;
   cost_overrun_probability: number | null;
+  predicted_delay_months?: number | null;
+  delay_duration_months?: number | null;
+  risk_trend?: string | null;
 }
 
 export interface Alert {
@@ -188,8 +191,11 @@ export interface StructuredMitigationPlan {
   monitoring_plan: MonitoringItem[];
   escalation_plan: EscalationItem[];
   executive_recommendation: string;
+}
+
 export interface ModelMetadata {
   primary_model: string;
+  validator_model?: string;
   models_used: string[];
   models_attempted: string[];
   models_successful: string[];
@@ -197,6 +203,9 @@ export interface ModelMetadata {
   generation_mode: string;
   status: string;
   validation_status: string;
+  project_specificity_score?: number;
+  semantic_similarity_score?: number;
+  generation_attempt?: number;
 }
 
 export interface MitigationPlanResponse {
@@ -217,3 +226,20 @@ export interface MitigationPlanResponse {
   additional_models?: string[];
   generation_mode?: string;
 }
+
+export interface AvailableLlmModel {
+  id: string;
+  name: string;
+  provider: string;
+  is_available: boolean;
+  is_local: boolean;
+  description: string;
+}
+
+export interface MitigationPlanRequest {
+  project_id?: string;
+  force_regenerate?: boolean;
+  model_preference?: string;
+  api_key?: string;
+}
+

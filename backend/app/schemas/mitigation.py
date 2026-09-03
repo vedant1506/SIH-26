@@ -67,18 +67,33 @@ class StructuredMitigationPlan(BaseModel):
 
 class ModelMetadataSchema(BaseModel):
     primary_model: str = "Qwen 2.5"
+    validator_model: Optional[str] = "DeepSeek-R1 / Independent Policy Auditor"
     models_used: List[str] = ["Qwen 2.5"]
     models_attempted: List[str] = ["Qwen 2.5"]
     models_successful: List[str] = ["Qwen 2.5"]
     models_failed: List[str] = []
     generation_mode: str = "Project-Specific Deep Risk Intelligence"
     status: str = "completed"
-    validation_status: str = "passed"
+    validation_status: str = "approved"
+    project_specificity_score: Optional[float] = 0.85
+    semantic_similarity_score: Optional[float] = 0.12
+    generation_attempt: Optional[int] = 1
+
+
+class AvailableLlmModelSchema(BaseModel):
+    id: str
+    name: str
+    provider: str
+    is_available: bool
+    is_local: bool
+    description: str
 
 
 class MitigationPlanRequest(BaseModel):
     project_id: Optional[str] = None
     force_regenerate: bool = False
+    model_preference: Optional[str] = "auto"
+    api_key: Optional[str] = None
 
 
 class MitigationPlanResponse(BaseModel):

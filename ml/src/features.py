@@ -111,35 +111,65 @@ def compute_cost_variation(original_cost_cr: pd.Series, revised_cost_cr: pd.Seri
 
 def build_feature_matrix(df: pd.DataFrame, snapshot_date: date) -> pd.DataFrame:
     """
-    Master function: takes a raw project DataFrame and returns the full feature matrix.
+    Master function: takes a raw or preprocessed project DataFrame and returns the full feature matrix.
     Call this in your training notebooks and scripts.
 
     Args:
-        df: DataFrame with raw project columns from MoSPI PAIMANA data
+        df: DataFrame with raw or processed project columns from MoSPI PAIMANA data
         snapshot_date: The date of the data snapshot (for time_elapsed_ratio)
 
     Returns:
         DataFrame with exactly MODEL_FEATURES columns
     """
-    features = pd.DataFrame()
+    features = pd.DataFrame(index=df.index)
 
-    features["burn_rate_pct"] = compute_burn_rate(
-        df["cumulative_expenditure_cr"], df["revised_cost_cr"]
-    )
-    features["burn_progress_gap"] = compute_burn_progress_gap(
-        features["burn_rate_pct"], df["physical_progress_pct"]
-    )
-    features["time_elapsed_ratio"] = compute_time_elapsed_ratio(
-        pd.to_datetime(df["original_start_date"]),
-        pd.to_datetime(df["scheduled_completion_date"]),
-        snapshot_date,
-    )
-    features["physical_progress_pct"] = df["physical_progress_pct"]
-    features["cost_variation_pct"] = compute_cost_variation(
-        df["original_cost_cr"], df["revised_cost_cr"]
-    )
-    features["original_cost_cr"] = df["original_cost_cr"]
-    features["revised_cost_cr"] = df["revised_cost_cr"]
+    # 1. Burn rate
+    if "burn_rate_pct" in df.columns:
+        features["burn_rate_pct"] = df["burn_rate_pct"].fillna(0.0)
+    else:
+        exp_col = "cumulative_expenditure_cr" if "cumulative_expenditure_cr" in df.columns else "cumulative_expenditure_crore"
+        rev_col = "revised_cost_cr" if "revised_cost_cr" in df.columns else "revised_cost_crore"
+        features["burn_rate_pct"] = compute_burn_rate(df[exp_col], df[rev_col]).fillna(0.0)
+
+    # 2. Physical progress
+    prog_col = "physical_progress_pct" if "physical_progress_pct" in df.columns else "physical_progress_percent"
+    features["physical_progress_pct"] = df[prog_col].fillna(0.0)
+
+    # 3. Burn progress gap
+    if "burn_progress_gap" in df.columns:
+        features["burn_progress_gap"] = df["burn_progress_gap"].fillna(0.0)
+    else:
+        features["burn_progress_gap"] = compute_burn_progress_gap(
+            features["burn_rate_pct"], features["physical_progress_pct"]
+        ).fillna(0.0)
+
+    # 4. Time elapsed ratio
+    if "time_elapsed_ratio" in df.columns:
+        features["time_elapsed_ratio"] = df["time_elapsed_ratio"].fillna(0.5)
+    else:
+        start_col = "original_start_date" if "original_start_date" in df.columns else "start_date_mm_yyyy"
+        target_col = "scheduled_completion_date" if "scheduled_completion_date" in df.columns else "original_target_doc_mm_yyyy"
+        features["time_elapsed_ratio"] = compute_time_elapsed_ratio(
+            pd.to_datetime(df[start_col], errors="coerce"),
+            pd.to_datetime(df[target_col], errors="coerce"),
+            snapshot_date,
+        ).fillna(0.5)
+
+    # 5. Cost variation
+    if "cost_variation_pct" in df.columns:
+        features["cost_variation_pct"] = df["cost_variation_pct"].fillna(0.0)
+    else:
+        orig_col = "original_cost_cr" if "original_cost_cr" in df.columns else "original_cost_crore"
+        rev_col = "revised_cost_cr" if "revised_cost_cr" in df.columns else "revised_cost_crore"
+        features["cost_variation_pct"] = compute_cost_variation(
+            df[orig_col], df[rev_col]
+        ).fillna(0.0)
+
+    # 6. Original & revised costs
+    orig_col = "original_cost_cr" if "original_cost_cr" in df.columns else "original_cost_crore"
+    rev_col = "revised_cost_cr" if "revised_cost_cr" in df.columns else "revised_cost_crore"
+    features["original_cost_cr"] = df[orig_col].fillna(0.0)
+    features["revised_cost_cr"] = df[rev_col].fillna(features["original_cost_cr"])
 
     return features[MODEL_FEATURES]
 
