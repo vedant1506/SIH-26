@@ -90,6 +90,7 @@ export interface ProjectListItem {
   predicted_delay_months?: number | null;
   delay_duration_months?: number | null;
   risk_trend?: string | null;
+  report_month?: string | null;
 }
 
 export interface Alert {

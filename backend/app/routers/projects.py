@@ -111,6 +111,7 @@ async def list_projects(
             composite_risk_score=pred.composite_risk_score if pred else None,
             delay_probability=pred.delay_probability if pred else None,
             cost_overrun_probability=pred.cost_overrun_probability if pred else None,
+            report_month="April 2026",
         )
         result.append(item)
 

@@ -18,6 +18,7 @@ export default function AnalyticsPage() {
   const [viewMode, setViewMode] = useState<"states" | "districts">("states");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [hoveredSlice, setHoveredSlice] = useState<{ name: string; value: number; color: string; pct: string; index: number } | null>(null);
+  const [escalationLimit, setEscalationLimit] = useState<number>(5);
 
   // Comprehensive state-level aggregation across all authentic MoSPI projects
   const allStatesData = useMemo(() => {
@@ -575,63 +576,131 @@ export default function AnalyticsPage() {
             </ResponsiveContainer>
           </div>
 
-          {/* Highest Cost Escalation Projects */}
+          {/* Highest Cost Escalation Projects — Official MoSPI April 2026 Dataset */}
           <div className="card" style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 16 }}>
-              Highest Cost Escalation Projects (PAIMANA Tracked)
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text)" }}>
+                    Highest Cost Escalation Projects
+                  </span>
+                  <span className="badge" style={{ background: "rgba(56, 189, 248, 0.15)", color: "#38bdf8", border: "1px solid rgba(56, 189, 248, 0.3)", fontSize: 11, padding: "2px 8px", fontWeight: 700 }}>
+                    Official MoSPI April 2026 Dataset
+                  </span>
+                  <span className="badge" style={{ background: "rgba(16, 185, 129, 0.12)", color: "#10b981", border: "1px solid rgba(16, 185, 129, 0.25)", fontSize: 11, padding: "2px 8px" }}>
+                    Table 6: All Ongoing Projects (Pan-India)
+                  </span>
+                  <span className="badge" style={{ background: "rgba(245, 158, 11, 0.12)", color: "#f59e0b", border: "1px solid rgba(245, 158, 11, 0.25)", fontSize: 11, padding: "2px 8px" }}>
+                    1,981 Projects Baseline
+                  </span>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>
+                  Ranked strictly by capital cost overrun (Anticipated / Revised Cost − Original Sanctioned Cost) directly from <strong style={{ color: "var(--text)" }}>FlashReport_April_2026_All_Ongoing_Projects_Structured.csv</strong>.
+                </div>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "monospace", background: "var(--surface-2)", padding: "4px 8px", borderRadius: 4, border: "1px solid var(--border)" }}>
+                  April 2026 CSV
+                </span>
+                <select
+                  value={escalationLimit}
+                  onChange={(e) => setEscalationLimit(Number(e.target.value))}
+                  className="select"
+                  style={{ padding: "4px 10px", fontSize: 11, height: 30, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 6, color: "var(--text)" }}
+                >
+                  <option value={5}>Top 5 Projects</option>
+                  <option value={10}>Top 10 Projects</option>
+                  <option value={15}>Top 15 Projects</option>
+                </select>
+              </div>
             </div>
+
             <div style={{ overflowX: "auto" }}>
-              <table className="data-table" style={{ minWidth: 780 }}>
+              <table className="data-table" style={{ minWidth: 920 }}>
                 <thead>
                   <tr>
+                    <th style={{ width: 40 }}>#</th>
                     <th>Project Name</th>
                     <th>Ministry</th>
-                    <th>State</th>
+                    <th>Sector</th>
+                    <th>State / Scope</th>
+                    <th>Report Month</th>
                     <th>Original Cost</th>
                     <th>Revised Cost</th>
                     <th>Cost Overrun</th>
                     <th>Action</th>
                   </tr>
                 </thead>
-              <tbody>
-                {projects
-                  .filter((p) => (p.revised_cost_cr || 0) > (p.original_cost_cr || 0))
-                  .sort((a, b) => {
-                    const escA = (a.revised_cost_cr || 0) - (a.original_cost_cr || 0);
-                    const escB = (b.revised_cost_cr || 0) - (b.original_cost_cr || 0);
-                    return escB - escA;
-                  })
-                  .slice(0, 5)
-                  .map((p) => {
-                    const esc = (p.revised_cost_cr || 0) - (p.original_cost_cr || 0);
-                    const escPct = p.original_cost_cr ? ((esc / p.original_cost_cr) * 100).toFixed(1) : "0.0";
-                    return (
-                      <tr key={p.id}>
-                        <td style={{ fontWeight: 600, color: "var(--text)", maxWidth: 280 }}>
-                          <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={p.project_name}>
-                            {p.project_name}
-                          </div>
-                        </td>
-                        <td>{getMinistryShortName(p.ministry)}</td>
-                        <td>{p.state}</td>
-                        <td>₹{p.original_cost_cr?.toLocaleString("en-IN") || "—"} Cr</td>
-                        <td style={{ fontWeight: 600 }}>₹{p.revised_cost_cr?.toLocaleString("en-IN") || "—"} Cr</td>
-                        <td style={{ color: "var(--critical)", fontWeight: 700 }}>
-                          +₹{esc.toFixed(0)} Cr ({escPct}%)
-                        </td>
-                        <td>
-                          <a
-                            href={`/projects/${p.id}`}
-                            style={{ fontSize: 11, color: "var(--accent)", fontWeight: 600, textDecoration: "none" }}
-                          >
-                            View Details →
-                          </a>
-                        </td>
-                      </tr>
-                    );
-                  })}
-              </tbody>
-            </table>
+                <tbody>
+                  {projects
+                    .filter((p) => (p.revised_cost_cr || 0) > (p.original_cost_cr || 0))
+                    .sort((a, b) => {
+                      const escA = (a.revised_cost_cr || 0) - (a.original_cost_cr || 0);
+                      const escB = (b.revised_cost_cr || 0) - (b.original_cost_cr || 0);
+                      return escB - escA;
+                    })
+                    .slice(0, escalationLimit)
+                    .map((p, rank) => {
+                      const esc = (p.revised_cost_cr || 0) - (p.original_cost_cr || 0);
+                      const escPct = p.original_cost_cr ? ((esc / p.original_cost_cr) * 100).toFixed(1) : "0.0";
+                      return (
+                        <tr key={p.id}>
+                          <td style={{ color: "var(--text-muted)", fontWeight: 700, fontSize: 12 }}>
+                            #{rank + 1}
+                          </td>
+                          <td style={{ fontWeight: 600, color: "var(--text)", maxWidth: 280 }}>
+                            <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={p.project_name}>
+                              {p.project_name}
+                            </div>
+                          </td>
+                          <td style={{ maxWidth: 220, fontSize: 12 }}>
+                            <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={p.ministry}>
+                              {p.ministry}
+                            </div>
+                          </td>
+                          <td style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                            <span style={{ padding: "2px 6px", borderRadius: 4, background: "var(--surface-2)", border: "1px solid var(--border)", fontSize: 11 }}>
+                              {p.sector || "Infrastructure"}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: 12 }}>
+                            <span style={{
+                              fontWeight: p.state === "PAN India" ? 700 : 500,
+                              color: p.state === "PAN India" ? "#38bdf8" : "var(--text)"
+                            }}>
+                              {p.state}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="badge" style={{ background: "rgba(56, 189, 248, 0.1)", color: "#38bdf8", border: "1px solid rgba(56, 189, 248, 0.2)", fontSize: 10, padding: "1px 6px" }}>
+                              {p.report_month || "April 2026"}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: 12, whiteSpace: "nowrap" }}>
+                            ₹{p.original_cost_cr?.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "—"} Cr
+                          </td>
+                          <td style={{ fontWeight: 600, fontSize: 12, whiteSpace: "nowrap" }}>
+                            ₹{p.revised_cost_cr?.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "—"} Cr
+                          </td>
+                          <td style={{ color: "var(--critical)", fontWeight: 700, fontSize: 12, whiteSpace: "nowrap" }}>
+                            +₹{esc.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr
+                            <span style={{ fontSize: 11, marginLeft: 4, opacity: 0.85 }}>({escPct}%)</span>
+                          </td>
+                          <td>
+                            <a
+                              href={`/projects/${p.id}`}
+                              style={{ fontSize: 11, color: "var(--accent)", fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}
+                            >
+                              View Details →
+                            </a>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -1013,6 +1082,5 @@ export default function AnalyticsPage() {
           </div>
         </div>
       </div>
-    </div>
   );
 }

@@ -24,6 +24,7 @@ class ProjectBase(BaseModel):
     revised_completion_date: Optional[date] = None
     actual_completion_date: Optional[date] = None
     project_scale: Optional[str] = None
+    report_month: Optional[str] = Field("April 2026", description="Reporting period of the project dataset")
 
     @field_validator("project_scale")
     @classmethod
@@ -92,5 +93,6 @@ class ProjectListItem(BaseModel):
     composite_risk_score: Optional[float] = None
     delay_probability: Optional[float] = None
     cost_overrun_probability: Optional[float] = None
+    report_month: Optional[str] = "April 2026"
 
     model_config = {"from_attributes": True}
