@@ -419,43 +419,41 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
           )}
 
           {/* Section 8: AI Generation Information & Provenance Box */}
-          <div style={{ background: "var(--surface-2)", borderRadius: 8, padding: "12px 16px", border: "1px solid var(--border)", fontSize: 11, color: "var(--text-muted)", display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+          <div style={{ background: "var(--surface-2)", borderRadius: 8, padding: "12px 16px", border: "1px solid var(--border)", fontSize: 11, color: "var(--text-muted)", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <div>
-                <strong>Plan ID:</strong> <span style={{ color: "var(--text)", fontFamily: "monospace" }}>{planId}</span> | <strong>Hash:</strong> <span style={{ color: "var(--accent)", fontFamily: "monospace" }}>{planHash ? planHash.substring(0, 16) : ""}...</span>
+                <strong>Plan ID:</strong> <span style={{ color: "var(--text)", fontFamily: "monospace" }}>{planId}</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <strong>Policy Gate:</strong>
-                <span style={{
-                  padding: "2px 8px",
-                  borderRadius: 4,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  background: modelMetadata?.validation_status === "approved" ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)",
-                  color: modelMetadata?.validation_status === "approved" ? "#10b981" : "#f59e0b",
-                  border: `1px solid ${modelMetadata?.validation_status === "approved" ? "rgba(16, 185, 129, 0.3)" : "rgba(245, 158, 11, 0.3)"}`,
-                }}>
-                  {modelMetadata?.validation_status || "approved"}
-                </span>
-                <span>|</span>
-                <strong>Specificity Score:</strong>
-                <span style={{ color: "#10b981", fontWeight: 700 }}>
-                  {typeof modelMetadata?.project_specificity_score === "number"
-                    ? `${(modelMetadata.project_specificity_score * 100).toFixed(0)}% / 100%`
-                    : "95% / 100%"}
-                </span>
+              <span>|</span>
+              <div>
+                <strong>Hash:</strong> <span style={{ color: "var(--accent)", fontFamily: "monospace" }}>{planHash ? planHash.substring(0, 16) : ""}...</span>
+              </div>
+              <span>|</span>
+              <div>
+                <strong>Generated:</strong> {new Date(generatedAt || Date.now()).toLocaleTimeString()}
               </div>
             </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8, borderTop: "1px dashed var(--border)", paddingTop: 6, alignItems: "center" }}>
-              <div>
-                <strong>Primary Reasoner:</strong> <span style={{ color: "var(--accent)" }}>{modelMetadata?.primary_model || "Qwen 2.5 (Dynamic Risk Reasoner)"}</span>
-                {" "} | <strong>Validator Model:</strong> <span style={{ color: "var(--text)" }}>{modelMetadata?.validator_model || "DeepSeek-R1 / Independent Policy Auditor"}</span>
-              </div>
-              <div>
-                <strong>Mode:</strong> {modelMetadata?.generation_mode || "Project-Specific Deep Risk Intelligence"} | <strong>Generated:</strong> {new Date(generatedAt || Date.now()).toLocaleTimeString()}
-              </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <strong>Policy Gate:</strong>
+              <span style={{
+                padding: "2px 8px",
+                borderRadius: 4,
+                fontSize: 10,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                background: modelMetadata?.validation_status === "approved" ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)",
+                color: modelMetadata?.validation_status === "approved" ? "#10b981" : "#f59e0b",
+                border: `1px solid ${modelMetadata?.validation_status === "approved" ? "rgba(16, 185, 129, 0.3)" : "rgba(245, 158, 11, 0.3)"}`,
+              }}>
+                {modelMetadata?.validation_status || "approved"}
+              </span>
+              <span>|</span>
+              <strong>Specificity Score:</strong>
+              <span style={{ color: "#10b981", fontWeight: 700 }}>
+                {typeof modelMetadata?.project_specificity_score === "number"
+                  ? `${(modelMetadata.project_specificity_score * 100).toFixed(0)}% / 100%`
+                  : "95% / 100%"}
+              </span>
             </div>
           </div>
         </div>
