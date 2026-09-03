@@ -1845,14 +1845,24 @@ def _get_active_llm_providers(
         }
 
     # 6. Local Qwen 2.5 Transformer Model (Hugging Face local weights)
-    if os.path.exists(qwen_service.MERGED_MODEL_PATH):
-        providers["qwen_local"] = {
-            "name": "Qwen 2.5 (Local Transformer Model)",
-            "role": "primary_generator",
-            "is_local_qwen": True,
-            "is_local": True,
-            "provider": "local_huggingface",
-        }
+    # Check if GPU acceleration is present. On CPU without CUDA, token-by-token generation takes 45-60+ seconds.
+    # In "auto" mode, avoid freezing the server on CPU and instead use the sub-second dynamic empirical reasoner.
+    has_cuda = False
+    try:
+        import torch
+        has_cuda = torch.cuda.is_available()
+    except Exception:
+        pass
+
+    if os.path.exists(qwen_service.MERGED_MODEL_PATH) and not qwen_service.LOW_MEMORY_MODE:
+        if has_cuda or pref in ("qwen_local", "qwen", "local"):
+            providers["qwen_local"] = {
+                "name": "Qwen 2.5 (Local Transformer Model)",
+                "role": "primary_generator",
+                "is_local_qwen": True,
+                "is_local": True,
+                "provider": "local_huggingface",
+            }
 
     # 7. Local Ollama
     ollama_url = os.environ.get("OLLAMA_BASE_URL") or settings.ollama_base_url or "http://localhost:11434/v1"
