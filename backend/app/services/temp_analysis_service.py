@@ -541,16 +541,25 @@ def find_authoritative_table_boundaries(pdf_bytes: bytes, reporting_period: str)
     end_page = None
     table_name = "All Ongoing Projects"
 
+    # STRICT Pan-India patterns only — must match the master 'All Ongoing Projects' section
+    # These patterns are ordered from most specific to least specific
     t6_patterns = [
         re.compile(r"table\s*6\s*[:–-]?\s*all\s+ongoing\s+projects", re.IGNORECASE),
         re.compile(r"table\s*6\s*[:–-]?\s*all\s+on-going\s+projects", re.IGNORECASE),
         re.compile(r"all\s+ongoing\s+projects\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)?\s*(?:20\d\d)?", re.IGNORECASE),
         re.compile(r"table\s*6\b.*ongoing", re.IGNORECASE),
-        re.compile(r"table\s*5\s*[:–-]?\s*all\s+ongoing\s+projects", re.IGNORECASE),
         re.compile(r"annexure(?:\s+[i|1])?\s*[:–-]?\s*all\s+ongoing\s+projects", re.IGNORECASE),
         re.compile(r"\ball\s+ongoing\s+projects\b", re.IGNORECASE),
         re.compile(r"\blist\s+of\s+ongoing\s+projects\b", re.IGNORECASE),
-        re.compile(r"\bongoing\s+infrastructure\s+projects\b", re.IGNORECASE),
+    ]
+
+    # Keywords that indicate this is NOT the Pan-India master table
+    PAN_INDIA_EXCLUDES = [
+        "north eastern", "north-eastern", "north east",
+        "ministry-wise", "state-wise", "sector-wise",
+        "region-wise", "regional",
+        "newly added", "table 5", "table-5",
+        "table 1", "table 2", "table 3", "table 4",
     ]
 
     stop_patterns = [
@@ -565,13 +574,23 @@ def find_authoritative_table_boundaries(pdf_bytes: bytes, reporting_period: str)
     ]
 
     def _is_summary_or_regional(txt_lower: str) -> bool:
-        """Returns True if text represents summary tables (1-4) or regional sub-table 5 (North Eastern)."""
-        if "table 6" in txt_lower or "all ongoing projects" in txt_lower:
+        """Returns True if text represents a summary/sub-table or regional section, not the Pan-India master table."""
+        # Explicit Table 6 marker overrides everything — definitely the Pan-India master table
+        if "table 6" in txt_lower and "all ongoing projects" in txt_lower:
             return False
-        if any(k in txt_lower for k in [
-            "north eastern", "north-eastern", "table 5", "table-5", "table 1", "table 2", "table 3", "table 4",
-            "table-1", "table-2", "table-3", "table-4", "ministry-wise ongoing", "state-wise ongoing",
-            "projects completed during the month", "newly added projects"
+        if "table 6" in txt_lower:
+            return False
+        # If it says 'all ongoing projects' but also mentions a regional/sub qualifier — it's a sub-section
+        if "all ongoing projects" in txt_lower:
+            if any(k in txt_lower for k in PAN_INDIA_EXCLUDES):
+                return True
+            return False  # Plain 'all ongoing projects' without qualifiers = Pan-India
+        # Any regional/sub-section indicator without a Table 6 header = skip
+        if any(k in txt_lower for k in PAN_INDIA_EXCLUDES + [
+            "table-1", "table-2", "table-3", "table-4", "table-5",
+            "ministry-wise ongoing", "state-wise ongoing",
+            "projects completed during the month", "newly added projects",
+            "projects commissioned", "north eastern region",
         ]):
             return True
         return False
@@ -594,23 +613,29 @@ def find_authoritative_table_boundaries(pdf_bytes: bytes, reporting_period: str)
                         continue
 
                     for pat in t6_patterns:
-                        if pat.search(txt) and not ("north eastern" in txt_lower or "table 5" in txt_lower and "all ongoing" not in txt_lower):
+                        # Must NOT match if a Pan-India exclusion keyword is present
+                        has_exclude = any(k in txt_lower for k in PAN_INDIA_EXCLUDES)
+                        if pat.search(txt) and not has_exclude:
                             start_page = page_num
                             table_name = "Table 6: All Ongoing Projects" if "table 6" in txt_lower else "All Ongoing Projects"
-                            logger.info("Found authoritative ongoing table start at PDF page %d: %s", page_num, table_name)
+                            logger.info("Found Pan-India master table start at PDF page %d: %s", page_num, table_name)
                             break
 
-                    # If still not found after page 3, inspect table structure
-                    if start_page is None and page_num > 3:
+                    # Structure-based detection fallback (only if text-title scan failed)
+                    if start_page is None and page_num > 5:
                         tabs = doc[p_idx].find_tables()
                         if tabs and tabs.tables:
                             extracted = tabs.tables[0].extract()
-                            if len(extracted) > 2:
-                                header_str = " ".join(str(c or "").lower() for c in extracted[0])
-                                if ("project" in header_str or "name" in header_str) and ("cost" in header_str or "expenditure" in header_str or "progress" in header_str):
+                            if len(extracted) > 5:  # Must have enough rows to be the main table
+                                header_str = " ".join(str(c or "").lower() for c in (extracted[0] or []))
+                                # Only match if header contains canonical project table columns
+                                has_project_col = "project" in header_str or "name of" in header_str
+                                has_cost_col = "cost" in header_str or "expenditure" in header_str or "progress" in header_str
+                                has_date_col = "approval" in header_str or "target" in header_str or "completion" in header_str
+                                if has_project_col and has_cost_col and has_date_col:
                                     start_page = page_num
-                                    table_name = "Ongoing Projects Table"
-                                    logger.info("Found ongoing project table structure on page %d", page_num)
+                                    table_name = "All Ongoing Projects"
+                                    logger.info("Found ongoing project table by structure on page %d", page_num)
                                     break
                 else:
                     if "table 6" not in txt_lower and "all ongoing projects" not in txt_lower:
@@ -640,7 +665,8 @@ def find_authoritative_table_boundaries(pdf_bytes: bytes, reporting_period: str)
                         if _is_summary_or_regional(txt_lower):
                             continue
                         for pat in t6_patterns:
-                            if pat.search(txt) and not ("north eastern" in txt_lower or "table 5" in txt_lower and "all ongoing" not in txt_lower):
+                            has_exclude = any(k in txt_lower for k in PAN_INDIA_EXCLUDES)
+                            if pat.search(txt) and not has_exclude:
                                 start_page = page_num
                                 table_name = "Table 6: All Ongoing Projects" if "table 6" in txt_lower else "All Ongoing Projects"
                                 break
@@ -929,10 +955,14 @@ def extract_ongoing_projects_from_pdf(
                             continue
 
                         joined_row = " ".join(str(c or "").lower() for c in row)
-                        if "name of project" in joined_row or "sl no" in joined_row or "sl.no" in joined_row or "original cost" in joined_row:
+
+                        # ── Skip repeated table header rows
+                        if any(k in joined_row for k in ["name of project", "sl no", "sl.no", "original cost", "sanctioned cost"]):
                             continue
-                        if joined_row.startswith("total") or "all india total" in joined_row or "sub total" in joined_row:
-                            continue
+                        # ── Skip total/summary rows
+                        if any(k in joined_row for k in ["total", "all india total", "sub total", "grand total"]):
+                            if not any(c and str(c).strip().isdigit() and int(str(c).strip()) < 10000 for c in row[:3]):
+                                continue
 
                         raw_sl = str(row[col_map.get("sl_no", 0)] or "").strip() if "sl_no" in col_map else str(row[0] or "").strip()
                         clean_sl = int(raw_sl) if raw_sl.isdigit() else None
@@ -949,7 +979,33 @@ def extract_ongoing_projects_from_pdf(
                         p_ministry = _clean_str(row[col_map["ministry"]]) if "ministry" in col_map and col_map["ministry"] < len(row) else current_ministry
                         explicit_id = _clean_str(row[col_map["project_id"]]) if "project_id" in col_map and col_map["project_id"] < len(row) else None
 
-                        # Continuation row
+                        # ── CRITICAL: Skip ministry/sector GROUP HEADER rows ──
+                        # In Table 6, each ministry block starts with a header row like:
+                        #   "1 | Ministry of Civil Aviation | (Aviation & Aviation Infra) | ..."
+                        # These rows have NO cost, expenditure, or progress values.
+                        # Detect them by: has a name that looks like a ministry/sector header AND no numeric data.
+                        if p_name and (p_cost is None and p_exp is None and p_prog is None):
+                            name_lower = p_name.lower()
+                            is_ministry_header = (
+                                re.search(r"\bministry\s+of\b|\bdepartment\s+of\b", name_lower) or
+                                re.search(r"\bministry\b|\bdepartment\b", name_lower) or
+                                re.search(r"\brailways?\b|\broads?\s*&\s*highways?\b", name_lower) or
+                                # A short row (< 4 meaningful non-empty cells) with no numbers = sub-header
+                                (len([c for c in row if str(c or "").strip()]) <= 3 and clean_sl is not None and clean_sl < 100)
+                            )
+                            if is_ministry_header:
+                                # Capture the ministry name for propagation to subsequent project rows
+                                clean_min = p_name.strip()
+                                if len(clean_min) < 80:
+                                    current_ministry = clean_min
+                                # Also try to get sector from parenthetical in same row
+                                sec_paren = re.search(r"\(([A-Za-z\s&/]+)\)", p_name)
+                                if sec_paren and len(sec_paren.group(1)) < 60:
+                                    current_sector = sec_paren.group(1).strip()
+                                logger.debug("Skipping ministry header row: %s", p_name[:60])
+                                continue
+
+                        # ── Continuation row (wrapped project name with no numeric data)
                         if current_project_row and p_name and clean_sl is None and (p_cost is None and p_prog is None and p_exp is None):
                             current_project_row["project_name"] += " " + p_name
                             if not current_project_row.get("agency") and p_agency:
@@ -959,8 +1015,14 @@ def extract_ongoing_projects_from_pdf(
                         if p_status and any(k in p_status.lower() for k in ["complete", "closed", "dropped", "cancel", "inactive"]):
                             continue
 
-                        if not p_name or len(p_name) < 3:
+                        # Must have a valid project name AND at least one numeric column populated
+                        if not p_name or len(p_name) < 5:
                             continue
+                        # If absolutely no numeric data at all, likely still a header/label row
+                        if p_cost is None and p_exp is None and p_prog is None and p_rev_cost is None:
+                            # Allow if it has an explicit project_id which proves it's a real project
+                            if not explicit_id:
+                                continue
 
                         # Extract embedded Project ID, Agency, and cleaned Name
                         if not explicit_id:
@@ -1172,10 +1234,14 @@ def extract_ongoing_projects_from_pdf(
                                 continue
 
                             joined_row = " ".join(str(c or "").lower() for c in row)
-                            if "name of project" in joined_row or "sl no" in joined_row or "sl.no" in joined_row or "original cost" in joined_row:
+
+                            # ── Skip repeated table header rows
+                            if any(k in joined_row for k in ["name of project", "sl no", "sl.no", "original cost", "sanctioned cost"]):
                                 continue
-                            if joined_row.startswith("total") or "all india total" in joined_row or "sub total" in joined_row:
-                                continue
+                            # ── Skip total/summary rows
+                            if any(k in joined_row for k in ["total", "all india total", "sub total", "grand total"]):
+                                if not any(c and str(c).strip().isdigit() and int(str(c).strip()) < 10000 for c in row[:3]):
+                                    continue
 
                             raw_sl = str(row[col_map.get("sl_no", 0)] or "").strip() if "sl_no" in col_map else str(row[0] or "").strip()
                             clean_sl = int(raw_sl) if raw_sl.isdigit() else None
@@ -1192,6 +1258,26 @@ def extract_ongoing_projects_from_pdf(
                             p_ministry = _clean_str(row[col_map["ministry"]]) if "ministry" in col_map and col_map["ministry"] < len(row) else current_ministry
                             explicit_id = _clean_str(row[col_map["project_id"]]) if "project_id" in col_map and col_map["project_id"] < len(row) else None
 
+                            # ── CRITICAL: Skip ministry/sector GROUP HEADER rows ──
+                            if p_name and (p_cost is None and p_exp is None and p_prog is None):
+                                name_lower = p_name.lower()
+                                is_ministry_header = (
+                                    re.search(r"\bministry\s+of\b|\bdepartment\s+of\b", name_lower) or
+                                    re.search(r"\bministry\b|\bdepartment\b", name_lower) or
+                                    re.search(r"\brailways?\b|\broads?\s*&\s*highways?\b", name_lower) or
+                                    (len([c for c in row if str(c or "").strip()]) <= 3 and clean_sl is not None and clean_sl < 100)
+                                )
+                                if is_ministry_header:
+                                    clean_min = p_name.strip()
+                                    if len(clean_min) < 80:
+                                        current_ministry = clean_min
+                                    sec_paren = re.search(r"\(([A-Za-z\s&/]+)\)", p_name)
+                                    if sec_paren and len(sec_paren.group(1)) < 60:
+                                        current_sector = sec_paren.group(1).strip()
+                                    logger.debug("Skipping ministry header row: %s", p_name[:60])
+                                    continue
+
+                            # ── Continuation row (wrapped project name with no numeric data)
                             if current_project_row and p_name and clean_sl is None and (p_cost is None and p_prog is None and p_exp is None):
                                 current_project_row["project_name"] += " " + p_name
                                 if not current_project_row.get("agency") and p_agency:
@@ -1201,8 +1287,13 @@ def extract_ongoing_projects_from_pdf(
                             if p_status and any(k in p_status.lower() for k in ["complete", "closed", "dropped", "cancel", "inactive"]):
                                 continue
 
-                            if not p_name or len(p_name) < 3:
+                            # Must have valid name (>=5 chars) AND at least some numeric data
+                            if not p_name or len(p_name) < 5:
                                 continue
+                            if p_cost is None and p_exp is None and p_prog is None and p_rev_cost is None:
+                                if not explicit_id:
+                                    continue
+
 
                             if not explicit_id:
                                 code_bracket = re.search(r"\[(\d{5,7})\]", p_name)
