@@ -105,16 +105,21 @@ async def upload_document(file: UploadFile = File(...)):
                 }
             )
 
+        CORE_FIELDS = ["project_name", "state", "original_cost_crore", "cumulative_expenditure_crore", "physical_progress_percent"]
         quality_metrics = {
             "projects_extracted": pdf_metrics.get("raw_table_rows", len(raw_projects)),
             "projects_validated": len(raw_projects),
             "duplicates": pdf_metrics.get("duplicates", 0),
-            "missing_fields": sum(sum(1 for v in p.values() if v is None) for p in raw_projects),
+            "missing_fields": sum(sum(1 for f in CORE_FIELDS if p.get(f) is None) for p in raw_projects),
             "pages_processed": pdf_metrics.get("pages_processed", val_result.get("num_pages", 1)),
+            "table_start_page": pdf_metrics.get("table_start_page"),
+            "table_end_page": pdf_metrics.get("table_end_page"),
             "diagnostic_panel": pdf_metrics.get("diagnostic_panel") or {
                 "source_file": filename,
                 "detected_report": reporting_period,
                 "authoritative_table": pdf_metrics.get("table_name", "Table 6: All Ongoing Projects"),
+                "table_start_page": pdf_metrics.get("table_start_page"),
+                "table_end_page": pdf_metrics.get("table_end_page"),
                 "raw_table_rows": pdf_metrics.get("raw_table_rows", len(raw_projects)),
                 "valid_project_rows": len(raw_projects),
                 "duplicates": pdf_metrics.get("duplicates", 0),
@@ -140,25 +145,19 @@ async def upload_document(file: UploadFile = File(...)):
         document_type=doc_type,
     )
 
-    # Deduplicate scored projects by project_id and normalized (project_name, agency)
+    # Index scored projects into ephemeral session memory
     deduped_scored_projects = []
     seen_ids = set()
-    seen_pairs = set()
     session.projects = {}
 
     for i, p in enumerate(scored_projects):
-        pid = str(p.get("project_id") or f"PRJ-{i+1:04d}")
-        p_name = str(p.get("project_name") or "").strip().lower()
-        p_agency = str(p.get("agency") or "").strip().lower()
-        pair = (p_name, p_agency)
-
-        if pid in seen_ids or (p_name and pair in seen_pairs):
-            continue
+        base_id = str(p.get("project_id") or f"PRJ-{p.get('sl_no') or (i + 1):04d}")
+        pid = base_id
+        if pid in seen_ids:
+            sl = p.get("sl_no") or (i + 1)
+            pid = f"{base_id}-{sl}"
 
         seen_ids.add(pid)
-        if p_name:
-            seen_pairs.add(pair)
-
         p["project_id"] = pid
         session.projects[pid] = p
         deduped_scored_projects.append(p)

@@ -179,21 +179,20 @@ def _clean_numeric(val: Any) -> Optional[float]:
     s = str(val).strip()
     if not s or s.lower() in ["-", "—", "n/a", "na", "null", "nil", "none", "nan", "--", "(-)", "...", "nil."]:
         return None
-    # Accounting negative e.g. (120.5)
-    is_neg = s.startswith("(") and s.endswith(")")
-    if is_neg:
+    # Strip wrapping parentheses e.g. (265.91) which denote revised/secondary values in Flash Reports
+    if s.startswith("(") and s.endswith(")"):
         s = s[1:-1].strip()
+    s = s.replace("(", "").replace(")", "")
     # Remove commas
     s = s.replace(",", "")
     # Remove known unit words and symbols case-insensitively
     s = re.sub(r"(?i)\b(crores?|cr\.?|lakhs?|inr|rs\.?|percent|pct)\b", "", s)
     s = re.sub(r"[₹%/\\]", "", s).strip()
     # Extract primary numeric sequence (handles e.g. "176.38 (Rev)")
-    m = re.search(r"[-+]?\d+(?:\.\d+)?", s)
+    m = re.search(r"\d+(?:\.\d+)?", s)
     if m:
         try:
-            f = float(m.group(0))
-            return -f if is_neg else f
+            return float(m.group(0))
         except ValueError:
             return None
     return None
@@ -249,6 +248,37 @@ def _parse_date_pair(raw: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
         return m[0].replace("-", "/"), None
 
     return s, None
+
+
+def _parse_dual_cost(val: Any) -> Tuple[Optional[float], Optional[float]]:
+    """
+    Parses dual-cost stacked cells in MoSPI Table 6 e.g. '265.91\n(265.91)' or '1813\n(1813)' or '218.03\n(-)'.
+    Returns (original_cost_crore, revised_cost_crore).
+    """
+    if val is None:
+        return None, None
+    s = str(val).strip()
+    if not s or s.lower() in ["-", "—", "n/a", "na", "null", "nil", "none", "nan", "--", "(-)", "...", "nil."]:
+        return None, None
+    lines = [l.strip() for l in s.splitlines() if l.strip()]
+    if len(lines) >= 2:
+        c1 = _clean_numeric(lines[0])
+        if lines[1].strip() in ["-", "(-)", "—", "(--)", "na", "(na)", "nil"]:
+            c2 = c1
+        else:
+            c2 = _clean_numeric(lines[1]) or c1
+        return c1, c2
+    elif len(lines) == 1:
+        m = re.findall(r"[-+]?\d+(?:\.\d+)?", lines[0])
+        if len(m) >= 2:
+            try:
+                return float(m[0]), float(m[1])
+            except ValueError:
+                pass
+        c1 = _clean_numeric(lines[0])
+        return c1, c1
+    return None, None
+
 
 
 class _MasterProjectCatalog:
@@ -601,43 +631,42 @@ def find_authoritative_table_boundaries(pdf_bytes: bytes, reporting_period: str)
             total_pages = len(doc)
             end_page = total_pages
 
+            # Pass 1: Authoritative Pan-India Ongoing Projects Title Search
             for p_idx in range(total_pages):
                 page_num = p_idx + 1
                 txt = doc[p_idx].get_text()
                 txt_lower = txt.lower()
 
-                if start_page is None:
-                    if page_num <= 10 and ("contents" in txt_lower or "index" in txt_lower):
-                        continue
-                    if _is_summary_or_regional(txt_lower):
-                        continue
+                if page_num <= 10 and ("contents" in txt_lower or "index" in txt_lower):
+                    continue
+                if _is_summary_or_regional(txt_lower):
+                    continue
 
-                    for pat in t6_patterns:
-                        # Must NOT match if a Pan-India exclusion keyword is present
-                        has_exclude = any(k in txt_lower for k in PAN_INDIA_EXCLUDES)
-                        if pat.search(txt) and not has_exclude:
-                            start_page = page_num
-                            table_name = "Table 6: All Ongoing Projects" if "table 6" in txt_lower else "All Ongoing Projects"
-                            logger.info("Found Pan-India master table start at PDF page %d: %s", page_num, table_name)
-                            break
+                for pat in t6_patterns:
+                    has_exclude = any(k in txt_lower for k in PAN_INDIA_EXCLUDES)
+                    if pat.search(txt) and not has_exclude:
+                        start_page = page_num
+                        table_name = "Table 6: All Ongoing Projects" if "table 6" in txt_lower else "All Ongoing Projects"
+                        logger.info("Found Pan-India master table start at PDF page %d: %s", page_num, table_name)
+                        break
+                if start_page is not None:
+                    break
 
-                    # Structure-based detection fallback (only if text-title scan failed)
-                    if start_page is None and page_num > 5:
-                        tabs = doc[p_idx].find_tables()
-                        if tabs and tabs.tables:
-                            extracted = tabs.tables[0].extract()
-                            if len(extracted) > 5:  # Must have enough rows to be the main table
-                                header_str = " ".join(str(c or "").lower() for c in (extracted[0] or []))
-                                # Only match if header contains canonical project table columns
-                                has_project_col = "project" in header_str or "name of" in header_str
-                                has_cost_col = "cost" in header_str or "expenditure" in header_str or "progress" in header_str
-                                has_date_col = "approval" in header_str or "target" in header_str or "completion" in header_str
-                                if has_project_col and has_cost_col and has_date_col:
-                                    start_page = page_num
-                                    table_name = "All Ongoing Projects"
-                                    logger.info("Found ongoing project table by structure on page %d", page_num)
-                                    break
-                else:
+            # If title page had no tables (e.g. divider sheet), advance to first data table page
+            if start_page is not None:
+                while start_page <= total_pages:
+                    tabs = doc[start_page - 1].find_tables()
+                    if tabs and tabs.tables and len(tabs.tables[0].extract()) > 1:
+                        break
+                    start_page += 1
+
+            # Pass 2: Find authoritative end page
+            if start_page is not None:
+                for p_idx in range(start_page - 1, total_pages):
+                    page_num = p_idx + 1
+                    txt = doc[p_idx].get_text()
+                    txt_lower = txt.lower()
+
                     if "table 6" not in txt_lower and "all ongoing projects" not in txt_lower:
                         for spat in stop_patterns:
                             if spat.search(txt):
@@ -646,6 +675,38 @@ def find_authoritative_table_boundaries(pdf_bytes: bytes, reporting_period: str)
                                 break
                     if end_page < total_pages:
                         break
+
+            # If end_page was not stopped by a stop pattern, find the last page with data tables
+            if end_page == total_pages and start_page is not None:
+                for p_idx in range(total_pages - 1, start_page - 2, -1):
+                    tabs = doc[p_idx].find_tables()
+                    if tabs and tabs.tables and len(tabs.tables[0].extract()) > 1:
+                        end_page = p_idx + 1
+                        break
+
+            # Pass 3: Structure-based fallback ONLY if entire title scan found nothing
+            if start_page is None:
+                for p_idx in range(total_pages):
+                    page_num = p_idx + 1
+                    if page_num <= 10:
+                        continue
+                    txt = doc[p_idx].get_text().lower()
+                    if _is_summary_or_regional(txt):
+                        continue
+                    tabs = doc[p_idx].find_tables()
+                    if tabs and tabs.tables:
+                        extracted = tabs.tables[0].extract()
+                        if len(extracted) > 5:
+                            header_str = " ".join(str(c or "").lower() for c in (extracted[0] or []))
+                            has_project_col = "project" in header_str or "name of" in header_str
+                            has_cost_col = "cost" in header_str or "expenditure" in header_str or "progress" in header_str
+                            has_date_col = "approval" in header_str or "target" in header_str or "completion" in header_str
+                            if has_project_col and has_cost_col and has_date_col:
+                                start_page = page_num
+                                table_name = "All Ongoing Projects"
+                                logger.info("Found ongoing project table by structure fallback on page %d", page_num)
+                                break
+
             doc.close()
         except Exception as fe:
             logger.warning("PyMuPDF boundary check fallback to pdfplumber: %s", fe)
@@ -866,7 +927,9 @@ def extract_ongoing_projects_from_pdf(
                                     col_map["state"] = c_idx
                                 elif re.search(r"\bstatus\b", cell) and "project" not in cell:
                                     col_map["status"] = c_idx
-                                elif re.search(r"original\s+cost|sanctioned\s+cost|orig\.?\s+cost", cell):
+                                elif ("cost" in cell and "revised" in cell and ("orig" in cell or "sanction" in cell)) or ("orignal" in cell and "revised" in cell):
+                                    col_map["dual_cost"] = c_idx
+                                elif re.search(r"orig(?:i)?nal\s+cost|sanctioned\s+cost|orig\.?\s+cost", cell):
                                     col_map["original_cost"] = c_idx
                                 elif re.search(r"revised\s+cost|approved\s+cost|latest\s+cost|anticipated\s+cost", cell):
                                     col_map["revised_cost"] = c_idx
@@ -886,7 +949,7 @@ def extract_ongoing_projects_from_pdf(
                                     col_map["approval_date"] = c_idx
                                 elif re.search(r"(?:date\s+of\s+)?commence?(?:ment)?|start\s+date|date.*start", cell):
                                     col_map["start_date"] = c_idx
-                                elif re.search(r"original.*(?:target|doc|complet)|orig.*target|original.*completion", cell):
+                                elif re.search(r"orig(?:i)?nal.*(?:target|doc|complet)|orig.*target|orig(?:i)?nal.*completion", cell):
                                     col_map["original_target"] = c_idx
                                 elif re.search(r"revised.*(?:target|doc|complet)|latest.*target|anticipated.*complet", cell):
                                     col_map["revised_target"] = c_idx
@@ -917,8 +980,17 @@ def extract_ongoing_projects_from_pdf(
 
                         p_name = _clean_str(row[col_map["project_name"]]) if "project_name" in col_map and col_map["project_name"] < len(row) else None
                         p_status = _clean_str(row[col_map["status"]]) if "status" in col_map and col_map["status"] < len(row) else None
-                        p_cost = _clean_numeric(row[col_map["original_cost"]]) if "original_cost" in col_map and col_map["original_cost"] < len(row) else None
-                        p_rev_cost = _clean_numeric(row[col_map["revised_cost"]]) if "revised_cost" in col_map and col_map["revised_cost"] < len(row) else None
+
+                        if "dual_cost" in col_map and col_map["dual_cost"] < len(row):
+                            p_cost, p_rev_cost = _parse_dual_cost(row[col_map["dual_cost"]])
+                        else:
+                            p_cost = _clean_numeric(row[col_map["original_cost"]]) if "original_cost" in col_map and col_map["original_cost"] < len(row) else None
+                            p_rev_cost = _clean_numeric(row[col_map["revised_cost"]]) if "revised_cost" in col_map and col_map["revised_cost"] < len(row) else None
+                            if p_cost is not None and p_rev_cost is None:
+                                p_rev_cost = p_cost
+                            elif p_rev_cost is not None and p_cost is None:
+                                p_cost = p_rev_cost
+
                         p_exp = _clean_numeric(row[col_map["expenditure"]]) if "expenditure" in col_map and col_map["expenditure"] < len(row) else None
                         p_prog = _clean_numeric(row[col_map["physical_progress"]]) if "physical_progress" in col_map and col_map["physical_progress"] < len(row) else None
                         p_state = _clean_str(row[col_map["state"]]) if "state" in col_map and col_map["state"] < len(row) else None
@@ -928,25 +1000,18 @@ def extract_ongoing_projects_from_pdf(
                         explicit_id = _clean_str(row[col_map["project_id"]]) if "project_id" in col_map and col_map["project_id"] < len(row) else None
 
                         # ── CRITICAL: Skip ministry/sector GROUP HEADER rows ──
-                        # In Table 6, each ministry block starts with a header row like:
-                        #   "1 | Ministry of Civil Aviation | (Aviation & Aviation Infra) | ..."
-                        # These rows have NO cost, expenditure, or progress values.
-                        # Detect them by: has a name that looks like a ministry/sector header AND no numeric data.
                         if p_name and (p_cost is None and p_exp is None and p_prog is None):
                             name_lower = p_name.lower()
                             is_ministry_header = (
                                 re.search(r"\bministry\s+of\b|\bdepartment\s+of\b", name_lower) or
                                 re.search(r"\bministry\b|\bdepartment\b", name_lower) or
                                 re.search(r"\brailways?\b|\broads?\s*&\s*highways?\b", name_lower) or
-                                # A short row (< 4 meaningful non-empty cells) with no numbers = sub-header
                                 (len([c for c in row if str(c or "").strip()]) <= 3 and clean_sl is not None and clean_sl < 100)
                             )
                             if is_ministry_header:
-                                # Capture the ministry name for propagation to subsequent project rows
                                 clean_min = p_name.strip()
                                 if len(clean_min) < 80:
                                     current_ministry = clean_min
-                                # Also try to get sector from parenthetical in same row
                                 sec_paren = re.search(r"\(([A-Za-z\s&/]+)\)", p_name)
                                 if sec_paren and len(sec_paren.group(1)) < 60:
                                     current_sector = sec_paren.group(1).strip()
@@ -966,9 +1031,7 @@ def extract_ongoing_projects_from_pdf(
                         # Must have a valid project name AND at least one numeric column populated
                         if not p_name or len(p_name) < 5:
                             continue
-                        # If absolutely no numeric data at all, likely still a header/label row
                         if p_cost is None and p_exp is None and p_prog is None and p_rev_cost is None:
-                            # Allow if it has an explicit project_id which proves it's a real project
                             if not explicit_id:
                                 continue
 
@@ -1038,25 +1101,38 @@ def extract_ongoing_projects_from_pdf(
                         # Auto-enrich from Master Project Catalog
                         record = enrich_project_from_master_catalog(record)
 
-                        norm_pair = (record["project_name"].strip().lower(), (record.get("agency") or "").strip().lower())
-                        target_id = None
-                        if pid in deduped_projects:
-                            target_id = pid
-                        elif norm_pair in name_agency_index:
-                            target_id = name_agency_index[norm_pair]
-
-                        if target_id and target_id in deduped_projects:
-                            existing = deduped_projects[target_id]
-                            dup_count += 1
-                            existing_filled = sum(1 for v in existing.values() if v is not None)
-                            new_filled = sum(1 for v in record.values() if v is not None)
-                            if new_filled > existing_filled:
-                                record["sl_no"] = existing["sl_no"]
-                                deduped_projects[target_id] = record
+                        # In Table 6, each row with clean_sl is an authoritative distinct project
+                        if clean_sl is not None:
+                            if clean_sl in deduped_projects:
+                                existing = deduped_projects[clean_sl]
+                                dup_count += 1
+                                existing_filled = sum(1 for v in existing.values() if v is not None)
+                                new_filled = sum(1 for v in record.values() if v is not None)
+                                if new_filled > existing_filled:
+                                    deduped_projects[clean_sl] = record
+                            else:
+                                deduped_projects[clean_sl] = record
+                                current_project_row = record
                         else:
-                            deduped_projects[pid] = record
-                            name_agency_index[norm_pair] = pid
-                            current_project_row = record
+                            norm_pair = (record["project_name"].strip().lower(), (record.get("agency") or "").strip().lower())
+                            target_id = None
+                            if pid in deduped_projects:
+                                target_id = pid
+                            elif norm_pair in name_agency_index:
+                                target_id = name_agency_index[norm_pair]
+
+                            if target_id and target_id in deduped_projects:
+                                existing = deduped_projects[target_id]
+                                dup_count += 1
+                                existing_filled = sum(1 for v in existing.values() if v is not None)
+                                new_filled = sum(1 for v in record.values() if v is not None)
+                                if new_filled > existing_filled:
+                                    record["sl_no"] = existing["sl_no"]
+                                    deduped_projects[target_id] = record
+                            else:
+                                deduped_projects[pid] = record
+                                name_agency_index[norm_pair] = pid
+                                current_project_row = record
 
             doc.close()
             fitz_extracted = len(deduped_projects) > 0
@@ -1145,7 +1221,9 @@ def extract_ongoing_projects_from_pdf(
                                         col_map["state"] = c_idx
                                     elif re.search(r"\bstatus\b", cell) and "project" not in cell:
                                         col_map["status"] = c_idx
-                                    elif re.search(r"original\s+cost|sanctioned\s+cost|orig\.?\s+cost", cell):
+                                    elif ("cost" in cell and "revised" in cell and ("orig" in cell or "sanction" in cell)) or ("orignal" in cell and "revised" in cell):
+                                        col_map["dual_cost"] = c_idx
+                                    elif re.search(r"orig(?:i)?nal\s+cost|sanctioned\s+cost|orig\.?\s+cost", cell):
                                         col_map["original_cost"] = c_idx
                                     elif re.search(r"revised\s+cost|approved\s+cost|latest\s+cost|anticipated\s+cost", cell):
                                         col_map["revised_cost"] = c_idx
@@ -1165,7 +1243,7 @@ def extract_ongoing_projects_from_pdf(
                                         col_map["approval_date"] = c_idx
                                     elif re.search(r"(?:date\s+of\s+)?commence?(?:ment)?|start\s+date|date.*start", cell):
                                         col_map["start_date"] = c_idx
-                                    elif re.search(r"original.*(?:target|doc|complet)|orig.*target|original.*completion", cell):
+                                    elif re.search(r"orig(?:i)?nal.*(?:target|doc|complet)|orig.*target|orig(?:i)?nal.*completion", cell):
                                         col_map["original_target"] = c_idx
                                     elif re.search(r"revised.*(?:target|doc|complet)|latest.*target|anticipated.*complet", cell):
                                         col_map["revised_target"] = c_idx
@@ -1196,8 +1274,17 @@ def extract_ongoing_projects_from_pdf(
 
                             p_name = _clean_str(row[col_map["project_name"]]) if "project_name" in col_map and col_map["project_name"] < len(row) else None
                             p_status = _clean_str(row[col_map["status"]]) if "status" in col_map and col_map["status"] < len(row) else None
-                            p_cost = _clean_numeric(row[col_map["original_cost"]]) if "original_cost" in col_map and col_map["original_cost"] < len(row) else None
-                            p_rev_cost = _clean_numeric(row[col_map["revised_cost"]]) if "revised_cost" in col_map and col_map["revised_cost"] < len(row) else None
+
+                            if "dual_cost" in col_map and col_map["dual_cost"] < len(row):
+                                p_cost, p_rev_cost = _parse_dual_cost(row[col_map["dual_cost"]])
+                            else:
+                                p_cost = _clean_numeric(row[col_map["original_cost"]]) if "original_cost" in col_map and col_map["original_cost"] < len(row) else None
+                                p_rev_cost = _clean_numeric(row[col_map["revised_cost"]]) if "revised_cost" in col_map and col_map["revised_cost"] < len(row) else None
+                                if p_cost is not None and p_rev_cost is None:
+                                    p_rev_cost = p_cost
+                                elif p_rev_cost is not None and p_cost is None:
+                                    p_cost = p_rev_cost
+
                             p_exp = _clean_numeric(row[col_map["expenditure"]]) if "expenditure" in col_map and col_map["expenditure"] < len(row) else None
                             p_prog = _clean_numeric(row[col_map["physical_progress"]]) if "physical_progress" in col_map and col_map["physical_progress"] < len(row) else None
                             p_state = _clean_str(row[col_map["state"]]) if "state" in col_map and col_map["state"] < len(row) else None
@@ -1241,7 +1328,6 @@ def extract_ongoing_projects_from_pdf(
                             if p_cost is None and p_exp is None and p_prog is None and p_rev_cost is None:
                                 if not explicit_id:
                                     continue
-
 
                             if not explicit_id:
                                 code_bracket = re.search(r"\[(\d{5,7})\]", p_name)
@@ -1306,25 +1392,38 @@ def extract_ongoing_projects_from_pdf(
 
                             record = enrich_project_from_master_catalog(record)
 
-                            norm_pair = (record["project_name"].strip().lower(), (record.get("agency") or "").strip().lower())
-                            target_id = None
-                            if pid in deduped_projects:
-                                target_id = pid
-                            elif norm_pair in name_agency_index:
-                                target_id = name_agency_index[norm_pair]
-
-                            if target_id and target_id in deduped_projects:
-                                existing = deduped_projects[target_id]
-                                dup_count += 1
-                                existing_filled = sum(1 for v in existing.values() if v is not None)
-                                new_filled = sum(1 for v in record.values() if v is not None)
-                                if new_filled > existing_filled:
-                                    record["sl_no"] = existing["sl_no"]
-                                    deduped_projects[target_id] = record
+                            # In Table 6, each row with clean_sl is an authoritative distinct project
+                            if clean_sl is not None:
+                                if clean_sl in deduped_projects:
+                                    existing = deduped_projects[clean_sl]
+                                    dup_count += 1
+                                    existing_filled = sum(1 for v in existing.values() if v is not None)
+                                    new_filled = sum(1 for v in record.values() if v is not None)
+                                    if new_filled > existing_filled:
+                                        deduped_projects[clean_sl] = record
+                                else:
+                                    deduped_projects[clean_sl] = record
+                                    current_project_row = record
                             else:
-                                deduped_projects[pid] = record
-                                name_agency_index[norm_pair] = pid
-                                current_project_row = record
+                                norm_pair = (record["project_name"].strip().lower(), (record.get("agency") or "").strip().lower())
+                                target_id = None
+                                if pid in deduped_projects:
+                                    target_id = pid
+                                elif norm_pair in name_agency_index:
+                                    target_id = name_agency_index[norm_pair]
+
+                                if target_id and target_id in deduped_projects:
+                                    existing = deduped_projects[target_id]
+                                    dup_count += 1
+                                    existing_filled = sum(1 for v in existing.values() if v is not None)
+                                    new_filled = sum(1 for v in record.values() if v is not None)
+                                    if new_filled > existing_filled:
+                                        record["sl_no"] = existing["sl_no"]
+                                        deduped_projects[target_id] = record
+                                else:
+                                    deduped_projects[pid] = record
+                                    name_agency_index[norm_pair] = pid
+                                    current_project_row = record
         except Exception as e:
             logger.error("Error in pdfplumber table extraction: %s", e)
 
@@ -1387,6 +1486,8 @@ def extract_ongoing_projects_from_pdf(
 
     metrics = {
         "table_name": table_name,
+        "table_start_page": start_page,
+        "table_end_page": end_page,
         "raw_table_rows": raw_extracted_count or len(ongoing_projects),
         "valid_project_rows": len(ongoing_projects),
         "duplicates": dup_count,
