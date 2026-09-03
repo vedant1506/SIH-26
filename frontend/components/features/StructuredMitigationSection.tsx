@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import type { Project, RiskPrediction, StructuredMitigationPlan, MitigationPlanResponse, ModelMetadata, AvailableLlmModel } from "@/lib/types";
-import { generateMitigationPlan, downloadMitigationPdf, getAvailableLlmModels } from "@/lib/api";
+import type { Project, RiskPrediction, StructuredMitigationPlan, MitigationPlanResponse, ModelMetadata } from "@/lib/types";
+import { generateMitigationPlan, downloadMitigationPdf } from "@/lib/api";
 
 interface Props {
   project: Project;
@@ -25,26 +25,6 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
   const [progressStep, setProgressStep] = useState<number>(0);
   const [error, setError] = useState<string>("");
   const [pdfDownloading, setPdfDownloading] = useState<boolean>(false);
-  const [availableModels, setAvailableModels] = useState<AvailableLlmModel[]>([]);
-  const [selectedModel, setSelectedModel] = useState<string>("auto");
-  const [customApiKey, setCustomApiKey] = useState<string>("");
-  const [showApiKeyModal, setShowApiKeyModal] = useState<boolean>(false);
-  const [tempApiKey, setTempApiKey] = useState<string>("");
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedModel = localStorage.getItem("preferred_mitigation_model");
-      if (savedModel) setSelectedModel(savedModel);
-      const savedKey = localStorage.getItem("custom_llm_api_key");
-      if (savedKey) {
-        setCustomApiKey(savedKey);
-        setTempApiKey(savedKey);
-      }
-    }
-    getAvailableLlmModels().then((models) => {
-      if (models && models.length > 0) setAvailableModels(models);
-    });
-  }, []);
 
   // Reset state when project.id changes (prevents cross-project state bugs)
   // AI mitigation plan runs ONLY on-demand when user clicks "Generate AI Mitigation Plan"
@@ -70,7 +50,7 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
     }, 400);
 
     try {
-      const res = await generateMitigationPlan(project.id, force, selectedModel, customApiKey || undefined);
+      const res = await generateMitigationPlan(project.id, force, "auto");
       if (res?.plan) {
         setPlan(res.plan);
         setPlanId(res.plan_id || "MP-2026-AUTOGEN");
@@ -187,58 +167,6 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
               )}
             </button>
           )}
-
-          {/* Model Selector Dropdown & API Key Config */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <select
-              value={selectedModel}
-              onChange={(e) => {
-                const val = e.target.value;
-                setSelectedModel(val);
-                if (typeof window !== "undefined") localStorage.setItem("preferred_mitigation_model", val);
-              }}
-              style={{
-                fontSize: 11.5,
-                fontWeight: 600,
-                padding: "6px 10px",
-                background: "var(--surface-2)",
-                color: "var(--text)",
-                border: "1px solid var(--border)",
-                borderRadius: 6,
-                outline: "none",
-                cursor: "pointer",
-              }}
-            >
-              <option value="auto">⚡ Auto Multi-LLM</option>
-              <option value="qwen_local">🤖 Qwen 2.5 (Local)</option>
-              <option value="gemini">🌟 Google Gemini 2.0</option>
-              <option value="groq">⚡ Groq Llama 3.3</option>
-              <option value="openrouter">🌐 OpenRouter / DeepSeek</option>
-              <option value="openai">🧠 OpenAI GPT-4o-mini</option>
-              <option value="ollama">💻 Local Ollama</option>
-            </select>
-
-            <button
-              type="button"
-              onClick={() => setShowApiKeyModal(true)}
-              title="Configure Custom LLM API Key"
-              style={{
-                background: "var(--surface-2)",
-                border: "1px solid var(--border)",
-                borderRadius: 6,
-                padding: "6px 8px",
-                cursor: "pointer",
-                color: customApiKey ? "var(--accent)" : "var(--text-muted)",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-              </svg>
-            </button>
-          </div>
 
           {plan && !loading && (
             <button
@@ -547,177 +475,17 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
           <div style={{ fontSize: 12, color: "var(--text-muted)", maxWidth: 520, margin: "0 auto 18px", lineHeight: 1.6 }}>
             Click below to generate a tailored, evidence-grounded action roadmap analyzing live SHAP feature drivers, milestone progress, and financial variance for this specific asset.
           </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-            <select
-              value={selectedModel}
-              onChange={(e) => {
-                const val = e.target.value;
-                setSelectedModel(val);
-                if (typeof window !== "undefined") localStorage.setItem("preferred_mitigation_model", val);
-              }}
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                padding: "8px 12px",
-                background: "var(--surface)",
-                color: "var(--text)",
-                border: "1px solid var(--border)",
-                borderRadius: 6,
-                outline: "none",
-                cursor: "pointer",
-              }}
-            >
-              <option value="auto">⚡ Auto Multi-LLM Orchestrator</option>
-              <option value="qwen_local">🤖 Qwen 2.5 (Local Transformer Model)</option>
-              <option value="gemini">🌟 Google Gemini 2.0 Flash</option>
-              <option value="groq">⚡ Groq Llama 3.3 70B</option>
-              <option value="openrouter">🌐 OpenRouter (Qwen 72B / DeepSeek)</option>
-              <option value="openai">🧠 OpenAI GPT-4o-mini</option>
-              <option value="ollama">💻 Local Ollama Daemon</option>
-            </select>
-
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
             <button
               onClick={() => handleGenerate(true)}
               className="btn btn-primary"
-              style={{ fontSize: 12.5, padding: "8px 20px", display: "inline-flex", alignItems: "center", gap: 8 }}
+              style={{ fontSize: 13, padding: "10px 24px", display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 700 }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
               Generate AI Mitigation Plan
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Custom LLM API Key Modal */}
-      {showApiKeyModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.75)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-            backdropFilter: "blur(4px)",
-          }}
-        >
-          <div
-            className="card"
-            style={{
-              width: "90%",
-              maxWidth: 480,
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
-              padding: 24,
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 18 }}>⚙️</span>
-                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "var(--text)" }}>
-                  LLM Model Configuration
-                </h3>
-              </div>
-              <button
-                onClick={() => setShowApiKeyModal(false)}
-                style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 16 }}
-              >
-                ✕
-              </button>
-            </div>
-
-            <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16, lineHeight: 1.5 }}>
-              By default, TRACE AI utilizes the local Qwen 2.5 Hugging Face model and configured system API keys.
-              You can optionally enter a custom API key for <strong>Google Gemini, Groq, OpenRouter, or OpenAI</strong> to power real-time plan generation directly.
-            </p>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text)", marginBottom: 6 }}>
-                Preferred LLM Engine:
-              </label>
-              <select
-                value={selectedModel}
-                onChange={(e) => {
-                  setSelectedModel(e.target.value);
-                  if (typeof window !== "undefined") localStorage.setItem("preferred_mitigation_model", e.target.value);
-                }}
-                style={{
-                  width: "100%",
-                  fontSize: 12,
-                  padding: "8px 12px",
-                  background: "var(--surface-2)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 6,
-                  outline: "none",
-                }}
-              >
-                <option value="auto">⚡ Auto Multi-LLM (Local + Cloud Failover)</option>
-                <option value="qwen_local">🤖 Qwen 2.5 Local Transformer Model (100% On-Prem)</option>
-                <option value="gemini">🌟 Google Gemini 2.0 Flash</option>
-                <option value="groq">⚡ Groq Llama 3.3 70B (Fast LPU)</option>
-                <option value="openrouter">🌐 OpenRouter (Qwen 72B / DeepSeek)</option>
-                <option value="openai">🧠 OpenAI GPT-4o-mini</option>
-                <option value="ollama">💻 Local Ollama (localhost:11434)</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text)", marginBottom: 6 }}>
-                Custom API Key (Optional):
-              </label>
-              <input
-                type="password"
-                placeholder="AIza... or gsk_... or sk-or-... or sk-..."
-                value={tempApiKey}
-                onChange={(e) => setTempApiKey(e.target.value)}
-                style={{
-                  width: "100%",
-                  fontSize: 12,
-                  padding: "8px 12px",
-                  background: "var(--surface-2)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 6,
-                  outline: "none",
-                }}
-              />
-              <span style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, display: "block" }}>
-                Stored locally in browser localStorage only. Never transmitted to third parties.
-              </span>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-              <button
-                type="button"
-                onClick={() => {
-                  setTempApiKey("");
-                  setCustomApiKey("");
-                  if (typeof window !== "undefined") localStorage.removeItem("custom_llm_api_key");
-                  setShowApiKeyModal(false);
-                }}
-                className="btn btn-secondary"
-                style={{ fontSize: 12, padding: "7px 14px" }}
-              >
-                Clear Key
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setCustomApiKey(tempApiKey);
-                  if (typeof window !== "undefined") localStorage.setItem("custom_llm_api_key", tempApiKey);
-                  setShowApiKeyModal(false);
-                }}
-                className="btn btn-primary"
-                style={{ fontSize: 12, padding: "7px 18px" }}
-              >
-                Save Settings
-              </button>
-            </div>
           </div>
         </div>
       )}
