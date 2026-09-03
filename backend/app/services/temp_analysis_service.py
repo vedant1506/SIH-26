@@ -760,65 +760,13 @@ def extract_ongoing_projects_from_pdf(
     year_part = reporting_period.split()[1] if len(reporting_period.split()) > 1 else "2026"
     period_code = f"{month_part[:3].upper()}{year_part}"
 
-    # 1. Authoritative Reference Check (only for explicitly named official baseline files)
+    # 1. Authoritative Reference Check (only for validation comparison, NEVER as extraction bypass)
     is_official_reference_file = bool(filename and any(
         f"flashreport_{m.lower()}_{y}" in filename.lower()
         for m in ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
         for y in ["2025", "2026", "2027"]
     ))
-
     ref_csv_path = _find_reference_csv(reporting_period, filename)
-    if is_official_reference_file and ref_csv_path and os.path.exists(ref_csv_path):
-        try:
-            ref_df = pd.read_csv(ref_csv_path)
-            authoritative_projects = []
-            for idx, r in ref_df.iterrows():
-                r_dict = r.to_dict()
-                raw_pid = str(r_dict.get("project_id", "")).strip()
-                pid = raw_pid if raw_pid and raw_pid != "nan" and raw_pid != "-" else f"PRJ-{int(r_dict.get('sl_no', idx + 1)):04d}"
-
-                appr_date = str(r_dict.get("approval_date_mm_yyyy", "")).strip() if pd.notna(r_dict.get("approval_date_mm_yyyy")) else None
-                start_date = str(r_dict.get("start_date_mm_yyyy", "")).strip() if pd.notna(r_dict.get("start_date_mm_yyyy")) else None
-                orig_target = str(r_dict.get("original_target_doc_mm_yyyy", "")).strip() if pd.notna(r_dict.get("original_target_doc_mm_yyyy")) else None
-                rev_target = str(r_dict.get("revised_target_doc_mm_yyyy", "")).strip() if pd.notna(r_dict.get("revised_target_doc_mm_yyyy")) else None
-
-                authoritative_projects.append({
-                    "sl_no": int(r_dict.get("sl_no", idx + 1)),
-                    "ministry": str(r_dict.get("ministry", "")).strip() or None,
-                    "sector": str(r_dict.get("sector", "")).strip() or None,
-                    "project_name": str(r_dict.get("project_name", "")).strip(),
-                    "agency": str(r_dict.get("agency", "")).strip() or None,
-                    "project_id": pid,
-                    "legacy_ocms_code": str(r_dict.get("legacy_ocms_code", "")).strip() if pd.notna(r_dict.get("legacy_ocms_code")) and str(r_dict.get("legacy_ocms_code")).strip() not in ("-", "None", "nan") else None,
-                    "pmgid": str(r_dict.get("pmgid", "")).strip() if pd.notna(r_dict.get("pmgid")) and str(r_dict.get("pmgid")).strip() not in ("-", "None", "nan") else None,
-                    "state": str(r_dict.get("state", "")).strip() or None,
-                    "approval_date_mm_yyyy": appr_date if appr_date not in ("-", "None", "nan") else None,
-                    "start_date_mm_yyyy": start_date if start_date not in ("-", "None", "nan") else None,
-                    "original_target_doc_mm_yyyy": orig_target if orig_target not in ("-", "None", "nan") else None,
-                    "revised_target_doc_mm_yyyy": rev_target if rev_target not in ("-", "None", "nan") else "-",
-                    "original_cost_crore": float(r_dict.get("original_cost_crore", 0)) if pd.notna(r_dict.get("original_cost_crore")) else None,
-                    "revised_cost_crore": float(r_dict.get("revised_cost_crore", 0)) if pd.notna(r_dict.get("revised_cost_crore")) else None,
-                    "cumulative_expenditure_crore": float(r_dict.get("cumulative_expenditure_crore", 0)) if pd.notna(r_dict.get("cumulative_expenditure_crore")) else None,
-                    "physical_progress_percent": float(r_dict.get("physical_progress_percent", 0)) if pd.notna(r_dict.get("physical_progress_percent")) else None,
-                    "report_month": str(r_dict.get("report_month", reporting_period)).strip(),
-                    "source_pdf_page": int(r_dict.get("source_pdf_page", 55)) if pd.notna(r_dict.get("source_pdf_page")) else 55,
-                })
-
-            logger.info("Loaded 100%% authoritative ongoing projects from %s: %d projects", ref_csv_path, len(authoritative_projects))
-            if return_metrics:
-                metrics = {
-                    "table_name": "Table 6: All Ongoing Projects",
-                    "raw_table_rows": len(authoritative_projects),
-                    "valid_project_rows": len(authoritative_projects),
-                    "duplicates": 0,
-                    "pages_processed": len(set(p["source_pdf_page"] for p in authoritative_projects)),
-                    "reference_csv": len(authoritative_projects),
-                    "csv_match": 100.0,
-                }
-                return authoritative_projects, metrics
-            return authoritative_projects
-        except Exception as ref_err:
-            logger.warning("Error loading reference CSV directly: %s. Falling back to PDF parser.", ref_err)
 
     start_page, end_page, table_name = find_authoritative_table_boundaries(pdf_bytes, reporting_period)
     logger.info("Extracting authoritative projects from pages [%d, %d] (%s)", start_page, end_page, table_name)
@@ -1389,116 +1337,53 @@ def extract_ongoing_projects_from_pdf(
     # Sort strictly by sl_no
     ongoing_projects.sort(key=lambda p: (p.get("sl_no") or 99999))
 
-    # Reconcile ONLY IF official baseline report file was uploaded
+    # Validation comparison against reference CSV if available (Section 24)
+    # The reference CSV is strictly for validation/reporting, NEVER for appending/overwriting PDF facts (Section 24, 25, 94)
     ref_count = None
     csv_match_pct = None
+    missing_from_pdf = 0
+    extra_in_pdf = 0
+    field_mismatches_count = 0
 
-    if is_official_reference_file and ref_csv_path and os.path.exists(ref_csv_path):
+    if ref_csv_path and os.path.exists(ref_csv_path):
         try:
             ref_df = pd.read_csv(ref_csv_path)
             ref_count = len(ref_df)
-            ref_by_id = {}
-            ref_by_sl = {}
+            ref_ids = set(str(r).strip() for r in ref_df.get("project_id", []).dropna() if str(r).strip() not in ("", "nan", "-"))
+            pdf_ids = set(str(p.get("project_id", "")).strip() for p in ongoing_projects if p.get("project_id"))
 
-            for _, r in ref_df.iterrows():
-                r_dict = r.to_dict()
-                pid = str(r_dict.get("project_id", "")).strip()
-                sl = r_dict.get("sl_no")
-                if pid and pid != "nan":
-                    ref_by_id[pid] = r_dict
-                if pd.notna(sl):
-                    try:
-                        ref_by_sl[int(sl)] = r_dict
-                    except (ValueError, TypeError):
-                        pass
-
-            reconciled_projects = []
-            matched_ref_ids = set()
-            matched_ref_sls = set()
-
-            for p in ongoing_projects:
-                pid = str(p.get("project_id", "")).strip()
-                sl = p.get("sl_no")
-                matched_ref = ref_by_id.get(pid) or (ref_by_sl.get(int(sl)) if sl is not None else None)
-                if matched_ref:
-                    ref_id = str(matched_ref.get("project_id", pid)).strip()
-                    ref_sl = int(matched_ref.get("sl_no", sl or len(reconciled_projects) + 1))
-                    if ref_id in matched_ref_ids or ref_sl in matched_ref_sls:
-                        continue
-                    matched_ref_ids.add(ref_id)
-                    matched_ref_sls.add(ref_sl)
-
-                    p["sl_no"] = ref_sl
-                    p["project_id"] = ref_id
-                    ref_name = str(matched_ref.get("project_name", "")).strip()
-                    if ref_name and (len(ref_name) > len(p.get("project_name", "")) or not p.get("project_name")):
-                        p["project_name"] = ref_name
-
-                    for field in ["agency", "sector", "ministry", "state", "legacy_ocms_code", "pmgid"]:
-                        val = matched_ref.get(field)
-                        if pd.notna(val) and str(val).strip() and str(val).strip() not in ("-", "None", "nan"):
-                            p[field] = str(val).strip()
-
-                    for dfield in ["approval_date_mm_yyyy", "start_date_mm_yyyy", "original_target_doc_mm_yyyy", "revised_target_doc_mm_yyyy"]:
-                        val = matched_ref.get(dfield)
-                        if pd.notna(val) and str(val).strip() and (not p.get(dfield) or str(p.get(dfield)).strip() in ("-", "None", "nan")):
-                            p[dfield] = str(val).strip()
-
-                    for nfield in ["original_cost_crore", "revised_cost_crore", "cumulative_expenditure_crore", "physical_progress_percent"]:
-                        val = matched_ref.get(nfield)
-                        if pd.notna(val) and (p.get(nfield) is None or p.get(nfield) == 0):
-                            try:
-                                p[nfield] = float(val)
-                            except (ValueError, TypeError):
-                                pass
-
-                    reconciled_projects.append(p)
-
-            for _, r in ref_df.iterrows():
-                r_dict = r.to_dict()
-                r_id = str(r_dict.get("project_id", "")).strip()
-                r_sl = int(r_dict.get("sl_no", len(reconciled_projects) + 1))
-                if r_id not in matched_ref_ids and r_sl not in matched_ref_sls:
-                    new_p = {
-                        "sl_no": r_sl,
-                        "ministry": str(r_dict.get("ministry", "")).strip() or None,
-                        "sector": str(r_dict.get("sector", "")).strip() or None,
-                        "project_name": str(r_dict.get("project_name", "")).strip(),
-                        "agency": str(r_dict.get("agency", "")).strip() or None,
-                        "project_id": r_id,
-                        "legacy_ocms_code": str(r_dict.get("legacy_ocms_code", "")).strip() or None,
-                        "pmgid": str(r_dict.get("pmgid", "")).strip() or None,
-                        "state": str(r_dict.get("state", "")).strip() or None,
-                        "approval_date_mm_yyyy": str(r_dict.get("approval_date_mm_yyyy", "")).strip() or None,
-                        "start_date_mm_yyyy": str(r_dict.get("start_date_mm_yyyy", "")).strip() or None,
-                        "original_target_doc_mm_yyyy": str(r_dict.get("original_target_doc_mm_yyyy", "")).strip() or None,
-                        "revised_target_doc_mm_yyyy": str(r_dict.get("revised_target_doc_mm_yyyy", "")).strip() or None,
-                        "original_cost_crore": float(r_dict.get("original_cost_crore", 0)) if pd.notna(r_dict.get("original_cost_crore")) else None,
-                        "revised_cost_crore": float(r_dict.get("revised_cost_crore", 0)) if pd.notna(r_dict.get("revised_cost_crore")) else None,
-                        "cumulative_expenditure_crore": float(r_dict.get("cumulative_expenditure_crore", 0)) if pd.notna(r_dict.get("cumulative_expenditure_crore")) else None,
-                        "physical_progress_percent": float(r_dict.get("physical_progress_percent", 0)) if pd.notna(r_dict.get("physical_progress_percent")) else None,
-                        "report_month": reporting_period,
-                        "source_pdf_page": int(r_dict.get("source_pdf_page", 1)) if pd.notna(r_dict.get("source_pdf_page")) else 1,
-                    }
-                    reconciled_projects.append(new_p)
-                    matched_ref_ids.add(r_id)
-                    matched_ref_sls.add(r_sl)
-
-            reconciled_projects.sort(key=lambda x: (x.get("sl_no") or 99999))
-            ongoing_projects = reconciled_projects
-            csv_match_pct = 100.0
-            logger.info("Authoritative reference dataset reconciliation complete: exactly %d projects verified (100.0%% match)", len(ongoing_projects))
+            matched_ids = pdf_ids & ref_ids
+            missing_from_pdf = max(0, ref_count - len(ongoing_projects))
+            extra_in_pdf = max(0, len(ongoing_projects) - ref_count)
+            csv_match_pct = round((len(matched_ids) / max(1, ref_count)) * 100, 1) if ref_count else 100.0
+            logger.info("PDF vs Reference CSV validation: ref_rows=%d, pdf_rows=%d, matched_ids=%d (%.1f%% match)", ref_count, len(ongoing_projects), len(matched_ids), csv_match_pct)
         except Exception as ref_err:
-            logger.warning("Error during reference CSV reconciliation: %s", ref_err)
-    elif "July" in reporting_period and is_official_reference_file:
-        ref_count = 1775
-        csv_match_pct = 100.0
+            logger.warning("Error reading reference CSV for validation: %s", ref_err)
 
     # Sl.No continuity validation
     if ongoing_projects:
         min_sl = min(p["sl_no"] for p in ongoing_projects)
         max_sl = max(p["sl_no"] for p in ongoing_projects)
         logger.info("Extracted %d projects. Sl.No range: [%d, %d]", len(ongoing_projects), min_sl, max_sl)
+
+    diagnostic_panel = {
+        "source_file": filename,
+        "detected_report": reporting_period,
+        "authoritative_table": table_name,
+        "table_start_page": start_page,
+        "table_end_page": end_page,
+        "raw_table_rows": raw_extracted_count or len(ongoing_projects),
+        "valid_project_rows": len(ongoing_projects),
+        "duplicates": dup_count,
+        "final_projects": len(ongoing_projects),
+        "reference_csv": ref_count,
+        "csv_match": csv_match_pct if ref_count else 100.0,
+        "database_writes": 0,
+        "map_writes": 0,
+        "missing_from_pdf": missing_from_pdf,
+        "extra_in_pdf": extra_in_pdf,
+        "field_mismatches": field_mismatches_count,
+    }
 
     metrics = {
         "table_name": table_name,
@@ -1508,6 +1393,7 @@ def extract_ongoing_projects_from_pdf(
         "pages_processed": (end_page - start_page + 1),
         "reference_csv": ref_count,
         "csv_match": csv_match_pct if ref_count else None,
+        "diagnostic_panel": diagnostic_panel,
     }
 
     if return_metrics:
@@ -2312,6 +2198,10 @@ def generate_temporary_project_mitigation(
                 if prov.get("is_gemini_native"):
                     raw_response = _call_gemini_llm(prov, ctx)
                 elif prov.get("is_local_qwen"):
+                    import torch
+                    if not torch.cuda.is_available() and not os.environ.get("FORCE_CPU_QWEN"):
+                        logger.info("Local Qwen on CPU without CUDA: using dynamic project-specific reasoner for sub-second response")
+                        continue
                     raw_response = qwen_service.generate_structured_project_mitigation_qwen(ctx)
                 else:
                     raw_response = _call_openai_compatible_llm(prov, ctx)
@@ -2322,22 +2212,24 @@ def generate_temporary_project_mitigation(
             except Exception as le:
                 logger.warning("LLM provider %s call error: %s", prov.get("name"), le)
 
-    # 3. Local Qwen 2.5 Transformer (Fast Inference if loaded)
+    # 3. Local Qwen 2.5 Transformer (Fast Inference if loaded and GPU available)
     if not raw_response and qwen_service.is_loaded():
         try:
-            qwen_prompt = (
-                f"Analyze project: {project_id} - {p_name} ({sector}, {state}, Agency: {agency}). "
-                f"Physical progress {prog}%, outlay Rs. {orig_cost} Cr, expenditure Rs. {exp} Cr. "
-                f"Return RAW JSON with keys 'overall_assessment' and 'mitigation_actions'."
-            )
-            qwen_out = qwen_service.generate_json_from_qwen(
-                prompt=qwen_prompt,
-                max_new_tokens=150,
-                system_prompt="You are an expert infrastructure risk analyst supporting MoSPI. Output strict RAW JSON.",
-            )
-            if qwen_out and isinstance(qwen_out, dict) and qwen_out.get("mitigation_actions"):
-                raw_response = qwen_out
-                model_used = "Qwen 2.5 (Local Transformer Model)"
+            import torch
+            if torch.cuda.is_available() or os.environ.get("FORCE_CPU_QWEN"):
+                qwen_prompt = (
+                    f"Analyze project: {project_id} - {p_name} ({sector}, {state}, Agency: {agency}). "
+                    f"Physical progress {prog}%, outlay Rs. {orig_cost} Cr, expenditure Rs. {exp} Cr. "
+                    f"Return RAW JSON with keys 'overall_assessment' and 'mitigation_actions'."
+                )
+                qwen_out = qwen_service.generate_json_from_qwen(
+                    prompt=qwen_prompt,
+                    max_new_tokens=150,
+                    system_prompt="You are an expert infrastructure risk analyst supporting MoSPI. Output strict RAW JSON.",
+                )
+                if qwen_out and isinstance(qwen_out, dict) and qwen_out.get("mitigation_actions"):
+                    raw_response = qwen_out
+                    model_used = "Qwen 2.5 (Local Transformer Model)"
         except Exception as qe:
             logger.warning("Local Qwen inference note: %s", qe)
 
@@ -2546,6 +2438,7 @@ def _format_mitigation_schema(
         "project_name": proj_name,
         "model_used": raw_dict.get("model_used") or "Qwen 2.5 (Risk Reasoner)",
         "overall_assessment": assessment,
+        "executive_assessment": assessment,
         "critical_issues": issues,
         "mitigation_actions": actions,
         "cost_control": cost_control,

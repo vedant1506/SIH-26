@@ -161,7 +161,7 @@ export default function TopBar({
 
         {/* Projects count chip */}
         {hideGlobalProjectCount ? (
-          customProjectCount !== undefined && customProjectCount !== null && (
+          customProjectCount !== undefined && customProjectCount !== null ? (
             <div
               style={{
                 display: "flex", alignItems: "center", gap: 5,
@@ -175,7 +175,21 @@ export default function TopBar({
                 <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
               </svg>
               <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.05em" }}>
-                {customProjectCount === 0 ? "0 ANALYZED PROJECTS" : `${customProjectCount.toLocaleString("en-IN")} ${customProjectLabel || "ONGOING PROJECTS"}`}
+                {customProjectCount === 0 ? (customProjectLabel || "NO PROJECTS ANALYZED") : `${customProjectCount.toLocaleString("en-IN")} ${customProjectLabel || "ONGOING PROJECTS"}`}
+              </span>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                padding: "4px 10px",
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
+                borderRadius: 999, flexShrink: 0,
+              }}
+            >
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.05em" }}>
+                {customProjectLabel || "FILE SESSION · NO DOCUMENT ANALYZED"}
               </span>
             </div>
           )

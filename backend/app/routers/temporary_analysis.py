@@ -111,7 +111,7 @@ async def upload_document(file: UploadFile = File(...)):
             "duplicates": pdf_metrics.get("duplicates", 0),
             "missing_fields": sum(sum(1 for v in p.values() if v is None) for p in raw_projects),
             "pages_processed": pdf_metrics.get("pages_processed", val_result.get("num_pages", 1)),
-            "diagnostic_panel": {
+            "diagnostic_panel": pdf_metrics.get("diagnostic_panel") or {
                 "source_file": filename,
                 "detected_report": reporting_period,
                 "authoritative_table": pdf_metrics.get("table_name", "Table 6: All Ongoing Projects"),
@@ -122,6 +122,7 @@ async def upload_document(file: UploadFile = File(...)):
                 "reference_csv": pdf_metrics.get("reference_csv"),
                 "csv_match": pdf_metrics.get("csv_match"),
                 "database_writes": 0,
+                "map_writes": 0,
             },
         }
 
@@ -168,14 +169,12 @@ async def upload_document(file: UploadFile = File(...)):
     session.csv_text = final_csv_text
     session.risk_csv_text = generate_risk_enriched_csv(scored_projects)
 
-    # Ensure quality metrics match authoritative projects count exactly
+    # Ensure quality metrics reflect final validated session project count
     quality_metrics["projects_extracted"] = len(scored_projects)
     quality_metrics["projects_validated"] = len(scored_projects)
     if "diagnostic_panel" in quality_metrics and isinstance(quality_metrics["diagnostic_panel"], dict):
         quality_metrics["diagnostic_panel"]["final_projects"] = len(scored_projects)
         quality_metrics["diagnostic_panel"]["valid_project_rows"] = len(scored_projects)
-        quality_metrics["diagnostic_panel"]["raw_table_rows"] = len(scored_projects)
-        quality_metrics["diagnostic_panel"]["reference_csv"] = len(scored_projects)
     session.quality_metrics = quality_metrics
 
     # Calculate real risk tier distribution
