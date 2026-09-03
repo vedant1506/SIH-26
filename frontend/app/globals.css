@@ -728,3 +728,259 @@ path.leaflet-interactive:hover {
   color: #059669 !important;
 }
 
+/* ============================================================
+   RESPONSIVE DESIGN SYSTEM & MODERN UI ENHANCEMENTS
+   ============================================================ */
+
+/* ── Responsive Grid Breakpoints ── */
+.responsive-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.responsive-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.responsive-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* ── Responsive Content Padding ── */
+.responsive-container {
+  padding: 24px 24px 36px;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ── Responsive Sidebar & Layout Container ── */
+.sidebar-aside {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.2s ease, border-color 0.2s ease;
+  box-shadow: var(--sidebar-shadow);
+}
+
+.main-dashboard-content {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: padding-left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .sidebar-aside {
+    transform: translateX(0) !important;
+  }
+  .main-dashboard-content.expanded {
+    padding-left: 236px;
+  }
+  .main-dashboard-content.collapsed {
+    padding-left: 68px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .sidebar-aside {
+    transform: translateX(-100%);
+    width: 260px !important;
+    box-shadow: 12px 0 48px rgba(0, 0, 0, 0.65) !important;
+  }
+
+  .sidebar-aside.mobile-open {
+    transform: translateX(0) !important;
+  }
+
+  .main-dashboard-content {
+    padding-left: 0 !important;
+  }
+}
+
+/* ── High-Visibility Responsive Data Table Wrapper ── */
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius);
+  position: relative;
+}
+
+.table-responsive-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-responsive-wrapper::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 4px;
+}
+
+.table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* ── Visibility Utilities ── */
+.mobile-only {
+  display: none !important;
+}
+
+.desktop-only {
+  display: flex !important;
+}
+
+/* ── Mobile Backdrop Overlay ── */
+.mobile-nav-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 48;
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+
+/* ── Modern Glassmorphism & Hover Polish ── */
+.glass-panel {
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-panel:hover {
+  border-color: var(--border-3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* ── MEDIA QUERIES ── */
+
+/* Tablet (Large Tablets & iPads: 768px - 1023px) */
+@media (max-width: 1023px) {
+  .responsive-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+  }
+
+  .responsive-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+  }
+
+  .responsive-grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: flex !important;
+  }
+
+  .responsive-container {
+    padding: 18px 16px 28px !important;
+  }
+
+  .topbar {
+    padding: 0 16px !important;
+    height: 58px !important;
+  }
+
+  .sidebar-collapsed-padding {
+    padding-left: 0 !important;
+  }
+}
+
+/* Mobile Devices (Phones & Compact Tablets: <= 767px) */
+@media (max-width: 767px) {
+  .responsive-grid-4,
+  .responsive-grid-3,
+  .responsive-grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .responsive-container {
+    padding: 14px 12px 24px !important;
+  }
+
+  .tablet-hide {
+    display: none !important;
+  }
+
+  .btn {
+    font-size: 12px !important;
+    padding: 7px 12px !important;
+  }
+
+  /* Input & select elements comfortable for touch */
+  .input {
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+  }
+
+  .section-label {
+    font-size: 11px !important;
+  }
+
+  /* Prevent overflow on table cards */
+  .card {
+    padding: 14px !important;
+    border-radius: 10px !important;
+  }
+}
+
+/* Small Phones (<= 480px) */
+@media (max-width: 480px) {
+  .phone-hide {
+    display: none !important;
+  }
+
+  .topbar {
+    gap: 8px !important;
+    padding: 0 12px !important;
+  }
+
+  .btn-sm {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* ── Map Filter Bar ── */
+.map-filter-bar {
+  padding: 10px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
+}
+
+@media (max-width: 767px) {
+  .map-filter-bar {
+    padding: 8px 12px !important;
+    gap: 8px !important;
+  }
+}
+

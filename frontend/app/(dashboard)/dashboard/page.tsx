@@ -48,10 +48,10 @@ export default function DashboardPage() {
         subtitle="Real-time infrastructure risk intelligence · India" 
         status={status}
       />
-      <div style={{ padding: "24px 24px 32px" }}>
+      <div className="responsive-container">
         
         {/* KPI Cards */}
-        <div className="animate-levitate responsive-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24, animationDelay: "0ms" }}>
+        <div className="animate-levitate responsive-grid-4" style={{ marginBottom: 24, animationDelay: "0ms" }}>
           <KpiCard
             label="Total Projects"
             value={summary?.total_projects ?? 0}
@@ -92,7 +92,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Middle row */}
-        <div className="animate-levitate responsive-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24, animationDelay: "150ms" }}>
+        <div className="animate-levitate responsive-grid-2" style={{ marginBottom: 24, animationDelay: "150ms" }}>
 
           <div className="card" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
@@ -124,16 +124,18 @@ export default function DashboardPage() {
 
         {/* Critical Projects Table */}
         <div className="card animate-levitate" style={{ padding: 0, overflow: "hidden", animationDelay: "300ms" }}>
-          <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--surface-2)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <div className="section-label">Critical &amp; High Risk Projects</div>
-              <input type="text" placeholder="Search projects…" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="input" style={{ width: 220, padding: "6px 12px", fontSize: 12 }} />
+          <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, background: "var(--surface-2)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", flex: 1 }}>
+              <div className="section-label" style={{ whiteSpace: "nowrap" }}>Critical &amp; High Risk Projects</div>
+              <input type="text" placeholder="Search projects…" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="input" style={{ width: "100%", maxWidth: 220, padding: "6px 12px", fontSize: 12 }} />
             </div>
             <a href="/projects" style={{ fontSize: 12, color: "var(--accent)", textDecoration: "none", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>View all
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </a>
           </div>
-          <ProjectTable projects={filteredProjects} loading={loading} />
+          <div className="table-responsive-wrapper">
+            <ProjectTable projects={filteredProjects} loading={loading} />
+          </div>
         </div>
       </div>
     </div>

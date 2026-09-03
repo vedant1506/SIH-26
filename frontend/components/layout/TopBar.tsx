@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { listAlerts, getPortfolioSummary } from "@/lib/api";
 import { toggleTheme, getStoredTheme, type Theme } from "@/lib/theme";
 
+import { useNav } from "@/lib/nav-context";
+
 interface TopBarProps {
   title: string;
   subtitle?: string;
@@ -23,7 +25,7 @@ const BellIcon = () => (
 const SunIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="5"/>
-    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="12" y1="12" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
     <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
     <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
     <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
@@ -48,6 +50,7 @@ export default function TopBar({
   const [time, setTime] = useState<Date | null>(null);
   const [totalProjects, setTotalProjects] = useState<number | null>(null);
   const [theme, setTheme] = useState<Theme>("dark");
+  const { toggleMobile } = useNav();
 
   useEffect(() => {
     setTime(new Date());
@@ -93,11 +96,36 @@ export default function TopBar({
         transition: "background 0.2s ease, border-color 0.2s ease",
       }}
     >
-      {/* Left: Title + Brand Emblem */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0, flex: 1 }}>
-        <div
+      {/* Left: Mobile Toggle + Title + Brand Emblem */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
+        {/* Mobile Hamburger Button */}
+        <button
+          onClick={toggleMobile}
+          className="mobile-only"
           style={{
-            width: 36, height: 36, borderRadius: 9, overflow: "hidden", flexShrink: 0,
+            background: "var(--topbar-btn-bg)",
+            border: "1px solid var(--topbar-btn-border)",
+            borderRadius: 7,
+            color: "var(--text)",
+            padding: "6px 8px",
+            cursor: "pointer",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+          aria-label="Open Navigation"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+
+        <div
+          className="phone-hide"
+          style={{
+            width: 34, height: 34, borderRadius: 8, overflow: "hidden", flexShrink: 0,
             boxShadow: "0 2px 8px var(--accent-glow)",
             border: "1px solid var(--border)",
             background: "var(--surface)",
@@ -109,7 +137,7 @@ export default function TopBar({
         <div style={{ minWidth: 0 }}>
           <h1
             style={{
-              fontSize: 16, fontWeight: 700, color: "var(--text)", margin: 0,
+              fontSize: 15, fontWeight: 700, color: "var(--text)", margin: 0,
               fontFamily: "'Space Grotesk', sans-serif",
               letterSpacing: "0.01em",
               whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
@@ -118,7 +146,7 @@ export default function TopBar({
             {title}
           </h1>
           {subtitle && (
-            <p style={{ fontSize: 11, color: "var(--text-muted)", margin: 0, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <p className="phone-hide" style={{ fontSize: 11, color: "var(--text-muted)", margin: 0, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {subtitle}
             </p>
           )}
@@ -126,9 +154,10 @@ export default function TopBar({
 
         {/* Live Status Chip */}
         <div
+          className="phone-hide"
           style={{
             display: "flex", alignItems: "center", gap: 6,
-            padding: "4px 10px",
+            padding: "3px 8px",
             background: status === "error"
               ? "var(--critical-bg)"
               : status === "inferencing"
@@ -151,11 +180,11 @@ export default function TopBar({
           />
           <span
             style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+              fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
               color: status === "error" ? "var(--critical)" : status === "inferencing" ? "var(--high)" : "var(--low)",
             }}
           >
-            {status === "inferencing" ? "Inferencing…" : status === "error" ? "Data Error" : "Live · Synced"}
+            {status === "inferencing" ? "Inferencing…" : status === "error" ? "Error" : "Live"}
           </span>
         </div>
 
@@ -218,7 +247,7 @@ export default function TopBar({
       {/* Right: Actions */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
         {/* Live Clock */}
-        <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+        <div className="tablet-hide" style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
           <span
             suppressHydrationWarning
             style={{
@@ -238,7 +267,7 @@ export default function TopBar({
         </div>
 
         {/* Divider */}
-        <div style={{ width: 1, height: 28, background: "var(--border)" }} />
+        <div className="tablet-hide" style={{ width: 1, height: 28, background: "var(--border)" }} />
 
         {/* Alert Bell */}
         <Link

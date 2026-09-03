@@ -1,6 +1,7 @@
 "use client";
 import { useState, useMemo, useEffect } from "react";
 import TopBar from "@/components/layout/TopBar";
+import { toast } from "sonner";
 import {
   uploadTemporaryMonthlyPdf,
   generateTemporaryMitigation,
@@ -447,7 +448,7 @@ export default function FileAnalysisHub() {
         customProjectLabel={tempSession ? `${tempSession.reporting_period} ONGOING PROJECTS` : "FILE SESSION · NO DOCUMENT ANALYZED"}
       />
 
-      <div style={{ padding: "20px 24px 60px" }}>
+      <div className="responsive-container">
 
         {/* ── UPLOAD PANEL ── */}
         <div className="card" style={{ marginBottom: 20, borderLeft: "3px solid var(--accent)" }}>
@@ -924,7 +925,7 @@ export default function FileAnalysisHub() {
               </div>
             ) : viewMode === "table" ? (
               /* Structured Table View with explicit Column Headers matching CSV */
-              <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, overflowX: "auto" }}>
+              <div className="table-responsive-wrapper" style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8 }}>
                 {/* Fixed Column Header */}
                 <div style={{ display: "grid", gridTemplateColumns: "55px 1.6fr 1.1fr 100px 100px 90px 90px 90px 75px 85px 85px 140px", gap: 10, padding: "10px 14px", background: "var(--surface-2)", borderBottom: "2px solid var(--border)", fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", alignItems: "center", minWidth: 1100 }}>
                   <div>Sl.No</div>

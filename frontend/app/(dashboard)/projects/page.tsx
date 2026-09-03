@@ -6,6 +6,7 @@ import type { ProjectListItem } from "@/lib/types";
 import TopBar from "@/components/layout/TopBar";
 import ProjectFilters from "@/components/tables/ProjectFilters";
 import ProjectTable from "@/components/tables/ProjectTable";
+import { toast } from "sonner";
 
 interface Filters {
   ministry?: string;
@@ -82,7 +83,10 @@ function ProjectsContent() {
   };
 
   const exportCSV = () => {
-    if (!projects.length) return;
+    if (!projects.length) {
+      toast.error("No projects available to export");
+      return;
+    }
     const headers = [
       "Project Name",
       "Ministry",
@@ -115,6 +119,7 @@ function ProjectsContent() {
     link.download = `risk_matrix_${filters.delayed ? "delayed" : filters.risk_tier || "all"}_export.csv`;
     link.click();
     URL.revokeObjectURL(url);
+    toast.success(`Exported ${projects.length} projects to CSV`);
   };
 
   const isCriticalFiltered = filters.risk_tier?.toLowerCase() === "critical";
@@ -140,7 +145,7 @@ function ProjectsContent() {
         title={pageTitle}
         subtitle={pageSubtitle}
       />
-      <div style={{ padding: "24px 24px 32px" }}>
+      <div className="responsive-container">
         {/* Delayed Projects Banner if filtered */}
         {isDelayedFiltered && (
           <div
@@ -331,7 +336,9 @@ function ProjectsContent() {
             </div>
           </div>
 
-          <ProjectTable projects={projects} loading={loading} />
+          <div className="table-responsive-wrapper">
+            <ProjectTable projects={projects} loading={loading} />
+          </div>
 
           <div
             style={{
@@ -340,6 +347,8 @@ function ProjectsContent() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 10,
               background: "var(--surface-2)",
             }}
           >

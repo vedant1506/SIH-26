@@ -465,18 +465,7 @@ export default function MapPage() {
       />
 
       {/* Filter Bar with Alphabetical State, Dynamic District, Category, Risk Tier */}
-      <div
-        style={{
-          padding: "10px 24px",
-          background: "var(--surface)",
-          borderBottom: "1px solid var(--border)",
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          gap: 12,
-          zIndex: 10,
-        }}
-      >
+      <div className="map-filter-bar">
         {/* SEARCH INPUT */}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Search:</span>

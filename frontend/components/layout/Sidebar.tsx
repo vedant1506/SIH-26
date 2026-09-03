@@ -70,31 +70,28 @@ const NAV = [
 export default function Sidebar({
   collapsed,
   setCollapsed,
+  mobileOpen,
+  onCloseMobile,
 }: {
   collapsed?: boolean;
   setCollapsed?: (v: boolean) => void;
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }) {
   const pathname = usePathname();
   const router = useRouter();
 
   function handleLogout() {
+    if (onCloseMobile) onCloseMobile();
     clearToken();
     router.replace("/login");
   }
 
   return (
     <aside
+      className={`sidebar-aside ${mobileOpen ? "mobile-open" : ""}`}
       style={{
-        position: "fixed",
-        left: 0, top: 0, bottom: 0,
         width: collapsed ? 68 : 236,
-        background: "var(--surface)",
-        borderRight: "1px solid var(--border)",
-        display: "flex",
-        flexDirection: "column",
-        zIndex: 50,
-        transition: "width 0.3s cubic-bezier(0.2,0.8,0.2,1), background 0.2s ease, border-color 0.2s ease",
-        boxShadow: "var(--sidebar-shadow)",
       }}
     >
       {/* ── Logo ── */}
@@ -107,6 +104,7 @@ export default function Sidebar({
           padding: collapsed ? "0" : "0 16px 0 14px",
           borderBottom: "1px solid var(--border)",
           flexShrink: 0,
+          position: "relative",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -145,6 +143,31 @@ export default function Sidebar({
             </div>
           )}
         </div>
+
+        {/* Mobile Close Button */}
+        {onCloseMobile && (
+          <button
+            onClick={onCloseMobile}
+            className="mobile-only"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid var(--border-2)",
+              borderRadius: 6,
+              color: "var(--text-sub)",
+              cursor: "pointer",
+              padding: 6,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            aria-label="Close navigation"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        )}
 
         {!collapsed && setCollapsed && (
           <button
@@ -190,6 +213,9 @@ export default function Sidebar({
             <Link
               key={href}
               href={href}
+              onClick={() => {
+                if (onCloseMobile) onCloseMobile();
+              }}
               title={collapsed ? label : undefined}
               style={{
                 display: "flex",

@@ -1,23 +1,49 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { isLoggedIn } from "@/lib/auth";
 import Sidebar from "@/components/layout/Sidebar";
+import { NavProvider, useNav } from "@/lib/nav-context";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, setCollapsed, mobileOpen, closeMobile } = useNav();
 
   useEffect(() => {
     if (!isLoggedIn()) router.replace("/login");
   }, [router]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-      <div style={{ paddingLeft: collapsed ? 72 : 240, minHeight: "100vh", display: "flex", flexDirection: "column", transition: "padding-left 0.3s ease" }}>
-        <main style={{ flex: 1 }}>{children}</main>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", position: "relative" }}>
+      {/* Mobile Drawer Backdrop */}
+      {mobileOpen && (
+        <div
+          className="mobile-nav-backdrop mobile-only"
+          onClick={closeMobile}
+          aria-label="Close menu"
+        />
+      )}
+
+      {/* Sidebar with Desktop + Mobile Drawer support */}
+      <Sidebar
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+        mobileOpen={mobileOpen}
+        onCloseMobile={closeMobile}
+      />
+
+      {/* Main Content Area — Fully Responsive */}
+      <div className={`main-dashboard-content ${collapsed ? "collapsed" : "expanded"}`}>
+        <main style={{ flex: 1, width: "100%" }}>{children}</main>
       </div>
     </div>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <NavProvider>
+      <DashboardShell>{children}</DashboardShell>
+    </NavProvider>
   );
 }

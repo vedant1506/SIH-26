@@ -24,6 +24,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${jakarta.variable}`} suppressHydrationWarning>
@@ -46,7 +48,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Toaster richColors position="top-right" closeButton />
+      </body>
     </html>
   );
 }

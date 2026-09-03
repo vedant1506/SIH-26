@@ -12,6 +12,7 @@
     "@tanstack/react-table": "^8.21.3",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
+    "framer-motion": "^13.2.0",
     "geist": "^1.7.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
@@ -22,6 +23,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "recharts": "^3.10.1",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {

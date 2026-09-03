@@ -147,9 +147,9 @@ export default function AnalyticsPage() {
   return (
     <div>
       <TopBar title="Analytics &amp; PAIMANA Portfolio Intelligence" subtitle="Comprehensive financial analytics, capital allocation variance, and sector risk intelligence" />
-      <div style={{ padding: "24px 24px 48px" }}>
+      <div className="responsive-container">
         {/* Portfolio KPI Overview Header */}
-        <div className="responsive-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
+        <div className="responsive-grid-4" style={{ marginBottom: 24 }}>
           <KpiCard label="PAIMANA Projects Tracked" value={summary?.total_projects ? summary.total_projects.toLocaleString("en-IN") : "1,981"} color="#06b6d4" loading={loading} sub="Across 17 Ministries &amp; 22 Sectors" />
           <KpiCard label="High + Critical Risk" value={summary ? summary.high_count + summary.critical_count : "—"} color="#f43f5e" loading={loading} sub="Early intervention required" />
           <KpiCard label="Safe Projects (Low Risk)" value={summary?.low_count ?? "—"} color="#10b981" loading={loading} sub="On-schedule trajectory" />
@@ -158,7 +158,7 @@ export default function AnalyticsPage() {
 
         {/* PORTFOLIO & FINANCIAL ANALYTICS DASHBOARD */}
         <div className="animate-fade">
-          <div className="responsive-grid-2" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 24 }}>
+          <div className="responsive-grid-2" style={{ marginBottom: 24 }}>
             {/* Sector Risk Breakdown */}
             <div className="card">
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 16, textAlign: "center" }}>
@@ -445,7 +445,7 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
-            <div style={{ overflowX: "auto" }}>
+            <div className="table-responsive-wrapper">
               <table className="data-table" style={{ minWidth: 780 }}>
                 <thead>
                   <tr>
