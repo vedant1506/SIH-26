@@ -2,21 +2,22 @@
 
 # ⚡ PRISM: Predictive Risk & Infrastructure Status Monitoring
 ### *Next-Generation AI Intelligence & Geospatial Analytics Platform for National Infrastructure*
+#### **Smart India Hackathon 2026 (SIH26103) · Ministry of Statistics and Programme Implementation (MoSPI)**
 
 [![Next.js 16](https://img.shields.io/badge/Next.js-16.3.3%20(Turbopack)-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React 19](https://img.shields.io/badge/React-19.2.8-blue?style=for-the-badge&logo=react)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python)](https://python.org/)
-[![XGBoost](https://img.shields.io/badge/XGBoost-Explainable%20AI-EB6536?style=for-the-badge)](https://xgboost.readthedocs.io/)
+[![XGBoost 2.0](https://img.shields.io/badge/XGBoost-Explainable%20AI-EB6536?style=for-the-badge)](https://xgboost.readthedocs.io/)
 [![TreeSHAP](https://img.shields.io/badge/TreeSHAP-Factor%20Attribution-8A2BE2?style=for-the-badge)](https://github.com/slundberg/shap)
-[![Leaflet GIS](https://img.shields.io/badge/Leaflet-GIS%20Intelligence-199900?style=for-the-badge&logo=leaflet)](https://leafletjs.com/)
-[![SIH 2026](https://img.shields.io/badge/Smart%20India%20Hackathon-2026%20Winner-FF9933?style=for-the-badge)](https://sih.gov.in/)
+[![Leaflet GIS](https://img.shields.io/badge/Leaflet-100%25%20Inland%20GIS-199900?style=for-the-badge&logo=leaflet)](https://leafletjs.com/)
+[![System Architecture](https://img.shields.io/badge/Architecture-Interactive%20Mermaid%20Docs-FF6F00?style=for-the-badge)](ARCHITECTURE.md)
 
 <br />
 
-**PRISM** is an enterprise-grade, market-ready infrastructure intelligence platform engineered for government ministries, state departments, and infrastructure authorities. It ingests official **Ministry of Statistics and Programme Implementation (MoSPI) PAIMANA** datasets and monthly **Flash Reports**, transforming fragmented data into **explainable predictive risk forecasts**, **TreeSHAP root-cause attributions**, **interactive geospatial mapping**, and **automated executive mitigation roadmaps**.
+**PRISM** is an enterprise-grade infrastructure intelligence and project governance platform engineered for central ministries, state project monitoring units, and project authorities across India. It ingests official **MoSPI PAIMANA** datasets and monthly **Flash Reports**, transforming fragmented oversight into **explainable predictive risk forecasts**, **dynamic S-curve early warnings**, **TreeSHAP root-cause attributions**, **high-precision geospatial mapping**, **intelligent document lifecycle verification**, and **automated executive mitigation roadmaps** across **₹42.78+ Lakh Crore** of capital assets.
 
-[Executive Summary](#-executive-summary) • [Key Capabilities](#-key-capabilities) • [System Architecture](#-system-architecture) • [Live Demonstration Portfolio](#-live-demonstration-portfolio) • [Quick Start](#-quick-start) • [API Reference](#-api-reference)
+[🏛️ Executive Summary](#-executive-summary) • [📐 System Architecture](#-system-architecture) • [🚀 Core Platform Modules](#-core-platform-modules) • [📈 Demonstration Portfolio](#-live-demonstration-portfolio) • [🏁 Quick Start](#-quick-start) • [🔌 API Directory](#-api-directory) • [📑 Full Architecture Doc](ARCHITECTURE.md)
 
 </div>
 
@@ -24,134 +25,170 @@
 
 ## 🏛️ Executive Summary
 
-India's central sector infrastructure program monitors projects each costing ₹150 Crore or more, spanning an outlay exceeding **₹42.78 Lakh Crore**. Historical oversight has relied on lagging quarterly reviews and manual tabular reports, leading to compounded schedule delays and undetected budget escalations.
+India's central sector infrastructure monitoring mechanism tracks capital projects each costing ₹150 Crore or more. Historical oversight has relied on lagging post-hoc reviews and static tabular flash reports, allowing schedule slips and budget escalations to compound undetected.
 
-**PRISM resolves this paradigm through four technological pillars:**
-1. **Explainable Dual-Engine Machine Learning**: Predicts both schedule delay probability and cost overrun severity before physical milestones slip, explaining every inference with TreeSHAP feature attributions.
-2. **Autonomous Ephemeral Document Extraction**: Ingests multi-hundred-page official MoSPI Flash Report PDFs (160+ pages) and parses the authoritative **Table 6 (Pan-India All Ongoing Projects)** in under 40 seconds with zero manual configuration and 100% schema integrity.
-3. **High-Precision Geospatial Intelligence**: Maps central infrastructure assets with inland coordinate validation across Indian states, districts, and union territories.
-4. **Actionable AI Mitigation Synthesizer**: Converts predictive risk factors and financial variances into grounded, multi-horizon intervention strategies with instant exportable executive PDF briefings.
+```mermaid
+flowchart LR
+    A["Raw Flash Reports & PAIMANA Data\n(160+ Page Unstructured PDFs)"] --> B["PRISM Autonomous Ingestion\n(Table 6 Extraction in <40s)"]
+    B --> C["Dual XGBoost & TreeSHAP Core\n(Delay & Cost Overrun Predictions)"]
+    C --> D["Dynamic Early Warning & S-Curve\n(3-State Burn & Deterioration Triggers)"]
+    D --> E["Action Lifecycle & Executive Briefings\n(Targeted Interventions & PDF Exports)"]
+```
 
----
-
-## 🚀 Key Capabilities
-
-### 1. 📊 Executive Command Center
-- **Real-Time Risk Tiers**: Categorizes central sector portfolios into **Critical**, **High**, **Medium**, and **Low** risk tiers based on composite predictive scoring.
-- **Exposure Analytics**: Quantifies total financial outlay at risk across 17+ central ministries and 22+ key economic sectors (Highways, Railways, Power, Petroleum, Ports, Jal Shakti).
-- **Responsive Layout Architecture**: Optimized for high-resolution command-center displays, tablet briefing monitors, and mobile smartphones with slide-out drawer navigation and fluid CSS grid breakpoints.
-
-### 2. 🤖 Explainable AI & Predictive Modeling
-- **Dual XGBoost Classifier**:
-  - *Schedule Delay Model*: Predicts timeline slippage probability and duration in months using operational burn gap, milestone progress drift, and scale ratios.
-  - *Cost Overrun Model*: Forecasts capital expenditure variations against sanctioned expenditure limits.
-- **TreeSHAP Explainability**: Replaces black-box guessing with quantified positive and negative factor contributions for every project (e.g. *Budget spent 35% faster than physical progress*, *Land acquisition milestone overdue by 64 days*).
-- **Interactive What-If Simulation Sandbox**: Allows project directors to stress-test budget adjustments, milestone accelerations, and contractor performance to simulate risk-reduction scenarios in real time.
-
-### 3. 📂 File Analysis Hub (Ephemeral Intelligence)
-- **Authoritative Table 6 Isolation**: Proprietary multi-pass table boundary parser that skips summary sheets and regional sub-tables to isolate the Pan-India All Ongoing Projects master register.
-- **Stacked Dual-Cost Parsing**: Automatically splits and normalizes complex dual-cost cells (`Original Cost\nRevised Cost`) without accounting-negative inversions.
-- **Zero Database Contamination**: Ephemeral 2-hour session memory guarantees that ad-hoc uploads and test datasets never overwrite the central reference database or corrupt historical tracking.
-- **Canonical 19-Column CSV Export**: Verified round-trip CSV generator that matches MoSPI schema specifications with sequential Sl.No continuity.
-
-### 4. 🗺️ Geospatial Risk Map
-- **100% Inland Spatial Validation**: Verified spatial integrity ensuring zero coordinates drift into marine zones or foreign territories.
-- **Multi-Level Granularity**: Filter by State, District, Sector, or Risk Tier with instant heatmap clusters, choropleth state boundaries, and pin-level project drilldowns.
-- **Dual Thematic Modes**: Switch dynamically between **Risk Tier Visualization** (Critical/High/Medium/Low) and **Sector Infrastructure Distribution** (Highways, Railways, Power, Coal, Petroleum).
-
-### 5. 📑 Grounded AI Mitigation Roadmaps
-- **Immediate Intervention Protocol**: Identifies high-leverage immediate actions (7-14 day horizon) and follow-up milestones (30-90 day horizon).
-- **Printable Executive Briefings**: One-click professional PDF generation incorporating MoSPI reference codes, risk indices, SHAP factor rankings, and administrative recommendations.
+### The Four Technological Breakthroughs of PRISM
+1. **Explainable Dual-Engine Machine Learning**: Forecasts both timeline slippage probability (months) and cost overrun severity (₹ Crore) before physical milestones breach, attributing exact feature importances via TreeSHAP.
+2. **Autonomous Ephemeral Document Extraction**: Ingests multi-hundred-page MoSPI Flash Report PDFs and extracts the authoritative **Table 6 (Pan-India All Ongoing Projects)** in under 40 seconds with 100% schema consistency and zero database contamination.
+3. **Dynamic S-Curve & Multi-Trigger Early Warning**: Dynamically models construction cadence using mathematical logistic S-curves, tracking progress gaps against financial burn divergence to categorize severe overburns and trigger targeted mitigations.
+4. **Geospatial & Document Verification Triangulation**: Combines 100% inland spatial coordinates, geotagged citizen ground evidence, and SHA-256 authenticated document management with automated OCR/NLP entity extraction.
 
 ---
 
 ## 📐 System Architecture
 
+> [!NOTE]
+> For in-depth architectural deep-dives, entity relationship diagrams (ERD), state machines, and sequence diagrams, refer to the authoritative [System Architecture & Technical Specification Document (ARCHITECTURE.md)](ARCHITECTURE.md).
+
 ```mermaid
 flowchart TB
-    subgraph Data_Sources["Data Ingestion Layer"]
-        M1["MoSPI PAIMANA April 2026\n(1,981 Baseline Projects)"]
-        M2["Monthly Flash Report PDFs\n(e.g., May 2026 - 1,987 Projects)"]
-        M3["Historical Monitoring Audits\n(14 Snapshots · 20,544 Observations)"]
+    subgraph Client_Layer["Client Presentation Layer (Next.js 16 · Turbopack · React 19)"]
+        UI_DASH["Executive Command Center\n(Portfolio KPIs & Risk Tiers)"]
+        UI_GIS["Geospatial GIS Command Map\n(100% Inland Coordinate Engine)"]
+        UI_WARN["Dynamic Early Warning System\n(S-Curve & Deterioration Triggers)"]
+        UI_ACT["Action Item Tracker\n(SLA Timers & Audit Timeline)"]
+        UI_DOC["Intelligent Document Vault\n(OCR · Hash Check · PDF Viewer)"]
+        UI_CIT["Citizen Transparency Portal\n(Geotagged Photo Verification)"]
     end
 
-    subgraph Backend_Engine["FastAPI Core & ML Service (Port 8000)"]
-        B1["Table Boundary Parser\n(PyMuPDF + pdfplumber)"]
-        B2["Schema Canonicalizer\n(19-Column Standard)"]
-        B3["Dual XGBoost Classifiers\n(Delay & Cost Overrun)"]
-        B4["TreeSHAP Explainer\n(Feature Attributions)"]
-        B5["Ephemeral Session Registry\n(In-Memory TTL)"]
+    subgraph Gateway_Layer["API Gateway & Security Layer (FastAPI ASGI :8000)"]
+        GW["FastAPI Core Gateway"]
+        JWT["JWT Bearer Authentication"]
+        RBAC["Role-Based Access Control"]
+        CORS["CORS & Rate Limiting"]
     end
 
-    subgraph Database_Layer["Storage & Security Layer"]
-        DB1[("PostgreSQL / Supabase\nPort 6543 Pooler")]
-        DB2[("SQLite sql_app.db\nLocal Offline Fallback")]
+    subgraph Service_Engine["Modular Microservices & Domain Routers"]
+        S_PROJ["Projects & Milestones"]
+        S_ML["Dual XGBoost & TreeSHAP"]
+        S_WARN["Early Warning Analytics"]
+        S_ACT["Governance Actions"]
+        S_DOC["Document Intelligence"]
+        S_FRAUD["Fraud & Red-Flag Anomaly"]
+        S_GEO["Spatial Geo Engine"]
+        S_AUDIT["Tamper-Evident Audit Logs"]
     end
 
-    subgraph Frontend_App["Enterprise Web Application (Next.js 16 · Port 3000)"]
-        F1["Command Center Dashboard\n(Responsive KPI Grids)"]
-        F2["Risk Matrix & Filter Hub\n(TanStack Virtual Table)"]
-        F3["Geospatial Intelligence Map\n(Leaflet / MapLibre)"]
-        F4["File Analysis Hub\n(Ephemeral Workflow)"]
-        F5["Executive PDF Generator\n(jsPDF + html2canvas)"]
+    subgraph Data_Storage["Persistence & Storage Layer"]
+        DB_PG[("PostgreSQL Master Database\n(Port 6543 PgBouncer)")]
+        DB_SQLITE[("SQLite Edge Fallback\n(sql_app.db)")]
+        VAULT[("Secure Storage Vault\n(backend/storage/project-documents)")]
+        CACHE[("In-Memory Ephemeral Cache\n(TTL 2-Hour Isolation)")]
     end
 
-    M1 --> DB1
-    M2 --> B1
-    M3 --> DB1
-    B1 --> B2 --> B3 --> B4
-    B4 --> B5
-    DB1 <--> Backend_Engine
-    DB2 <--> Backend_Engine
-    Backend_Engine <==>|"REST APIs (JWT Auth)"| Frontend_App
+    subgraph National_Gateways["National Digital Ecosystem Connectors"]
+        EXT1["PM GatiShakti GIS"]
+        EXT2["PFMS Disbursals"]
+        EXT3["GeM Procurement"]
+        EXT4["Railways CRIS / NHAI"]
+    end
+
+    Client_Layer ==>|"REST APIs & WebSockets"| GW
+    GW --> JWT --> RBAC --> CORS --> Service_Engine
+    Service_Engine <==>|"SQLAlchemy 2.0 ORM"| DB_PG
+    Service_Engine -.->|"Offline Edge Fallback"| DB_SQLITE
+    S_DOC <--> VAULT
+    GW <--> CACHE
+    Service_Engine <==>|"REST Integrations"| National_Gateways
 ```
+
+---
+
+## 🚀 Core Platform Modules
+
+```
+PRISM Platform Capabilities:
+├── 1. Command Center Dashboard      ── Real-time risk distribution, ministry outlay & exposure heatmaps
+├── 2. Early Warning Intelligence    ── S-curve expected progress, 3-state burn & deterioration triggers
+├── 3. Geospatial Command Map        ── 100% inland coordinate GIS with multi-mode layers & drilldowns
+├── 4. Explainable AI & SHAP         ── Dual XGBoost delay/cost inference with waterfall attributions
+├── 5. Governance Action Tracker     ── Tamper-evident remediation state machine with SLA countdowns
+├── 6. Intelligent Document Vault    ── SHA-256 deduplication, OCR text extraction & inline PDF preview
+├── 7. File Analysis Hub (Ephemeral) ── 160+ page Table 6 boundary parser with 0 database contamination
+├── 8. Fraud & Anomaly Triangulation ── Red-flag heuristics, ghost milestone checks & bid concentration
+├── 9. Infrastructure Benchmarking   ── Cross-sector efficiency KPIs, cost-per-km & delay comparisons
+├── 10. Cost Escalation Drivers      ── Deep dive on raw material inflation, land acquisition & RoW stalls
+├── 11. National Gateway Connectors  ── PM GatiShakti, PFMS, GeM, CRIS, and NHAI integration bus
+├── 12. Citizen Transparency Portal  ── Public grievance reporting with EXIF geotagged photo proofs
+└── 13. Model Governance & Drift     ── ROC-AUC, calibration curves, and feature distribution tracking
+```
+
+### Module Highlights
+
+#### 1. ⚡ Early Warning System & Dynamic S-Curve Analytics
+- **Analytical S-Curve Expected Progress**: Uses mathematical logistic formulation $P_{\text{expected}}(t) = \frac{100}{1 + e^{-k(t-0.5)}}$ to compare actual physical milestone completion against elapsed timeline.
+- **3-State Financial Burn Variance**: Classifies fiscal pacing into **Severe Overburn** ($>20\%$ divergence), **Moderate Overburn** ($5-20\%$), and **Balanced / Disciplined Execution** ($\le 5\%$).
+- **Dynamic Contextual Triggers & Actions**: Synthesizes sector-specific drivers (Right-of-Way, Forest Clearances, Equipment Mobilization) and recommends immediate executive actions.
+- **Sort by Risk Severity**: Real-time sorting dynamically bubble-sorts projects requiring urgent cabinet attention to the top.
+
+#### 2. 🗺️ High-Precision Geospatial Command Map
+- **100% Inland Spatial Integrity**: Every project coordinate is validated against Survey of India bounding polygons, eliminating marine drift or border inaccuracies.
+- **Dynamic Thematic Layers**: Instantly toggle between **Risk Tier Modes** (Critical, High, Medium, Low) and **Sector Infrastructure Distribution** (Highways, Railways, Power, Petroleum).
+- **Interactive Spatial Drawers**: Quick-inspect project milestones, contractor scorecards, and financial burn directly from the map pins.
+
+#### 3. 📄 Intelligent Document Repository
+- **SHA-256 Content Deduplication**: Prevents duplicate document submission and verifies document authenticity.
+- **Automated OCR & NLP Parsing**: Ingests project DPRs, monthly progress reports, and contractor bills, extracting milestone tables and expenditure figures.
+- **Full-Screen PDF Preview Modal**: In-browser viewing of official documentation alongside AI-synthesized executive summaries and tags.
+
+#### 4. 🛡️ Governance Actions & SLA Enforcement
+- **Audited State Machine**: Actions transition through `pending` $\to$ `assigned` $\to$ `in_progress` $\to$ `under_review` $\to$ `verified` $\to$ `closed`.
+- **Immutable Timeline**: Every reassignment, priority shift, and review comment is cryptographically preserved in `intervention_action_history`.
 
 ---
 
 ## 📈 Live Demonstration Portfolio
 
-PRISM is pre-calibrated against verified government infrastructure reports:
+PRISM is pre-calibrated against verified government infrastructure data:
 
-| Metric | Primary Dataset (April 2026) | Flash Report (May 2026) | Flash Report (July 2026) | Historical Pipeline |
+| Dimension | Primary Master (April 2026) | Flash Report (May 2026) | Flash Report (July 2026) | Historical Longitudinal |
 |---|---|---|---|---|
 | **Authoritative Register** | MoSPI PAIMANA Master | Table 6: All Ongoing | Table 6: All Ongoing | 14 Historical Audits |
-| **Monitored Projects** | **Exactly 1,981** | **Exactly 1,987** | **Exactly 1,775** | **20,544 Records** |
+| **Monitored Projects** | **Exactly 1,981 Assets** | **Exactly 1,987 Assets** | **Exactly 1,775 Assets** | **20,544 Records** |
 | **Total Capital Outlay** | **₹42.78 Lakh Crore** | **₹37.10 Lakh Crore** | **₹34.49 Lakh Crore** | Longitudinal (2025–2026) |
-| **Critical Risk Projects** | **106 Projects** | 108 Projects | 97 Projects | Continuously Assessed |
+| **Critical Risk Assets** | **106 Projects** | 108 Projects | 97 Projects | Continuously Assessed |
 | **Delayed Trajectory** | **334 Projects** (>50% prob) | 345 Projects | 370 Projects | Validated vs Slippage |
-| **False-Positive Drops** | **0** | **0** | **0** | **0** |
-| **Database Contamination** | 0 Writes on Upload | 0 Writes on Upload | 0 Writes on Upload | Immutable Master Baseline |
+| **Spatial Validity** | **100% Inland Verified** | 100% Inland Verified | 100% Inland Verified | Survey of India Audited |
+| **Database Contamination**| **0 Writes on Upload** | 0 Writes on Upload | 0 Writes on Upload | Protected Master Baseline |
 
 ---
 
 ## 🛠️ Technology Stack
 
 ```
-Frontend:
+Frontend Architecture:
 ├── Framework: Next.js 16.3.3 (Turbopack, App Router)
 ├── Core: React 19.2.8 & TypeScript 5
-├── Animations & Physics: Framer Motion 12+
-├── Notifications: Sonner (Enterprise Toasts)
-├── GIS & Mapping: Leaflet 1.9 & MapLibre GL
-├── Visualizations: Recharts 3.10
+├── Animations: Framer Motion 12+
+├── Notifications: Sonner Toast Notifications
+├── GIS Engine: Leaflet 1.9 & MapLibre GL
+├── Charting: Recharts 3.10
 ├── Icons: Lucide React
-└── Styling: Custom CSS Design System + Tailwind CSS v4
+└── Design: Custom CSS Design System + Tailwind CSS v4
 
-Backend & AI Layer:
-├── Server Framework: FastAPI 0.115+ (ASGI, Starlette)
-├── Machine Learning: XGBoost 2.0+ (Dual Delay/Cost Classifiers)
-├── Explainability: TreeSHAP (Additive Feature Attributions)
+Backend & AI Architecture:
+├── ASGI Framework: FastAPI 0.115+ (Starlette, Pydantic v2)
+├── Predictive Modeling: XGBoost 2.0+ (Dual Classifier & Regressor)
+├── Factor Attribution: TreeSHAP (Tree-based Shapley Additive Explanations)
 ├── PDF Document Extraction: PyMuPDF (fitz) & pdfplumber
 ├── Data Engineering: Pandas 2.2 & NumPy
-├── ORM & Persistence: SQLAlchemy 2.0 & Pydantic v2
-└── Security: JWT Bearer Authentication & PBKDF2 Password Hashing
+├── Persistence & ORM: PostgreSQL (PgBouncer) + SQLite Fallback, SQLAlchemy 2.0
+└── Security: JWT Bearer Auth & PBKDF2 Password Hashing
 ```
 
 ---
 
 ## 🏁 Quick Start
 
-### Prerequisites
+### System Prerequisites
 - **Node.js**: `v20.x` or higher
 - **Python**: `v3.11` or `v3.12`
 - **Git**
@@ -184,44 +221,53 @@ cd frontend
 npm install
 npm run dev
 ```
-> Web Application accessible at: `http://localhost:3000`
+> PRISM Web Application accessible at: `http://localhost:3000`
 
 ---
 
-## 🔌 API Reference (FastAPI Endpoints)
+## 🔌 API Directory
 
-| Method | Endpoint | Description | Role / Auth |
-|---|---|---|---|
-| `POST` | `/api/v1/auth/login` | Authenticate user & issue JWT bearer token | Public |
-| `GET` | `/api/v1/auth/me` | Fetch authenticated officer profile & roles | Officer+ |
-| `GET` | `/api/v1/projects` | Filterable project matrix with pagination & search | All Roles |
-| `GET` | `/api/v1/projects/{id}` | Project detail, financial breakdown & milestone history | All Roles |
-| `POST` | `/api/v1/projects/{id}/predict` | Execute dual XGBoost inference & compute TreeSHAP vectors | All Roles |
-| `POST` | `/api/v1/projects/{id}/mitigation` | Synthesize grounded multi-action mitigation roadmap | All Roles |
-| `GET` | `/api/v1/alerts` | Query active early warning risk escalation alerts | All Roles |
-| `POST` | `/api/v1/alerts/{id}/acknowledge`| Acknowledge early warning escalation item | Officer+ |
-| `GET` | `/api/v1/projects/analytics/portfolio`| Aggregate portfolio KPI metrics, variance & distributions | Decision Maker |
-| `POST` | `/api/v1/temporary-analysis/upload` | Ingest MoSPI Flash Report PDF/CSV into ephemeral session | Ephemeral |
-| `GET` | `/api/v1/temporary-analysis/{id}/csv` | Download verified canonical 19-column CSV export | Ephemeral |
-| `DELETE` | `/api/v1/temporary-analysis/{id}` | Terminate ephemeral session and release memory | Ephemeral |
+| Domain | Method | Endpoint | Description | Access Level |
+|---|---|---|---|---|
+| **Auth** | `POST` | `/api/v1/auth/login` | Authenticate officer & issue signed JWT bearer token | Public |
+| **Auth** | `GET` | `/api/v1/auth/me` | Fetch authenticated profile, ministry & assigned roles | Officer+ |
+| **Projects** | `GET` | `/api/v1/projects` | Filterable project matrix with pagination, search & state filters | All Roles |
+| **Projects** | `GET` | `/api/v1/projects/{id}` | Project detail, financial breakdown & milestone history | All Roles |
+| **AI / ML** | `POST` | `/api/v1/projects/{id}/predict` | Execute dual XGBoost inference & compute TreeSHAP vectors | All Roles |
+| **AI / ML** | `POST` | `/api/v1/projects/{id}/mitigation` | Synthesize grounded multi-action mitigation roadmap | All Roles |
+| **Early Warning** | `GET` | `/api/v1/analytics/early-warning` | Dynamic S-curve expected progress, triggers & 3-state burn | All Roles |
+| **Alerts** | `GET` | `/api/v1/alerts` | Query active early warning risk escalation alerts | All Roles |
+| **Alerts** | `POST` | `/api/v1/alerts/{id}/acknowledge`| Acknowledge early warning escalation item | Officer+ |
+| **Actions** | `GET` | `/api/v1/actions` | Query governance action items with SLA status & assignees | All Roles |
+| **Actions** | `POST` | `/api/v1/actions` | Create new corrective intervention action item | Officer+ |
+| **Actions** | `PUT` | `/api/v1/actions/{id}/status` | Transition action status with audit note & evidence URL | Officer+ |
+| **Documents** | `GET` | `/api/v1/projects/{id}/documents` | List project documents, OCR status & metadata | All Roles |
+| **Documents** | `POST` | `/api/v1/projects/{id}/documents` | Upload document, compute SHA-256 & trigger async OCR | Officer+ |
+| **Citizen** | `POST` | `/api/v1/citizen/grievances` | Submit public grievance with geotagged photo evidence | Public |
+| **Citizen** | `GET` | `/api/v1/citizen/grievances` | Query citizen feedback register with spatial validation | Officer+ |
+| **Fraud** | `GET` | `/api/v1/fraud/anomalies` | Query detected red flags, ghost milestones & vendor risk | Decision Maker |
+| **Integrations** | `GET` | `/api/v1/integrations/status` | Query sync health with GatiShakti, PFMS, GeM, and CRIS | Admin |
+| **Ephemeral** | `POST` | `/api/v1/temporary-analysis/upload` | Ingest MoSPI Flash Report PDF/CSV into ephemeral session | Ephemeral |
+| **Ephemeral** | `GET` | `/api/v1/temporary-analysis/{id}/csv` | Download verified canonical 19-column CSV export | Ephemeral |
 
 ---
 
-## 🛡️ Enterprise Data Quality & Security Safeguards
+## 🛡️ Enterprise Governance & Data Integrity
 
-- **Zero Future-Leakage Guarantee**: ML training strictly partitions historical data chronologically. Snapshot horizons never use future milestones to predict retrospective outcomes.
-- **Port 6543 Transaction Pooling**: Production database connections utilize connection pooling to prevent socket exhaustion during concurrent dashboard usage.
-- **Ephemeral Sandbox Isolation**: File Analysis uploads process entirely in memory (`temp_analysis_service.py`), ensuring that draft reports never overwrite verified database records.
-- **Coordinate Boundary Enforcers**: All geographic latitude/longitude data points are audited against the Survey of India territorial polygon bounding boxes.
+- **Zero Future-Leakage Partitioning**: Machine learning models strictly partition historical training data chronologically. Future milestones are never leaked into retrospective evaluations.
+- **PgBouncer Transaction Pooling**: High-concurrency production database connection pooling on port 6543 prevents socket exhaustion during cabinet briefings.
+- **Ephemeral Sandbox Isolation**: Flash Report parsing runs strictly in volatile RAM (`temp_analysis_service.py`), ensuring draft files never overwrite authoritative records.
+- **Survey of India Spatial Compliance**: All project coordinates are audited against authoritative territorial polygons to maintain 100% inland accuracy.
 
 ---
 
-## 👥 Core Team & SIH Acknowledgements
+## 👥 Hackathon Acknowledgements & Governance
 
 * **Developed for**: Smart India Hackathon (SIH) 2026
 * **Problem Statement**: Web-Based Integrated Project-Monitoring Platform (SIH26103)
-* **Ministry / Organization**: Ministry of Statistics and Programme Implementation (MoSPI)
+* **Ministry / Partner**: Ministry of Statistics and Programme Implementation (MoSPI)
 * **Repository**: [vedant1506/SIH-26](https://github.com/vedant1506/SIH-26)
+* **Full Technical Design**: [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ---
 
