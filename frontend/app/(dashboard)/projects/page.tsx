@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { listProjects } from "@/lib/api";
-import type { ProjectListItem } from "@/lib/types";
+import { listProjects, getPortfolioSummary } from "@/lib/api";
+import type { ProjectListItem, PortfolioSummary } from "@/lib/types";
 import TopBar from "@/components/layout/TopBar";
 import ProjectFilters from "@/components/tables/ProjectFilters";
 import ProjectTable from "@/components/tables/ProjectTable";
@@ -34,9 +34,14 @@ function ProjectsContent() {
   });
 
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
+  const [summary, setSummary] = useState<PortfolioSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const pageSize = 20;
+
+  useEffect(() => {
+    getPortfolioSummary().then(setSummary).catch(() => {});
+  }, []);
 
   // Sync state when query parameters change
   useEffect(() => {
@@ -70,6 +75,20 @@ function ProjectsContent() {
   useEffect(() => {
     setPage(0);
   }, [filters]);
+
+  useEffect(() => {
+    if (filters.sector) {
+      document.title = `${filters.sector} Projects | PRISM`;
+    } else if (filters.ministry) {
+      document.title = `${filters.ministry} Portfolio | PRISM`;
+    } else if (filters.delayed === "true" || filters.delayed === "1") {
+      document.title = "Delayed Projects | PRISM";
+    } else if (filters.risk_tier?.toLowerCase() === "critical") {
+      document.title = "Critical Projects | PRISM";
+    } else {
+      document.title = "Project Risk Matrix | PRISM";
+    }
+  }, [filters.sector, filters.ministry, filters.delayed, filters.risk_tier]);
 
   const handleFilterChange = (newFilters: Filters) => {
     setFilters(newFilters);
@@ -122,22 +141,36 @@ function ProjectsContent() {
     toast.success(`Exported ${projects.length} projects to CSV`);
   };
 
+  const isSectorFiltered = !!filters.sector;
+  const isMinistryFiltered = !!filters.ministry;
   const isCriticalFiltered = filters.risk_tier?.toLowerCase() === "critical";
   const isDelayedFiltered = filters.delayed === "true" || filters.delayed === "1" || filters.delayed === "yes";
 
-  const totalEstimate = isCriticalFiltered ? 140 : isDelayedFiltered ? 1805 : 1981;
+  const criticalTotal = summary?.critical_count ?? 106;
+  const delayedTotal = summary?.total_delayed_count ?? 334;
+  const allTotal = summary?.total_projects ?? 1981;
 
-  const pageTitle = isDelayedFiltered
+  const totalEstimate = isCriticalFiltered ? criticalTotal : isDelayedFiltered ? delayedTotal : allTotal;
+
+  const pageTitle = isSectorFiltered
+    ? `${filters.sector} Sector Projects`
+    : isMinistryFiltered
+    ? `${filters.ministry} Portfolio`
+    : isDelayedFiltered
     ? "Delayed Infrastructure Projects"
     : isCriticalFiltered
     ? "Critical Risk Projects"
     : "Project Risk Matrix";
 
-  const pageSubtitle = isDelayedFiltered
-    ? "1,805 Delayed Projects · Predicted Schedule Delay Probability > 50% · Avg 12.8 Mo Delay"
+  const pageSubtitle = isSectorFiltered
+    ? `Viewing monitored central sector projects under ${filters.sector} · MoSPI April 2026 Baseline`
+    : isMinistryFiltered
+    ? `Viewing monitored central sector projects under ${filters.ministry} · MoSPI April 2026 Baseline`
+    : isDelayedFiltered
+    ? `${delayedTotal} Delayed Projects · Schedule Delay Probability > 50% · MoSPI April 2026 Baseline`
     : isCriticalFiltered
-    ? "140 Critical Risk Projects · Require Immediate Intervention"
-    : "Filterable risk matrix · All central sector infrastructure projects";
+    ? `${criticalTotal} Critical Risk Projects · Require Immediate Intervention · MoSPI April 2026 Baseline`
+    : `Filterable risk matrix · ${allTotal.toLocaleString()} central sector projects · MoSPI April 2026 Baseline`;
 
   return (
     <div>
@@ -184,7 +217,7 @@ function ProjectsContent() {
               </div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#a855f7", letterSpacing: "0.02em" }}>
-                  Viewing 1,805 Delayed Infrastructure Projects (Avg 12.8 Mo Delay)
+                  Viewing {delayedTotal} Delayed Infrastructure Projects (MoSPI April 2026 Baseline)
                 </div>
                 <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
                   Showing central sector projects with delay probability exceeding 50% or documented timeline slippage against original commissioning milestones.
@@ -205,7 +238,7 @@ function ProjectsContent() {
                 padding: "6px 14px",
               }}
             >
-              Clear Filter (Show All 1,981)
+              Clear Filter (Show All {allTotal.toLocaleString()})
             </button>
           </div>
         )}
@@ -249,7 +282,7 @@ function ProjectsContent() {
               </div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#f43f5e", letterSpacing: "0.02em" }}>
-                  Viewing 140 Critical Risk Projects
+                  Viewing {criticalTotal} Critical Risk Projects
                 </div>
                 <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
                   These projects exhibit high probability of multi-year delay and severe cost escalation, requiring immediate ministry intervention.
@@ -270,7 +303,70 @@ function ProjectsContent() {
                 padding: "6px 14px",
               }}
             >
-              Clear Filter (Show All 1,981)
+              Clear Filter (Show All {allTotal.toLocaleString()})
+            </button>
+          </div>
+        )}
+
+        {/* Sector Filter Banner if filtered */}
+        {isSectorFiltered && (
+          <div
+            style={{
+              marginBottom: 16,
+              padding: "14px 20px",
+              background: "rgba(56, 189, 248, 0.08)",
+              border: "1px solid rgba(56, 189, 248, 0.28)",
+              borderRadius: "var(--radius-lg, 12px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 16,
+              boxShadow: "0 4px 16px rgba(56, 189, 248, 0.08)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 8,
+                  background: "rgba(56, 189, 248, 0.16)",
+                  border: "1px solid rgba(56, 189, 248, 0.35)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#38bdf8",
+                  flexShrink: 0,
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 3h18M3 9h18M3 15h18M3 21h18M9 3v18M15 3v18"/>
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#38bdf8", letterSpacing: "0.02em" }}>
+                  Active Sector Filter: {filters.sector}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+                  Displaying central sector infrastructure projects filtered for {filters.sector}.
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => handleFilterChange({ ...filters, sector: undefined })}
+              className="btn btn-sm"
+              style={{
+                background: "rgba(56, 189, 248, 0.16)",
+                border: "1px solid rgba(56, 189, 248, 0.35)",
+                color: "#38bdf8",
+                fontWeight: 600,
+                fontSize: 12,
+                whiteSpace: "nowrap",
+                cursor: "pointer",
+                padding: "6px 14px",
+              }}
+            >
+              Clear Sector Filter
             </button>
           </div>
         )}
@@ -300,7 +396,11 @@ function ProjectsContent() {
                 color: "var(--text-muted)",
               }}
             >
-              {isDelayedFiltered
+              {isSectorFiltered
+                ? `${filters.sector} Projects List`
+                : isMinistryFiltered
+                ? `${filters.ministry} Portfolio`
+                : isDelayedFiltered
                 ? "Delayed Projects List"
                 : isCriticalFiltered
                 ? "Critical Portfolio Projects"
@@ -327,11 +427,15 @@ function ProjectsContent() {
               <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>
                 {loading
                   ? "Loading…"
+                  : isSectorFiltered
+                  ? `Showing ${projects.length} Projects in ${filters.sector}`
+                  : isMinistryFiltered
+                  ? `Showing ${projects.length} Projects in ${filters.ministry}`
                   : isDelayedFiltered
-                  ? `Showing ${page * pageSize + 1}–${page * pageSize + projects.length} of 1,805 Delayed Projects`
+                  ? `Showing ${page * pageSize + 1}–${page * pageSize + projects.length} of ${delayedTotal} Delayed Projects`
                   : isCriticalFiltered
-                  ? `Showing ${page * pageSize + 1}–${page * pageSize + projects.length} of 140 Critical Projects`
-                  : `Showing ${page * pageSize + 1}–${page * pageSize + projects.length} of 1,981 Projects`}
+                  ? `Showing ${page * pageSize + 1}–${page * pageSize + projects.length} of ${criticalTotal} Critical Projects`
+                  : `Showing ${page * pageSize + 1}–${page * pageSize + projects.length} of ${allTotal.toLocaleString()} Projects`}
               </div>
             </div>
           </div>

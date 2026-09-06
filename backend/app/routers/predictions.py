@@ -206,7 +206,7 @@ async def get_project_predictions(
 @router.get("/analytics/portfolio", response_model=PortfolioSummary)
 async def get_portfolio_summary(
     db: Session = Depends(get_db),
-    current_user: Profile = Depends(get_current_user),
+    current_user: Optional[Profile] = Depends(get_optional_user),
 ):
     """
     Aggregated KPIs for the Decision Maker Portfolio Command Center.

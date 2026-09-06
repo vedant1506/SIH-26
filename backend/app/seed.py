@@ -17,7 +17,7 @@ if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
 from app.core.database import Base, engine, SessionLocal
-from app.models.project import Project, RiskPrediction, Alert
+from app.models.project import Project, RiskPrediction, Alert, Profile
 
 MOSPI_RAW_CSV = os.path.join(ROOT_DIR, "ml", "data", "raw", "mospi_paimana_april_2026.csv")
 
@@ -296,5 +296,79 @@ def seed_real_mospi_dataset(force: bool = True):
         db.close()
 
 
+def seed_demo_profiles():
+    """
+    Seed 4 realistic government stakeholder profiles for the RBAC demo.
+    Idempotent — checks if profiles already exist before inserting.
+    """
+    Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        demo_profiles = [
+            {
+                "id": "11111111-1111-1111-1111-111111111101",
+                "email": "admin@prism.gov.in",
+                "full_name": "Dr. Rajesh Sharma",
+                "role": "admin",
+                "designation": "Joint Secretary & System Admin",
+                "department_or_ministry": "Ministry of Statistics & Programme Implementation (MoSPI)",
+            },
+            {
+                "id": "22222222-2222-2222-2222-222222222202",
+                "email": "executive@prism.gov.in",
+                "full_name": "Smt. Sunita Rao",
+                "role": "decision_maker",
+                "designation": "Additional Secretary",
+                "department_or_ministry": "Cabinet Secretariat, Government of India",
+            },
+            {
+                "id": "33333333-3333-3333-3333-333333333303",
+                "email": "officer@prism.gov.in",
+                "full_name": "Er. Vikram Patel",
+                "role": "monitoring_officer",
+                "designation": "Chief Project Officer",
+                "department_or_ministry": "National Highways Authority of India (NHAI) / MoRTH",
+            },
+            {
+                "id": "44444444-4444-4444-4444-444444444404",
+                "email": "analyst@prism.gov.in",
+                "full_name": "Aakash Verma",
+                "role": "analyst",
+                "designation": "Lead Infrastructure Data Scientist",
+                "department_or_ministry": "NITI Aayog, Government of India",
+            },
+        ]
+
+        for p_data in demo_profiles:
+            import uuid as _uuid
+            pid = _uuid.UUID(p_data["id"])
+            existing = db.query(Profile).filter(Profile.id == pid).first()
+            if existing:
+                # Update fields in case they changed
+                existing.role = p_data["role"]
+                existing.full_name = p_data["full_name"]
+                existing.designation = p_data["designation"]
+                existing.department_or_ministry = p_data["department_or_ministry"]
+            else:
+                profile = Profile(
+                    id=pid,
+                    email=p_data["email"],
+                    full_name=p_data["full_name"],
+                    role=p_data["role"],
+                    designation=p_data["designation"],
+                    department_or_ministry=p_data["department_or_ministry"],
+                )
+                db.add(profile)
+
+        db.commit()
+        print(f"[RBAC] Seeded {len(demo_profiles)} demo government officer profiles.")
+    except Exception as e:
+        db.rollback()
+        print(f"[RBAC] Error seeding demo profiles: {e}")
+    finally:
+        db.close()
+
+
 if __name__ == "__main__":
     seed_real_mospi_dataset(force=True)
+    seed_demo_profiles()

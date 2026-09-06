@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { isLoggedIn } from "@/lib/auth";
 import Sidebar from "@/components/layout/Sidebar";
 import { NavProvider, useNav } from "@/lib/nav-context";
+import { AuthProvider } from "@/lib/auth-context";
 
 function DashboardShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -42,8 +43,10 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <NavProvider>
-      <DashboardShell>{children}</DashboardShell>
-    </NavProvider>
+    <AuthProvider>
+      <NavProvider>
+        <DashboardShell>{children}</DashboardShell>
+      </NavProvider>
+    </AuthProvider>
   );
 }

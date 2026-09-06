@@ -1883,46 +1883,53 @@ export const STATE_COORDINATES: Record<string, [number, number]> = {
 export function normalizeStateName(rawState: string = ""): string {
   const s = rawState.trim();
   const sUpper = s.toUpperCase();
-  if (sUpper.includes("MULTI") || sUpper.includes("PAN INDIA") || s.includes(",")) return "MULTI-STATE";
-  if (sUpper.includes("OFFSHORE")) return "OFFSHORE";
-  if (sUpper.includes("ODISHA") || sUpper.includes("ORISSA")) return "ODISHA";
-  if (sUpper.includes("UTTARAKHAND") || sUpper.includes("UTTARANCHAL")) return "UTTARAKHAND";
-  if (sUpper.includes("JAMMU")) return "JAMMU & KASHMIR";
-  if (sUpper.includes("ANDAMAN")) return "ANDAMAN & NICOBAR";
+  if (sUpper === "PAN INDIA") return "PAN INDIA";
+  if (sUpper === "OFFSHORE") return "OFFSHORE";
+  if (sUpper.startsWith("MULTI")) return sUpper;
+  if (sUpper === "ODISHA" || sUpper === "ORISSA") return "ODISHA";
+  if (sUpper === "UTTARAKHAND" || sUpper === "UTTARANCHAL") return "UTTARAKHAND";
+  if (sUpper.includes("JAMMU") || sUpper.includes("KASHMIR")) return "JAMMU AND KASHMIR";
+  if (sUpper.includes("ANDAMAN") || sUpper.includes("NICOBAR")) return "ANDAMAN & NICOBAR";
   if (sUpper.includes("DADRA") || sUpper.includes("DAMAN") || sUpper.includes("DIU")) return "DADRA & NAGAR HAVELI AND DAMAN & DIU";
   if (sUpper.includes("PUDUCHERRY") || sUpper.includes("PONDICHERRY")) return "PUDUCHERRY";
-  if (sUpper.includes("SIKKIM")) return "SIKKIM";
-  if (sUpper.includes("GUJARAT")) return "GUJARAT";
-  if (sUpper.includes("MAHARASHTRA")) return "MAHARASHTRA";
-  if (sUpper.includes("UTTAR PRADESH")) return "UTTAR PRADESH";
-  if (sUpper.includes("ANDHRA PRADESH")) return "ANDHRA PRADESH";
-  if (sUpper.includes("BIHAR")) return "BIHAR";
-  if (sUpper.includes("ASSAM")) return "ASSAM";
-  if (sUpper.includes("MANIPUR")) return "MANIPUR";
-  if (sUpper.includes("MIZORAM")) return "MIZORAM";
-  if (sUpper.includes("NAGALAND")) return "NAGALAND";
-  if (sUpper.includes("ARUNACHAL")) return "ARUNACHAL PRADESH";
-  if (sUpper.includes("MEGHALAYA")) return "MEGHALAYA";
-  if (sUpper.includes("TRIPURA")) return "TRIPURA";
-  if (sUpper.includes("LADAKH")) return "LADAKH";
-  if (sUpper.includes("GOA")) return "GOA";
-
-  for (const k of Object.keys(STATE_GEO_KNOWLEDGE)) {
-    if (sUpper.includes(k)) return k;
-  }
   return sUpper;
 }
 
 export function projectMatchesState(projectState: string = "", filterState: string = ""): boolean {
   if (!filterState || filterState === "all") return true;
+  const pTrim = (projectState || "").trim();
+  const fTrim = (filterState || "").trim();
+  if (pTrim.localeCompare(fTrim, undefined, { sensitivity: "base" }) === 0) return true;
+
   const pNorm = normalizeStateName(projectState);
   const fNorm = normalizeStateName(filterState);
-  if (pNorm === fNorm) return true;
+  return pNorm === fNorm;
+}
 
-  const pUpper = projectState.toUpperCase();
-  const fUpper = filterState.toUpperCase();
-  if (pUpper.includes(fUpper) || fUpper.includes(pUpper)) return true;
-  return false;
+export function normalizeDistrictName(rawDistrict: string = ""): string {
+  if (!rawDistrict) return "";
+  let d = rawDistrict.trim();
+  d = d.replace(/\s+District$/i, "").replace(/\s+Dist$/i, "").trim();
+  const dUpper = d.toUpperCase();
+  if (dUpper === "MAHESANA" || dUpper === "MEHSANA") return "Mehsana";
+  if (dUpper === "PANCHMAHALS" || dUpper === "PANCHMAHAL") return "Panchmahal";
+  if (dUpper === "SABAR KANTHA" || dUpper === "SABARKANTHA") return "Sabarkantha";
+  if (dUpper === "BANAS KANTHA" || dUpper === "BANASKANTHA") return "Banaskantha";
+  if (dUpper === "KUTCH" || dUpper === "KACHCHH") return "Kutch";
+  if (dUpper === "DOHAD" || dUpper === "DAHOD") return "Dahod";
+  if (dUpper === "CHHOTA UDEPUR" || dUpper === "CHHOTA UDAIPUR") return "Chhota Udaipur";
+  if (dUpper === "AURANGABAD" || dUpper === "CHHATRAPATI SAMBHAJINAGAR") return "Chhatrapati Sambhajinagar";
+  if (dUpper === "Y.S.R." || dUpper === "YSR KADAPA" || dUpper === "KADAPA") return "YSR Kadapa";
+  if (dUpper === "VIJAYAWADA" || dUpper === "NTR") return "NTR";
+  return d;
+}
+
+export function projectMatchesDistrict(projectDistrict: string = "", filterDistrict: string = ""): boolean {
+  if (!filterDistrict || filterDistrict === "all") return true;
+  const pNorm = normalizeDistrictName(projectDistrict);
+  const fNorm = normalizeDistrictName(filterDistrict);
+  if (pNorm.toUpperCase() === fNorm.toUpperCase()) return true;
+  return projectDistrict.trim().toUpperCase() === filterDistrict.trim().toUpperCase();
 }
 
 export function getProjectLocation(

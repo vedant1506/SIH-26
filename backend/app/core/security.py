@@ -2,7 +2,7 @@ import sys
 import uuid
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Optional, List
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
@@ -20,13 +20,30 @@ from app.models.project import Profile
 settings = get_settings()
 bearer_scheme = HTTPBearer(auto_error=False)
 
-ROLE_HIERARCHY = {
+# ─── Role Definitions ────────────────────────────────────────────────────────
+# 4 canonical roles: admin > decision_maker = analyst > monitoring_officer
+# `executive` is an alias for `decision_maker` to prevent string-mismatch issues.
+ROLE_ALIASES: dict[str, str] = {
+    "executive": "decision_maker",
+}
+
+ROLE_HIERARCHY: dict[str, int] = {
     "monitoring_officer": 1,
     "analyst": 2,
-    "executive": 2,
+    "decision_maker": 2,
+    "executive": 2,   # alias kept for backward compat in hierarchy lookup
     "admin": 3,
 }
 
+ALL_ROLES: List[str] = ["admin", "decision_maker", "monitoring_officer", "analyst"]
+
+
+def normalize_role(role: str) -> str:
+    """Normalize role aliases to their canonical form."""
+    return ROLE_ALIASES.get(role, role)
+
+
+# ─── Token Creation ───────────────────────────────────────────────────────────
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Create a signed JWT using the app SECRET_KEY."""
@@ -35,6 +52,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.secret_key, algorithm="HS256")
 
+
+# ─── Current User Dependency ──────────────────────────────────────────────────
 
 def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
@@ -97,11 +116,12 @@ def get_current_user(
 
     user_id: str = str(payload.get("sub", ""))
     email: str = payload.get("email") or (payload.get("user_metadata") or {}).get("email", "")
-    role: str = (
+    raw_role: str = (
         payload.get("role")
         or (payload.get("app_metadata") or {}).get("role")
         or (payload.get("user_metadata") or {}).get("role", "admin")
     )
+    role: str = normalize_role(raw_role)
     full_name: Optional[str] = payload.get("full_name") or (payload.get("user_metadata") or {}).get("full_name")
 
     if not user_id:
@@ -112,12 +132,14 @@ def get_current_user(
         )
 
     # Demo user — return synthetic Profile without hitting DB
-    if user_id == "demo-user":
+    if user_id.startswith("demo-"):
         return Profile(
             id=user_id,
             email=email or "demo@prism.gov.in",
             role=role or "admin",
             full_name=full_name or "Demo Administrator",
+            designation=payload.get("designation"),
+            department_or_ministry=payload.get("department_or_ministry"),
         )
 
     # Real user — look up profile in DB if user_id is a valid UUID
@@ -138,9 +160,12 @@ def get_current_user(
     )
 
 
+# ─── Role Check Dependencies ──────────────────────────────────────────────────
+
 def require_role(minimum_role: str):
     """
     Role check dependency — verifies the user meets or exceeds the required permission level.
+    Uses the numeric ROLE_HIERARCHY to determine access.
     """
     def role_checker(current_user: Profile = Depends(get_current_user)) -> Profile:
         user_level = ROLE_HIERARCHY.get(current_user.role, 0)
@@ -154,6 +179,40 @@ def require_role(minimum_role: str):
 
     return role_checker
 
+
+def require_roles(allowed_roles: List[str]):
+    """
+    Role allowlist dependency — verifies the user's role is in the allowed set.
+    Resolves aliases before comparison (e.g. 'executive' matches 'decision_maker').
+    """
+    normalized_allowed = {normalize_role(r) for r in allowed_roles}
+
+    def role_checker(current_user: Profile = Depends(get_current_user)) -> Profile:
+        user_role = normalize_role(current_user.role)
+        if user_role not in normalized_allowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied. Allowed roles: {sorted(normalized_allowed)}, yours: '{current_user.role}'",
+            )
+        return current_user
+
+    return role_checker
+
+
+def check_project_edit_permission(current_user: Profile) -> None:
+    """
+    Raise 403 if the user cannot edit project records.
+    Admins and Monitoring Officers can edit; Decision Makers and Analysts cannot.
+    """
+    allowed = {"admin", "monitoring_officer"}
+    if normalize_role(current_user.role) not in allowed:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Project editing requires Admin or Monitoring Officer clearance.",
+        )
+
+
+# ─── Optional Auth ────────────────────────────────────────────────────────────
 
 def get_optional_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),

@@ -1,9 +1,16 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { listAlerts, getPortfolioSummary } from "@/lib/api";
+import { useEffect, useState, useRef } from "react";
+import {
+  listAlerts,
+  getPortfolioSummary,
+  listNotifications,
+  getUnreadNotificationCount,
+  markNotificationRead,
+  markAllNotificationsRead,
+} from "@/lib/api";
 import { toggleTheme, getStoredTheme, type Theme } from "@/lib/theme";
-
+import type { Notification } from "@/lib/types";
 import { useNav } from "@/lib/nav-context";
 
 interface TopBarProps {
@@ -13,12 +20,20 @@ interface TopBarProps {
   hideGlobalProjectCount?: boolean;
   customProjectCount?: number | null;
   customProjectLabel?: string;
+  action?: React.ReactNode;
 }
 
 const BellIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
     <path d="M13.73 21a2 2 0 01-3.46 0"/>
+  </svg>
+);
+
+const InboxIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+    <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
   </svg>
 );
 
@@ -45,16 +60,33 @@ export default function TopBar({
   hideGlobalProjectCount,
   customProjectCount,
   customProjectLabel,
+  action,
 }: TopBarProps) {
   const [unread, setUnread] = useState(0);
+  const [notifs, setNotifs] = useState<Notification[]>([]);
+  const [notifUnread, setNotifUnread] = useState(0);
+  const [showNotifs, setShowNotifs] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+
   const [time, setTime] = useState<Date | null>(null);
   const [totalProjects, setTotalProjects] = useState<number | null>(null);
   const [theme, setTheme] = useState<Theme>("dark");
   const { toggleMobile } = useNav();
 
+  const loadNotifications = () => {
+    getUnreadNotificationCount()
+      .then((r) => setNotifUnread(r.unread_count))
+      .catch(() => {});
+    listNotifications(false, 15)
+      .then((items) => setNotifs(items))
+      .catch(() => {});
+  };
+
   useEffect(() => {
     setTime(new Date());
     listAlerts(true).then((a) => setUnread(a.length)).catch(() => {});
+    loadNotifications();
+
     if (!hideGlobalProjectCount) {
       getPortfolioSummary().then((s) => setTotalProjects(s?.total_projects ?? null)).catch(() => {});
     }
@@ -63,14 +95,37 @@ export default function TopBar({
     return () => clearInterval(timer);
   }, [hideGlobalProjectCount]);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setShowNotifs(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleToggleTheme = () => {
     const next = toggleTheme();
     setTheme(next);
   };
 
+  const handleMarkAllNotifsRead = async () => {
+    await markAllNotificationsRead().catch(() => {});
+    setNotifUnread(0);
+    setNotifs((prev) => prev.map((n) => ({ ...n, is_read: true })));
+  };
+
+  const handleMarkOneNotifRead = async (id: string) => {
+    await markNotificationRead(id).catch(() => {});
+    setNotifUnread((prev) => Math.max(0, prev - 1));
+    setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
+  };
+
   const timeStr = time
     ? time.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })
     : "12:00:00";
+
   const dateStr = time
     ? time.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
     : "01 Apr 2026";
@@ -226,7 +281,7 @@ export default function TopBar({
           totalProjects !== null && (
             <div
               style={{
-                display: "flex", alignItems: "center", gap: 5,
+                display: "flex", alignItems: "center", gap: 6,
                 padding: "4px 10px",
                 background: "var(--accent-glow-2)",
                 border: "1px solid var(--accent-glow)",
@@ -239,6 +294,9 @@ export default function TopBar({
               <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.05em" }}>
                 {totalProjects.toLocaleString("en-IN")} PROJECTS
               </span>
+              <span style={{ fontSize: 9.5, fontWeight: 600, color: "var(--text-sub)", borderLeft: "1px solid var(--border)", paddingLeft: 6, letterSpacing: "0.04em" }}>
+                APRIL 2026 BASELINE
+              </span>
             </div>
           )
         )}
@@ -246,6 +304,34 @@ export default function TopBar({
 
       {/* Right: Actions */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+        {action && <div>{action}</div>}
+
+        {/* Public Citizen Portal Quick Link */}
+        <Link
+          href="/citizen"
+          className="phone-hide"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "5px 10px",
+            borderRadius: 8,
+            fontSize: 11,
+            fontWeight: 600,
+            textDecoration: "none",
+            color: "var(--accent)",
+            background: "rgba(6,182,212,0.08)",
+            border: "1px solid rgba(6,182,212,0.25)",
+            transition: "all 0.15s ease",
+          }}
+          title="Open Public Citizen Transparency Portal"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span>Citizen Portal</span>
+        </Link>
+
         {/* Live Clock */}
         <div className="tablet-hide" style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
           <span
@@ -268,6 +354,227 @@ export default function TopBar({
 
         {/* Divider */}
         <div className="tablet-hide" style={{ width: 1, height: 28, background: "var(--border)" }} />
+
+        {/* Notifications Popover */}
+        <div style={{ position: "relative" }} ref={notifRef}>
+          <button
+            onClick={() => {
+              setShowNotifs((prev) => !prev);
+              if (!showNotifs) loadNotifications();
+            }}
+            style={{
+              position: "relative",
+              color: "var(--text-sub)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 34,
+              height: 34,
+              borderRadius: 8,
+              background: showNotifs ? "var(--accent-glow-2)" : "var(--topbar-btn-bg)",
+              border: `1px solid ${showNotifs ? "var(--accent)" : "var(--topbar-btn-border)"}`,
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+            title={`${notifUnread} unread notifications`}
+            aria-label="In-App Notifications"
+          >
+            <InboxIcon />
+            {notifUnread > 0 && (
+              <span
+                className="animate-glow"
+                style={{
+                  position: "absolute",
+                  top: -3,
+                  right: -3,
+                  minWidth: 16,
+                  height: 16,
+                  padding: "0 3px",
+                  background: "var(--accent)",
+                  borderRadius: 999,
+                  fontSize: 8,
+                  fontWeight: 800,
+                  color: "#000",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "1.5px solid var(--surface)",
+                  fontFamily: "'JetBrains Mono', monospace",
+                }}
+              >
+                {notifUnread > 99 ? "99+" : notifUnread}
+              </span>
+            )}
+          </button>
+
+          {showNotifs && (
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 10px)",
+                right: 0,
+                width: 360,
+                maxHeight: 460,
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 12,
+                boxShadow: "0 16px 40px rgba(0,0,0,0.45)",
+                backdropFilter: "blur(16px)",
+                zIndex: 100,
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 16px",
+                  borderBottom: "1px solid var(--border)",
+                  background: "var(--surface-2)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
+                    Notifications
+                  </span>
+                  {notifUnread > 0 && (
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        padding: "1px 6px",
+                        borderRadius: 999,
+                        background: "var(--accent-glow-2)",
+                        color: "var(--accent)",
+                        border: "1px solid var(--accent-glow)",
+                      }}
+                    >
+                      {notifUnread} new
+                    </span>
+                  )}
+                </div>
+                {notifs.length > 0 && (
+                  <button
+                    onClick={handleMarkAllNotifsRead}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "var(--accent)",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      padding: "2px 6px",
+                    }}
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
+
+              <div style={{ overflowY: "auto", flex: 1, padding: "8px 0" }}>
+                {notifs.length === 0 ? (
+                  <div
+                    style={{
+                      padding: "32px 16px",
+                      textAlign: "center",
+                      color: "var(--text-muted)",
+                      fontSize: 12,
+                    }}
+                  >
+                    No notifications yet
+                  </div>
+                ) : (
+                  notifs.map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => !n.is_read && handleMarkOneNotifRead(n.id)}
+                      style={{
+                        padding: "10px 16px",
+                        display: "flex",
+                        gap: 10,
+                        borderBottom: "1px solid var(--border)",
+                        background: n.is_read ? "transparent" : "rgba(6, 182, 212, 0.05)",
+                        cursor: n.is_read ? "default" : "pointer",
+                        transition: "background 0.15s ease",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          marginTop: 5,
+                          flexShrink: 0,
+                          background: n.is_read
+                            ? "transparent"
+                            : n.severity === "critical"
+                            ? "var(--critical)"
+                            : n.severity === "high"
+                            ? "var(--high)"
+                            : "var(--accent)",
+                        }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            fontWeight: n.is_read ? 500 : 700,
+                            color: "var(--text)",
+                            marginBottom: 2,
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {n.title}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: "var(--text-sub)",
+                            lineHeight: 1.4,
+                            marginBottom: 4,
+                          }}
+                        >
+                          {n.message}
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            fontSize: 9.5,
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          <span
+                            style={{
+                              padding: "1px 5px",
+                              borderRadius: 4,
+                              background: "var(--surface-2)",
+                              border: "1px solid var(--border)",
+                              textTransform: "uppercase",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {n.notification_type.replace(/_/g, " ")}
+                          </span>
+                          <span>
+                            {new Date(n.created_at).toLocaleTimeString("en-IN", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Alert Bell */}
         <Link

@@ -1016,7 +1016,7 @@ export default function FileAnalysisHub() {
                           <button onClick={() => handleTriggerMitigation(p)}
                             disabled={isMitigating} className="btn btn-primary btn-xs"
                             style={{ fontSize: 10, padding: "3px 8px", display: "inline-flex", alignItems: "center", gap: 3 }}>
-                            {isMitigating ? "⏳" : "AI Plan"}
+                            {isMitigating ? "Generating..." : "AI Plan"}
                           </button>
                         )}
                       </div>

@@ -9,11 +9,13 @@ import RiskBadge from "@/components/ui/RiskBadge";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorState from "@/components/ui/ErrorState";
 import KpiCard from "@/components/ui/KpiCard";
-import ShapWaterfall from "@/components/charts/ShapWaterfall";
+import ShapWaterfallChart from "@/components/charts/ShapWaterfallChart";
+import HistoricalTrajectoryChart from "@/components/charts/HistoricalTrajectoryChart";
 import RiskTrendChart from "@/components/charts/RiskTrendChart";
 import BurnProgressGauge from "@/components/charts/BurnProgressGauge";
 import WhatIfPanel from "@/components/features/WhatIfPanel";
 import StructuredMitigationSection from "@/components/features/StructuredMitigationSection";
+import ProjectDocumentsSection from "@/components/documents/ProjectDocumentsSection";
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -154,6 +156,26 @@ export default function ProjectDetailPage() {
                 </span>
               )}
             </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Link
+              href={`/actions?project_id=${project.id}&project_name=${encodeURIComponent(project.project_name)}&title=${encodeURIComponent(`Intervention: ${project.project_name}`)}&priority=${prediction?.risk_tier || "medium"}&action=new`}
+              className="btn btn-primary"
+              style={{
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 13,
+                padding: "8px 16px",
+                boxShadow: "0 0 15px rgba(59, 130, 246, 0.25)",
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Initiate Action Item
+            </Link>
           </div>
         </div>
 
@@ -297,24 +319,120 @@ export default function ProjectDetailPage() {
         </div>
 
 
-        {/* Middle Charts Grid */}
+        {/* Middle Charts Grid — Budget & Progress Gauges + Historical Trajectory */}
         <div className="responsive-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: 16, marginBottom: 24 }}>
           <div className="card">
             <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 16 }}>
-              Budget vs Progress
+              Budget vs Progress (Burn Gap)
             </div>
             <BurnProgressGauge burnRate={project.burn_rate_pct} physicalProgress={project.physical_progress_pct} gap={project.burn_progress_gap} />
           </div>
           <div className="card">
             <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 12 }}>
-              AI Risk Drivers (SHAP Waterfall)
+              Historical & Projected Execution Trajectory
             </div>
-            {prediction ? (
-              <ShapWaterfall values={prediction.shap_values} />
-            ) : (
-              <div style={{ color: "var(--text-muted)", fontSize: 13, padding: "24px 0" }}>Run a prediction to see risk drivers</div>
+            <HistoricalTrajectoryChart project={project} prediction={prediction} />
+          </div>
+        </div>
+
+        {/* Executive AI Risk Narrative Diagnostic */}
+        {prediction?.ai_risk_narrative && (
+          <div
+            className="card"
+            style={{
+              marginBottom: 20,
+              background: "linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.06) 100%)",
+              border: "1px solid rgba(59, 130, 246, 0.25)",
+              borderRadius: 12,
+              padding: "18px 22px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span
+                  style={{
+                    background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                    color: "#fff",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "3px 9px",
+                    borderRadius: 6,
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                  }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                  Executive AI Diagnostic
+                </span>
+                <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>
+                  Automated Root Cause Synthesis & PAIMANA Alert Reasoning
+                </span>
+              </div>
+              <Link
+                href={`/actions?project_id=${project.id}&project_name=${encodeURIComponent(project.project_name)}&title=${encodeURIComponent(`Resolve risk drivers on ${project.project_name}`)}&priority=${prediction.risk_tier.toLowerCase()}&action=new`}
+                className="btn btn-primary"
+                style={{
+                  fontSize: 12,
+                  padding: "5px 12px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  textDecoration: "none",
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Create Action Item
+              </Link>
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                lineHeight: "1.75",
+                color: "var(--text)",
+                background: "rgba(0,0,0,0.25)",
+                padding: "14px 18px",
+                borderRadius: 8,
+                border: "1px solid rgba(255,255,255,0.06)",
+                whiteSpace: "pre-line",
+                fontFamily: "var(--font-mono, monospace)",
+              }}
+            >
+              {prediction.ai_risk_narrative}
+            </div>
+          </div>
+        )}
+
+        {/* Full-width Explainable AI (TreeSHAP) Factor Attribution Section */}
+        <div className="card" style={{ marginBottom: 24 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>
+                Explainable AI (XAI) Attribution
+              </div>
+              <h3 style={{ margin: "4px 0 0 0", fontSize: 16, fontWeight: 600 }}>
+                TreeSHAP Feature Risk Impact Breakdown
+              </h3>
+            </div>
+            {prediction?.model_version && (
+              <span style={{ fontSize: 11, background: "rgba(255,255,255,0.05)", padding: "3px 8px", borderRadius: 4, color: "var(--text-muted)" }}>
+                Engine: {prediction.model_version}
+              </span>
             )}
           </div>
+          {prediction ? (
+            <ShapWaterfallChart values={prediction.shap_values} baselineScore={prediction.composite_risk_score} />
+          ) : (
+            <div style={{ color: "var(--text-muted)", fontSize: 13, padding: "24px 0", textAlign: "center" }}>
+              Run a risk prediction to compute live SHAP vector attributions
+            </div>
+          )}
         </div>
 
         {/* AI-Powered Multi-LLM Mitigation Plan */}
@@ -341,8 +459,16 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
+        {/* Project Documents & Intelligence Timeline */}
+        <ProjectDocumentsSection
+          projectId={project.id}
+          projectName={project.project_name}
+          masterRevisedCost={project.revised_cost_cr || project.original_cost_cr}
+          masterProgress={project.physical_progress_pct}
+        />
 
         {/* Milestones Table */}
+
         {project.milestones && project.milestones.length > 0 && (
           <div className="card" style={{ padding: 0, overflow: "hidden" }}>
             <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>

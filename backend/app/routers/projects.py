@@ -5,9 +5,10 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import desc
 from datetime import date, datetime
 from app.core.database import get_db
-from app.core.security import get_current_user, require_role
-from app.models.project import Project, RiskPrediction, Profile
+from app.core.security import get_current_user, get_optional_user, require_role, require_roles
+from app.models.project import Project, RiskPrediction, Profile, Milestone, ProjectMonthlySnapshot
 from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectOut, ProjectListItem
+from app.schemas.prediction import PortfolioSummary
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
@@ -25,7 +26,7 @@ async def list_projects(
     limit: int = Query(50, ge=1, le=2000),
     db: Session = Depends(get_db),
 
-    current_user: Profile = Depends(get_current_user),
+    current_user: Optional[Profile] = Depends(get_optional_user),
 ):
     """
     Returns the project list with latest risk predictions.
@@ -87,18 +88,59 @@ async def list_projects(
 
     rows = query.offset(skip).limit(limit).all()
 
+    # Build geo lookup from project_geolocations keyed by project_name (exact match)
+    from sqlalchemy import text as sql_text
+    geo_rows = db.execute(sql_text("""
+        SELECT project_id, project_name, district, place, location_name,
+               latitude, longitude, coordinate_status, coordinate_source,
+               location_resolution_level, geocoding_confidence,
+               state_match, district_match, validation_status, category
+        FROM project_geolocations
+    """)).fetchall()
+
+    geo_lookup: dict = {}
+    for gr in geo_rows:
+        key = (gr[1] or "").strip().lower()  # project_name lowercase
+        geo_lookup[key] = {
+            "paimana_project_id": gr[0],
+            "district": gr[2],
+            "place": gr[3],
+            "location_name": gr[4],
+            "latitude": float(gr[5]) if gr[5] is not None else None,
+            "longitude": float(gr[6]) if gr[6] is not None else None,
+            "coordinate_status": gr[7],
+            "coordinate_source": gr[8],
+            "location_resolution_level": gr[9],
+            "geocoding_confidence": float(gr[10]) if gr[10] is not None else None,
+            "state_match": bool(gr[11]) if gr[11] is not None else None,
+            "district_match": bool(gr[12]) if gr[12] is not None else None,
+            "location_validated": gr[13] == "VALIDATED" if gr[13] else None,
+            "category": gr[14],
+        }
+
     result = []
     for p, pred in rows:
+        # Derive report_month dynamically from latest prediction timestamp, strictly defaulting to April 2026
+        if pred and pred.predicted_at:
+            report_month = pred.predicted_at.strftime("%B %Y")
+        else:
+            report_month = "April 2026"
+
+        # Look up geo data for this project
+        geo = geo_lookup.get((p.project_name or "").strip().lower(), {})
+
         item = ProjectListItem(
             id=p.id,
             project_name=p.project_name,
             ministry=p.ministry,
             sector=p.sector,
             state=p.state,
-            district=getattr(p, "district", None),
-            location_name=getattr(p, "location_name", None),
-            latitude=float(p.latitude) if p.latitude is not None else None,
-            longitude=float(p.longitude) if p.longitude is not None else None,
+            district=geo.get("district") or getattr(p, "district", None),
+            location_name=geo.get("location_name") or getattr(p, "location_name", None),
+            place=geo.get("place"),
+            category=geo.get("category") or p.sector,
+            latitude=geo.get("latitude") if geo.get("latitude") is not None else (float(p.latitude) if p.latitude is not None else None),
+            longitude=geo.get("longitude") if geo.get("longitude") is not None else (float(p.longitude) if p.longitude is not None else None),
             original_cost_cr=p.original_cost_cr,
             revised_cost_cr=p.revised_cost_cr,
             cumulative_expenditure_cr=p.cumulative_expenditure_cr,
@@ -111,11 +153,33 @@ async def list_projects(
             composite_risk_score=pred.composite_risk_score if pred else None,
             delay_probability=pred.delay_probability if pred else None,
             cost_overrun_probability=pred.cost_overrun_probability if pred else None,
-            report_month="April 2026",
+            report_month=report_month,
+            paimana_project_id=geo.get("paimana_project_id"),
+            coordinate_status=geo.get("coordinate_status"),
+            coordinate_source=geo.get("coordinate_source"),
+            location_resolution_level=geo.get("location_resolution_level"),
+            geocoding_confidence=geo.get("geocoding_confidence"),
+            state_match=geo.get("state_match"),
+            district_match=geo.get("district_match"),
+            location_validated=geo.get("location_validated"),
         )
         result.append(item)
 
     return result
+
+
+
+@router.get("/analytics/portfolio", response_model=PortfolioSummary)
+async def get_portfolio_summary_projects_alias(
+    db: Session = Depends(get_db),
+    current_user: Optional[Profile] = Depends(get_optional_user),
+):
+    """
+    Direct alias for /projects/analytics/portfolio to ensure frontend getPortfolioSummary()
+    always succeeds with official April 2026 aggregated KPIs.
+    """
+    from app.routers.predictions import get_portfolio_summary
+    return await get_portfolio_summary(db=db, current_user=current_user)
 
 
 @router.get("/{project_id}", response_model=ProjectOut)
@@ -193,9 +257,9 @@ async def get_project(
 async def create_project(
     payload: ProjectCreate,
     db: Session = Depends(get_db),
-    current_user: Profile = Depends(get_current_user),
+    current_user: Profile = Depends(require_roles(["admin"])),
 ):
-    """Create a new project. Admin only (demo: open to all)."""
+    """Create a new project. Admin only."""
     project = Project(**payload.model_dump())
 
     # Auto-classify project scale based on cost
@@ -220,9 +284,9 @@ async def update_project(
     project_id: UUID,
     payload: ProjectUpdate,
     db: Session = Depends(get_db),
-    current_user: Profile = Depends(get_current_user),
+    current_user: Profile = Depends(require_roles(["admin", "monitoring_officer"])),
 ):
-    """Update project financial/progress fields."""
+    """Update project financial/progress fields. Admin and Monitoring Officer only."""
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -234,6 +298,20 @@ async def update_project(
     db.commit()
     db.refresh(project)
     return project
+
+
+@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_project(
+    project_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: Profile = Depends(require_roles(["admin"])),
+):
+    """Permanently delete a project. Admin only."""
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    db.delete(project)
+    db.commit()
 
 
 def _compute_indicators(project: Project) -> None:
@@ -253,3 +331,140 @@ def _compute_indicators(project: Project) -> None:
         if total_days > 0:
             elapsed_days = (date.today() - project.original_start_date).days
             project.time_elapsed_ratio = round(min(elapsed_days / total_days, 1.0), 4)
+
+
+@router.get("/{project_id}/history")
+async def get_project_history(
+    project_id: str,
+    db: Session = Depends(get_db),
+    current_user: Profile = Depends(get_current_user),
+):
+    """
+    Returns the monthly prediction history for a project.
+    Used by the Project History tab and risk trend charts.
+    Each entry shows a monthly snapshot of risk, financial, and progress data.
+    """
+    project = None
+    try:
+        uid = UUID(project_id)
+        project = db.query(Project).filter(Project.id == uid).first()
+    except (ValueError, TypeError):
+        pass
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # Get all predictions for this project ordered by date
+    predictions = (
+        db.query(RiskPrediction)
+        .filter(RiskPrediction.project_id == project.id)
+        .order_by(RiskPrediction.predicted_at)
+        .all()
+    )
+
+    # Get monthly snapshots if any
+    snapshots = (
+        db.query(ProjectMonthlySnapshot)
+        .filter(ProjectMonthlySnapshot.project_id == project.id)
+        .order_by(ProjectMonthlySnapshot.report_month)
+        .all()
+    )
+
+    history = [
+        {
+            "report_month": pred.predicted_at.strftime("%B %Y") if pred.predicted_at else "Unknown",
+            "report_month_key": pred.predicted_at.strftime("%Y-%m") if pred.predicted_at else None,
+            "predicted_at": pred.predicted_at.isoformat() if pred.predicted_at else None,
+            "risk_tier": pred.risk_tier,
+            "composite_risk_score": float(pred.composite_risk_score or 0),
+            "delay_probability": float(pred.delay_probability or 0),
+            "cost_overrun_probability": float(pred.cost_overrun_probability or 0),
+            "delay_duration_months": float(pred.delay_duration_months or 0),
+            "cost_overrun_amount_cr": float(pred.cost_overrun_amount_cr or 0),
+            "shap_values": pred.shap_values or [],
+            "model_version": pred.model_version,
+        }
+        for pred in predictions
+    ]
+
+    snapshot_history = [
+        {
+            "report_month": s.report_month,
+            "original_cost_cr": float(s.original_cost_cr or 0),
+            "revised_cost_cr": float(s.revised_cost_cr or 0),
+            "cumulative_expenditure_cr": float(s.cumulative_expenditure_cr or 0),
+            "physical_progress_pct": float(s.physical_progress_pct or 0),
+            "burn_rate_pct": float(s.burn_rate_pct or 0),
+            "burn_progress_gap": float(s.burn_progress_gap or 0),
+            "risk_tier": s.risk_tier,
+            "composite_risk_score": float(s.composite_risk_score or 0),
+        }
+        for s in snapshots
+    ]
+
+    return {
+        "project_id": str(project.id),
+        "project_name": project.project_name,
+        "prediction_history": history,
+        "snapshot_history": snapshot_history,
+        "total_months": len(history),
+    }
+
+
+@router.get("/{project_id}/milestones")
+async def get_project_milestones(
+    project_id: str,
+    db: Session = Depends(get_db),
+    current_user: Profile = Depends(get_current_user),
+):
+    """
+    Returns milestone data for a project.
+    Milestones include planned/actual dates and completion status.
+    """
+    project = None
+    try:
+        uid = UUID(project_id)
+        project = db.query(Project).filter(Project.id == uid).first()
+    except (ValueError, TypeError):
+        pass
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    milestones = (
+        db.query(Milestone)
+        .filter(Milestone.project_id == project.id)
+        .order_by(Milestone.scheduled_date)
+        .all()
+    )
+
+    today = date.today()
+    result = []
+    for m in milestones:
+        status = "COMPLETED" if m.is_completed else (
+            "OVERDUE" if m.scheduled_date and m.scheduled_date < today else
+            "IN_PROGRESS" if m.scheduled_date and (today - m.scheduled_date).days > -30 else
+            "NOT_STARTED"
+        )
+        delay_days = None
+        if m.scheduled_date and not m.is_completed and m.scheduled_date < today:
+            delay_days = (today - m.scheduled_date).days
+
+        result.append({
+            "id": str(m.id),
+            "milestone_name": m.milestone_name,
+            "scheduled_date": str(m.scheduled_date) if m.scheduled_date else None,
+            "actual_date": str(m.actual_date) if m.actual_date else None,
+            "is_completed": m.is_completed,
+            "status": status,
+            "delay_days": delay_days,
+        })
+
+    return {
+        "project_id": str(project.id),
+        "project_name": project.project_name,
+        "milestones": result,
+        "total": len(result),
+        "completed": sum(1 for m in result if m["is_completed"]),
+        "overdue": sum(1 for m in result if m["status"] == "OVERDUE"),
+    }

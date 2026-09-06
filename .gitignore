@@ -17,6 +17,9 @@ ENV/
 env/
 *.db
 *.sqlite3
+*.db-shm
+*.db-wal
+*.db-journal
 
 # Model checkpoints and large optimizer states
 checkpoint-*/

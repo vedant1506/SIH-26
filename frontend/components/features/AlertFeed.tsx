@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
-import { listAlerts, acknowledgeAlert, acknowledgeAllAlerts } from "@/lib/api";
+import { listAlerts, acknowledgeAlert, acknowledgeAllAlerts, updateAlertStatus } from "@/lib/api";
 import type { Alert } from "@/lib/types";
+import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 
 const TIER_VAR: Record<string, string> = {
@@ -22,10 +23,12 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTier, setSelectedTier] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<"priority" | "newest" | "oldest">("priority");
   const [acking, setAcking] = useState<string | null>(null);
   const [ackingAll, setAckingAll] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState<string | null>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -50,17 +53,35 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedTier, selectedMonth, unreadOnly, pageSize, sortOrder]);
+  }, [searchQuery, selectedTier, selectedStatus, selectedMonth, unreadOnly, pageSize, sortOrder]);
 
   async function handleAck(id: string) {
     setAcking(id);
     try {
       await acknowledgeAlert(id);
-      setAlerts(a => a.map(x => (x.id === id ? { ...x, is_acknowledged: true } : x)));
+      setAlerts(a => a.map(x => (x.id === id ? { ...x, is_acknowledged: true, status: "ACKNOWLEDGED" } : x)));
     } catch {
       /* ignore */
     } finally {
       setAcking(null);
+    }
+  }
+
+  async function handleStatusChange(id: string, newStatus: string) {
+    setStatusUpdating(id);
+    try {
+      await updateAlertStatus(id, newStatus);
+      setAlerts(a =>
+        a.map(x =>
+          x.id === id
+            ? { ...x, status: newStatus as any, is_acknowledged: newStatus !== "NEW" }
+            : x
+        )
+      );
+    } catch (e) {
+      console.error("Failed to update status", e);
+    } finally {
+      setStatusUpdating(null);
     }
   }
 
@@ -87,6 +108,24 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
     return counts;
   }, [alerts]);
 
+  // Status counts
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      ALL: alerts.length,
+      NEW: 0,
+      ACKNOWLEDGED: 0,
+      UNDER_REVIEW: 0,
+      ACTION_ASSIGNED: 0,
+      RESOLVED: 0,
+    };
+    alerts.forEach(a => {
+      const s = (a.status || (a.is_acknowledged ? "ACKNOWLEDGED" : "NEW")).toUpperCase();
+      if (counts[s] !== undefined) counts[s]++;
+      else counts["NEW"]++;
+    });
+    return counts;
+  }, [alerts]);
+
   // Available unique months list
   const availableMonths = useMemo(() => {
     const monthMap = new Map<string, { label: string; time: number; count: number }>();
@@ -109,6 +148,10 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
   // Filtered alerts
   const filteredAlerts = useMemo(() => {
     const filtered = alerts.filter(a => {
+      if (selectedStatus !== "ALL") {
+        const s = (a.status || (a.is_acknowledged ? "ACKNOWLEDGED" : "NEW")).toUpperCase();
+        if (s !== selectedStatus) return false;
+      }
       if (selectedTier !== "all" && (a.new_tier || "").toLowerCase() !== selectedTier) {
         return false;
       }
@@ -133,7 +176,7 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
       return [...filtered].sort((a, b) => new Date(a.triggered_at).getTime() - new Date(b.triggered_at).getTime());
     }
     return filtered;
-  }, [alerts, selectedTier, selectedMonth, searchQuery, sortOrder]);
+  }, [alerts, selectedTier, selectedStatus, selectedMonth, searchQuery, sortOrder]);
 
   // Paginated alerts
   const totalPages = pageSize === "all" ? 1 : Math.ceil(filteredAlerts.length / (pageSize as number));
@@ -168,6 +211,57 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
     <div>
       {!compact && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 20 }}>
+          {/* Lifecycle Status Pipeline Tabs */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", padding: "10px 14px", background: "rgba(255,255,255,0.02)", borderRadius: 10, border: "1px solid var(--border)" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.05em", marginRight: 4 }}>
+              Status Pipeline:
+            </span>
+            {[
+              { key: "ALL", label: "All Alerts", count: statusCounts.ALL, color: "var(--text)" },
+              { key: "NEW", label: "New", count: statusCounts.NEW, color: "#38bdf8" },
+              { key: "ACKNOWLEDGED", label: "Acknowledged", count: statusCounts.ACKNOWLEDGED, color: "#10b981" },
+              { key: "UNDER_REVIEW", label: "Under Review", count: statusCounts.UNDER_REVIEW, color: "#f59e0b" },
+              { key: "ACTION_ASSIGNED", label: "Action Assigned", count: statusCounts.ACTION_ASSIGNED, color: "#a855f7" },
+              { key: "RESOLVED", label: "Resolved", count: statusCounts.RESOLVED, color: "#64748b" },
+            ].map((tab) => {
+              const active = selectedStatus === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setSelectedStatus(tab.key)}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: 6,
+                    fontSize: 11,
+                    fontWeight: active ? 700 : 500,
+                    cursor: "pointer",
+                    border: active ? `1px solid ${tab.color}` : "1px solid var(--border)",
+                    background: active ? `${tab.color}20` : "var(--surface-2)",
+                    color: active ? tab.color : "var(--text-muted)",
+                    transition: "all 0.15s ease",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                  }}
+                >
+                  <span>{tab.label}</span>
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      background: active ? `${tab.color}40` : "rgba(255,255,255,0.06)",
+                      padding: "1px 5px",
+                      borderRadius: 4,
+                    }}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* Header Summary & Tier Filter Pills */}
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
             <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
@@ -561,20 +655,93 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
                     · {formatDistanceToNow(dateObj, { addSuffix: true })}
                   </span>
 
-                  {isAcked && <span style={{ fontSize: 10, color: "var(--low)", fontWeight: 600 }}>Acknowledged</span>}
+                  {/* Lifecycle Status Badge */}
+                  {(() => {
+                    const st = (a.status || (a.is_acknowledged ? "ACKNOWLEDGED" : "NEW")).toUpperCase();
+                    const stColor =
+                      st === "NEW" ? "#38bdf8" :
+                      st === "ACKNOWLEDGED" ? "#10b981" :
+                      st === "UNDER_REVIEW" ? "#f59e0b" :
+                      st === "ACTION_ASSIGNED" ? "#a855f7" : "#64748b";
+                    return (
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: stColor,
+                          background: `${stColor}15`,
+                          border: `1px solid ${stColor}35`,
+                          padding: "2px 6px",
+                          borderRadius: 4,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {st.replace("_", " ")}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
 
-              {!isAcked && !compact && (
-                <button
-                  id={`ack-${a.id}`}
-                  className="btn btn-secondary btn-sm"
-                  style={{ flexShrink: 0 }}
-                  onClick={() => handleAck(a.id)}
-                  disabled={acking === a.id}
-                >
-                  {acking === a.id ? "…" : "Acknowledge"}
-                </button>
+              {!compact && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                  {/* 1-Click Action Assignment */}
+                  <Link
+                    href={`/actions?project_id=${a.project_id}&alert_id=${a.id}&title=${encodeURIComponent(`Resolve Alert: ${a.message || a.alert_type}`)}&priority=${(a.new_tier || 'medium').toLowerCase()}&action=new`}
+                    className="btn btn-primary btn-sm"
+                    style={{
+                      padding: "4px 9px",
+                      fontSize: 11,
+                      textDecoration: "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                    title="Create intervention action"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    Assign Action
+                  </Link>
+
+                  {/* Quick Status Transition Buttons */}
+                  {(!a.status || a.status === "NEW") && !a.is_acknowledged && (
+                    <button
+                      id={`ack-${a.id}`}
+                      className="btn btn-secondary btn-sm"
+                      style={{ padding: "4px 8px", fontSize: 11 }}
+                      onClick={() => handleAck(a.id)}
+                      disabled={acking === a.id}
+                    >
+                      {acking === a.id ? "…" : "Ack"}
+                    </button>
+                  )}
+
+                  {a.status !== "UNDER_REVIEW" && a.status !== "RESOLVED" && (
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      style={{ padding: "4px 8px", fontSize: 11 }}
+                      onClick={() => handleStatusChange(a.id, "UNDER_REVIEW")}
+                      disabled={statusUpdating === a.id}
+                      title="Mark alert as under review"
+                    >
+                      Review
+                    </button>
+                  )}
+
+                  {a.status !== "RESOLVED" && (
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      style={{ padding: "4px 8px", fontSize: 11, color: "#10b981", borderColor: "rgba(16,185,129,0.3)" }}
+                      onClick={() => handleStatusChange(a.id, "RESOLVED")}
+                      disabled={statusUpdating === a.id}
+                      title="Mark alert as resolved"
+                    >
+                      Resolve
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           );

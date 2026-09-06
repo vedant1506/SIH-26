@@ -78,6 +78,8 @@ class ProjectListItem(BaseModel):
     state: str
     district: Optional[str] = None
     location_name: Optional[str] = None
+    place: Optional[str] = None
+    category: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     original_cost_cr: float
@@ -94,5 +96,14 @@ class ProjectListItem(BaseModel):
     delay_probability: Optional[float] = None
     cost_overrun_probability: Optional[float] = None
     report_month: Optional[str] = "April 2026"
+    # Geo metadata from project_geolocations
+    paimana_project_id: Optional[str] = None          # Numeric PAIMANA/OCMS ID
+    coordinate_status: Optional[str] = None           # exact | approximate | unresolved
+    coordinate_source: Optional[str] = None           # nominatim | source_data | district | state
+    location_resolution_level: Optional[str] = None   # project_site | facility | city | district | state | unresolved
+    geocoding_confidence: Optional[float] = None      # 0.0–1.0
+    state_match: Optional[bool] = None
+    district_match: Optional[bool] = None
+    location_validated: Optional[bool] = None
 
     model_config = {"from_attributes": True}

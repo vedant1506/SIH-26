@@ -11,7 +11,30 @@ interface Filters {
 }
 interface Props { filters: Filters; onChange: (f: Filters) => void; }
 
-const SECTORS = ["Roads", "Railways", "Power", "Petroleum", "Urban Dev", "Water Resources", "Telecom", "Shipping"];
+const SECTORS = [
+  "Roads & Highways",
+  "Railways",
+  "Coal",
+  "Oil & Gas",
+  "Transmission & Distribution",
+  "Water Resources",
+  "Electricity Generation",
+  "Healthcare",
+  "Education",
+  "Waste & Water",
+  "Urban Public Transport",
+  "Aviation & Aviation Infrastructure",
+  "Steel",
+  "Energy Storage",
+  "Telecommunication",
+  "Real Estate",
+  "Metals & Mining",
+  "Shipping",
+  "Construction",
+  "Tourism, Hospitality & Wellness",
+  "Logistics Infrastructure",
+  "Inland Waterways",
+];
 const SCALES = [{ value: "", label: "All Scales" }, { value: "mega", label: "Mega (≥₹1000 Cr)" }, { value: "major", label: "Major (₹150–1000 Cr)" }, { value: "other", label: "Other" }];
 const TIERS = [{ value: "", label: "All Tiers" }, { value: "critical", label: "Critical" }, { value: "high", label: "High" }, { value: "medium", label: "Medium" }, { value: "low", label: "Low" }];
 
@@ -20,6 +43,10 @@ export default function ProjectFilters({ filters, onChange }: Props) {
   
   const inputStyle = { fontSize: 13, background: "var(--surface-2)", border: "1px solid var(--border-2)", padding: "6px 12px" };
   const labelStyle = { fontSize: 11, color: "var(--text-muted)", marginBottom: 6, fontWeight: 600, textAlign: "left" as const, textTransform: "uppercase" as const, letterSpacing: "0.05em" };
+
+  const sectorOptions = filters.sector && !SECTORS.includes(filters.sector)
+    ? [filters.sector, ...SECTORS]
+    : SECTORS;
 
   return (
     <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
@@ -39,11 +66,11 @@ export default function ProjectFilters({ filters, onChange }: Props) {
         <div style={labelStyle}>Ministry</div>
         <input id="filter-ministry" className="input" placeholder="Filter ministry…" value={filters.ministry || ""} onChange={e => set("ministry", e.target.value)} style={{ ...inputStyle, width: "100%" }} />
       </div>
-      <div style={{ flex: "1 1 140px" }}>
+      <div style={{ flex: "1 1 160px" }}>
         <div style={labelStyle}>Sector</div>
         <select id="filter-sector" className="input" value={filters.sector || ""} onChange={e => set("sector", e.target.value)} style={{ ...inputStyle, width: "100%" }}>
           <option value="">All Sectors</option>
-          {SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
+          {sectorOptions.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
       <div style={{ flex: "1 1 120px" }}>
@@ -72,7 +99,7 @@ export default function ProjectFilters({ filters, onChange }: Props) {
           }}
         >
           <option value="">All Statuses</option>
-          <option value="true">Delayed Only (1,805)</option>
+          <option value="true">Delayed Only</option>
         </select>
       </div>
       <div style={{ flex: "1 1 130px" }}>

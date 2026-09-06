@@ -117,8 +117,8 @@ PRISM is pre-calibrated against verified government infrastructure reports:
 | **Authoritative Register** | MoSPI PAIMANA Master | Table 6: All Ongoing | Table 6: All Ongoing | 14 Historical Audits |
 | **Monitored Projects** | **Exactly 1,981** | **Exactly 1,987** | **Exactly 1,775** | **20,544 Records** |
 | **Total Capital Outlay** | **₹42.78 Lakh Crore** | **₹37.10 Lakh Crore** | **₹34.49 Lakh Crore** | Longitudinal (2025–2026) |
-| **Critical Risk Projects** | 140 Projects | 108 Projects | 97 Projects | Continuously Assessed |
-| **Delayed Trajectory** | 1,805 Projects (>50% prob) | 1,768 Projects | 1,592 Projects | Validated vs Slippage |
+| **Critical Risk Projects** | **106 Projects** | 108 Projects | 97 Projects | Continuously Assessed |
+| **Delayed Trajectory** | **334 Projects** (>50% prob) | 345 Projects | 370 Projects | Validated vs Slippage |
 | **False-Positive Drops** | **0** | **0** | **0** | **0** |
 | **Database Contamination** | 0 Writes on Upload | 0 Writes on Upload | 0 Writes on Upload | Immutable Master Baseline |
 
