@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   Download,
@@ -84,6 +85,33 @@ export default function PdfPreviewModal({
 
   // Audit state
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Keyboard accessibility: Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // Lock background body scroll while dialog is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || !documentId) return;
@@ -160,22 +188,20 @@ export default function PdfPreviewModal({
     }
   };
 
-  if (!isOpen || !documentId) return null;
+  if (!isOpen || !documentId || !mounted) return null;
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const pdfUrl = `${apiUrl}/api/v1/documents/${documentId}/file`;
 
-  return (
+  const modalContent = (
     <div
       style={{
         position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
+        inset: 0,
         backgroundColor: "rgba(0, 0, 0, 0.82)",
         backdropFilter: "blur(10px)",
-        zIndex: 9999,
+        WebkitBackdropFilter: "blur(10px)",
+        zIndex: 99999,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -184,7 +210,6 @@ export default function PdfPreviewModal({
       onClick={onClose}
     >
       <div
-        className="card"
         style={{
           width: isFullscreen ? "100vw" : "96vw",
           maxWidth: isFullscreen ? "100vw" : 1400,
@@ -195,8 +220,8 @@ export default function PdfPreviewModal({
           borderRadius: isFullscreen ? 0 : 12,
           overflow: "hidden",
           background: "var(--surface, #0b1324)",
-          border: "1px solid var(--border-2, #334155)",
-          boxShadow: "0 25px 60px rgba(0,0,0,0.8)",
+          border: isFullscreen ? "none" : "1px solid var(--border-2, #334155)",
+          boxShadow: "0 25px 60px rgba(0,0,0,0.85)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -600,4 +625,6 @@ export default function PdfPreviewModal({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

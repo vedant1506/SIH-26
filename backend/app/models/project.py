@@ -96,6 +96,9 @@ class Project(Base):
     location_name = Column(String)
     latitude = Column(Numeric)
     longitude = Column(Numeric)
+    coordinate_status = Column(String, nullable=True)
+    geocode_source = Column(String, nullable=True)
+    location_status = Column(String, nullable=True)
 
     # Financial fields (in Crore INR)
     original_cost_cr = Column(Numeric, nullable=False)

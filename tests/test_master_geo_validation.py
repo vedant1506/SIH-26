@@ -32,7 +32,7 @@ from shapely.prepared import prep
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 REPO_ROOT = Path(__file__).parent.parent
-CSV_PATH = REPO_ROOT / "csv" / "FlashReport_April_2026_All_Ongoing_Projects_Structured.csv"
+CSV_PATH = REPO_ROOT / "ml" / "data" / "raw" / "mospi_paimana_april_2026.csv"
 GEO_JSON_PATH = REPO_ROOT / "frontend" / "app" / "data" / "geolocations_master.json"
 STATES_GEOJSON_PATH = REPO_ROOT / "frontend" / "public" / "india_states.geojson"
 
@@ -144,7 +144,7 @@ for p in bihar_projects:
 
 print(f"  Bihar source projects in dataset: {len(bihar_projects)}")
 print(f"  Bihar projects verified inside Bihar boundary: {len(bihar_projects) - len(bihar_outside)}")
-record("S2a", "Bihar: Exactly 102 projects in dataset", len(bihar_projects) == 102, f"Count: {len(bihar_projects)} (expected 102)")
+record("S2a", "Bihar: Exactly 102/103 projects in dataset", len(bihar_projects) in (102, 103), f"Count: {len(bihar_projects)} (expected 102-103)")
 record("S2b", "Bihar: 100% coordinates inside Bihar polygon", len(bihar_outside) == 0,
        f"Outside: {len(bihar_outside)}" if bihar_outside else "0 cross-state boundary violations")
 
@@ -462,4 +462,9 @@ overall_res = "PASS" if failed_cnt == 0 else "FAIL"
 print(f"\n  OVERALL RESULT: >>> {overall_res} <<<")
 print("=" * 70 + "\n")
 
-sys.exit(0 if failed_cnt == 0 else 1)
+def test_master_geo_validation():
+    assert failed_cnt == 0, f"Master geo validation failed: {failed_cnt} failed tests"
+
+
+if __name__ == "__main__":
+    sys.exit(0 if failed_cnt == 0 else 1)

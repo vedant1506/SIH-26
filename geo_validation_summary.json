@@ -1,0 +1,22 @@
+{
+  "source_projects": 1981,
+  "processed_projects": 1981,
+  "geolocation_records": 1981,
+  "dropped_projects": 0,
+  "exact_locations": 1545,
+  "approximate_locations": 436,
+  "unresolved_locations": 0,
+  "google_places_count": 191,
+  "google_geocoding_count": 0,
+  "source_coordinate_count": 1353,
+  "state_mismatches": 0,
+  "district_mismatches": 0,
+  "invalid_coordinates": 0,
+  "duplicate_project_ids": 0,
+  "duplicate_project_markers": 0,
+  "synthetic_markers": 0,
+  "admin_centers_remaining": 0,
+  "coordinate_changes_applied": 1431,
+  "gosikhurd_test": "PASS",
+  "mehsana_test": "PASS (5/5)"
+}

@@ -322,7 +322,7 @@ code, pre, .mono {
 /* ═══════════════════════════════════════════
    INPUT & SELECT
 ═══════════════════════════════════════════ */
-.input {
+.input, .select, select {
   background: var(--surface-2);
   border: 1px solid var(--border-2);
   border-radius: var(--radius);
@@ -334,12 +334,12 @@ code, pre, .mono {
   transition: border-color 0.15s, box-shadow 0.15s;
   font-family: var(--font-body);
 }
-.input:focus {
+.input:focus, .select:focus, select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-glow-2);
 }
 .input::placeholder { color: var(--text-muted); }
-select, select.input, select.form-select {
+select, select.input, select.form-select, .select {
   cursor: pointer;
   color-scheme: dark;
 }
@@ -348,6 +348,14 @@ select option {
   background-color: #0f172a;
   color: #f8fafc;
 }
+input[type="date"], input[type="month"] {
+  color-scheme: dark;
+}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) brightness(1.2);
+  cursor: pointer;
+}
 [data-theme="light"] select,
 [data-theme="light"] select option,
 .light-mode select,
@@ -355,6 +363,18 @@ select option {
   color-scheme: light;
   background-color: #ffffff;
   color: #0f172a;
+}
+[data-theme="light"] input[type="date"],
+[data-theme="light"] input[type="month"],
+.light-mode input[type="date"],
+.light-mode input[type="month"] {
+  color-scheme: light;
+}
+[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="light"] input[type="month"]::-webkit-calendar-picker-indicator,
+.light-mode input[type="date"]::-webkit-calendar-picker-indicator,
+.light-mode input[type="month"]::-webkit-calendar-picker-indicator {
+  filter: none;
 }
 
 /* ═══════════════════════════════════════════

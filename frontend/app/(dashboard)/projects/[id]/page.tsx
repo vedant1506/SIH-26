@@ -156,6 +156,38 @@ export default function ProjectDetailPage() {
                 </span>
               )}
             </div>
+            {/* Stagnation Alert Banner — shown when project is severely behind schedule */}
+            {project.time_elapsed_ratio != null &&
+              project.physical_progress_pct != null &&
+              project.time_elapsed_ratio > 0.5 &&
+              project.physical_progress_pct < 15.0 && (
+                <div style={{
+                  marginTop: 10,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: "rgba(244,63,94,0.12)",
+                  border: "1px solid rgba(244,63,94,0.40)",
+                  borderRadius: 8,
+                  padding: "8px 14px",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "#f43f5e",
+                  maxWidth: 600,
+                }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  <span>
+                    PROJECT STAGNATION DETECTED — {(project.time_elapsed_ratio * 100).toFixed(0)}% of timeline elapsed with only {project.physical_progress_pct.toFixed(1)}% physical progress.
+                    {" "}SPI = {project.time_elapsed_ratio > 0 ? (project.physical_progress_pct / (project.time_elapsed_ratio * 100)).toFixed(3) : "—"}.
+                    {" "}Immediate site inspection and contractor mobilization review required.
+                  </span>
+                </div>
+              )}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <Link
@@ -268,8 +300,24 @@ export default function ProjectDetailPage() {
             <KpiCard
               label="Physical Progress"
               value={project.physical_progress_pct != null ? `${project.physical_progress_pct.toFixed(1)}%` : "—"}
-              sub={project.burn_progress_gap != null ? (project.burn_progress_gap > 0 ? `+${project.burn_progress_gap.toFixed(1)}% spend gap` : `${Math.abs(project.burn_progress_gap).toFixed(1)}% ahead of spend`) : "Ground completion"}
-              color="#10b981"
+              sub={(() => {
+                const pp = project.physical_progress_pct ?? 0;
+                const ter = project.time_elapsed_ratio ?? 0;
+                const gap = project.burn_progress_gap;
+                // Stagnation: large time elapsed, near-zero progress — negative gap is NOT "efficiency"
+                if (gap != null && gap < 0 && pp < 15.0 && ter >= 0.40) {
+                  return "⚠ Stagnation Warning";
+                }
+                if (gap != null) {
+                  return gap > 0 ? `+${gap.toFixed(1)}% spend gap` : `${Math.abs(gap).toFixed(1)}% ahead of spend`;
+                }
+                return "Ground completion";
+              })()}
+              color={(() => {
+                const pp = project.physical_progress_pct ?? 0;
+                const ter = project.time_elapsed_ratio ?? 0;
+                return pp < 15.0 && ter >= 0.40 ? "#f43f5e" : "#10b981";
+              })()}
             />
           </div>
         </div>
@@ -325,7 +373,7 @@ export default function ProjectDetailPage() {
             <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 16 }}>
               Budget vs Progress (Burn Gap)
             </div>
-            <BurnProgressGauge burnRate={project.burn_rate_pct} physicalProgress={project.physical_progress_pct} gap={project.burn_progress_gap} />
+            <BurnProgressGauge burnRate={project.burn_rate_pct} physicalProgress={project.physical_progress_pct} gap={project.burn_progress_gap} timeElapsedRatio={project.time_elapsed_ratio} />
           </div>
           <div className="card">
             <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 12 }}>
@@ -373,23 +421,6 @@ export default function ProjectDetailPage() {
                   Automated Root Cause Synthesis & PAIMANA Alert Reasoning
                 </span>
               </div>
-              <Link
-                href={`/actions?project_id=${project.id}&project_name=${encodeURIComponent(project.project_name)}&title=${encodeURIComponent(`Resolve risk drivers on ${project.project_name}`)}&priority=${prediction.risk_tier.toLowerCase()}&action=new`}
-                className="btn btn-primary"
-                style={{
-                  fontSize: 12,
-                  padding: "5px 12px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  textDecoration: "none",
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-                Create Action Item
-              </Link>
             </div>
             <div
               style={{
@@ -410,24 +441,57 @@ export default function ProjectDetailPage() {
         )}
 
         {/* Full-width Explainable AI (TreeSHAP) Factor Attribution Section */}
-        <div className="card" style={{ marginBottom: 24 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div className="card" style={{ marginBottom: 24, border: "1px solid var(--border-2)", boxShadow: "0 4px 24px rgba(0,0,0,0.25)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>
-                Explainable AI (XAI) Attribution
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <span style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  color: "#06b6d4",
+                  background: "rgba(6,182,212,0.1)",
+                  padding: "2px 8px",
+                  borderRadius: 4,
+                  border: "1px solid rgba(6,182,212,0.25)",
+                }}>
+                  Explainable AI (XAI)
+                </span>
+                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                  Algorithmic Factor Attribution
+                </span>
               </div>
-              <h3 style={{ margin: "4px 0 0 0", fontSize: 16, fontWeight: 600 }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em" }}>
                 TreeSHAP Feature Risk Impact Breakdown
               </h3>
+              <p style={{ margin: "4px 0 0 0", fontSize: 12, color: "var(--text-sub)", maxWidth: 680 }}>
+                Every factor evaluated by the AI model is isolated below, revealing its exact mathematical push towards delay or cost overrun along with clear operational explanations.
+              </p>
             </div>
+
             {prediction?.model_version && (
-              <span style={{ fontSize: 11, background: "rgba(255,255,255,0.05)", padding: "3px 8px", borderRadius: 4, color: "var(--text-muted)" }}>
-                Engine: {prediction.model_version}
-              </span>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 11,
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid var(--border-2)",
+                  padding: "5px 12px",
+                  borderRadius: 20,
+                  color: "var(--text-sub)",
+                }}
+                title={`Full Engine ID: ${prediction.model_version}`}
+              >
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981", display: "inline-block" }} />
+                <span>Engine: <strong style={{ color: "var(--text)" }}>XGBoost + Qwen 2.5 (SHAP)</strong></span>
+              </div>
             )}
           </div>
           {prediction ? (
-            <ShapWaterfallChart values={prediction.shap_values} baselineScore={prediction.composite_risk_score} />
+            <ShapWaterfallChart values={prediction.shap_values} baselineScore={prediction.composite_risk_score} riskTier={prediction.risk_tier} modelVersion={prediction.model_version} />
           ) : (
             <div style={{ color: "var(--text-muted)", fontSize: 13, padding: "24px 0", textAlign: "center" }}>
               Run a risk prediction to compute live SHAP vector attributions

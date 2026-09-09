@@ -317,4 +317,9 @@ overall = "PASS" if failed == 0 else "FAIL"
 print(f"\n  OVERALL RESULT: >>> {overall} <<<")
 print("=" * 70)
 
-sys.exit(0 if failed == 0 else 1)
+def test_geo_map_validation():
+    assert failed == 0, f"Geo map validation failed: {failed} failed tests"
+
+
+if __name__ == "__main__":
+    sys.exit(0 if failed == 0 else 1)

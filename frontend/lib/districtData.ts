@@ -1953,15 +1953,11 @@ export function getProjectLocation(
   // 2. Check Interstate Border Corridors
   for (const ic of INTERSTATE_CORRIDORS) {
     if (ic.keywords.some((kw) => pUpper.includes(kw))) {
-      const angle = (index * 137.5 * Math.PI) / 180.0;
-      const radius = ((index % 10) + 1) * 0.0012;
-      const lat = ic.coords[0] + radius * Math.cos(angle);
-      const lng = ic.coords[1] + radius * Math.sin(angle);
       return {
         state: rawState,
         district: ic.district,
         place: ic.place,
-        coords: [Math.round(lat * 1000000) / 1000000, Math.round(lng * 1000000) / 1000000],
+        coords: [ic.coords[0], ic.coords[1]],
         category: project.sector || "Infrastructure",
       };
     }
@@ -1971,29 +1967,21 @@ export function getProjectLocation(
   const stKey = normalizeStateName(rawState);
   const placesList = STATE_GEO_KNOWLEDGE[stKey] || [];
   let matched = placesList.find((p) => p.keywords?.some((kw) => pUpper.includes(kw)));
-  if (!matched && placesList.length > 0) {
-    matched = placesList[index % placesList.length];
-  }
 
   if (!matched) {
     const center = STATE_COORDINATES[stKey] || [22.5937, 78.9629];
     matched = {
-      place: `${rawState} Infrastructure Corridor`,
-      district: `${rawState} Central District`,
+      place: project.place || `${rawState} Infrastructure Corridor`,
+      district: project.district || `${rawState} Central District`,
       coords: center,
     };
   }
-
-  const angle = (index * 137.5 * Math.PI) / 180.0;
-  const radius = ((index % 15) + 1) * 0.0015;
-  const lat = matched.coords[0] + radius * Math.cos(angle);
-  const lng = matched.coords[1] + radius * Math.sin(angle);
 
   return {
     state: rawState,
     district: matched.district,
     place: matched.place,
-    coords: [Math.round(lat * 1000000) / 1000000, Math.round(lng * 1000000) / 1000000],
+    coords: [matched.coords[0], matched.coords[1]],
     category: project.sector || "Infrastructure",
   };
 }

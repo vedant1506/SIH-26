@@ -79,7 +79,8 @@ export default function ProjectDocumentsSection({
   const latestDoc = documents[0];
 
   return (
-    <div className="card" style={{ marginBottom: 24, padding: "20px 24px" }}>
+    <>
+      <div className="card" style={{ marginBottom: 24, padding: "20px 24px" }}>
       {/* Section Header */}
       <div
         style={{
@@ -598,6 +599,8 @@ export default function ProjectDocumentsSection({
         </div>
       )}
 
+      </div>
+
       {/* Upload Modal */}
       {isAddModalOpen && (
         <AddDocumentModal
@@ -619,7 +622,6 @@ export default function ProjectDocumentsSection({
           documentId={selectedDoc?.id || null}
         />
       )}
-    </div>
-
+    </>
   );
 }

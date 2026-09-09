@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { listProjects } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { ProjectListItem } from "@/lib/types";
@@ -92,9 +93,37 @@ export default function AddDocumentModal({
   const [aiProjectInfo, setAiProjectInfo] = useState(true);
   const [aiMilestones, setAiMilestones] = useState(true);
 
+  const [mounted, setMounted] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modalBodyRef = useRef<HTMLDivElement>(null);
   const projectInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Keyboard accessibility: Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen && !submitting) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, submitting, onClose]);
+
+  // Lock background body scroll while dialog is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
 
   // Load canonical projects list
   useEffect(() => {
@@ -261,19 +290,17 @@ export default function AddDocumentModal({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  const modalContent = (
     <div
       style={{
         position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        backdropFilter: "blur(8px)",
-        zIndex: 9999,
+        inset: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.78)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        zIndex: 99999,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -282,106 +309,143 @@ export default function AddDocumentModal({
       onClick={onClose}
     >
       <div
-        ref={modalBodyRef}
         style={{
           background: "var(--surface, #0f172a)",
-          border: "1px solid var(--border, #334155)",
+          border: "1px solid var(--border-2, #334155)",
           borderRadius: 14,
           width: "100%",
-          maxWidth: 680,
-          maxHeight: "92vh",
-          overflowY: "auto",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.7)",
-          padding: "24px 28px",
+          maxWidth: 720,
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          boxShadow: "0 25px 60px -12px rgba(0, 0, 0, 0.85)",
           position: "relative",
+          overflow: "hidden",
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  background: "rgba(56, 189, 248, 0.12)",
-                  color: "#38bdf8",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Upload size={16} />
-              </div>
-              <h3 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: "var(--text)" }}>
+        {/* Pinned Header */}
+        <div
+          style={{
+            padding: "18px 24px",
+            borderBottom: "1px solid var(--border)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            background: "var(--surface)",
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 8,
+                background: "rgba(56, 189, 248, 0.12)",
+                color: "#38bdf8",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Upload size={18} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "var(--text)" }}>
                 Upload Project Document
               </h3>
+              <p style={{ fontSize: 12, color: "var(--text-sub)", margin: "2px 0 0" }}>
+                Attach authentic DPRs, CA expenditure certificates, or monthly progress reports.
+              </p>
             </div>
-            <p style={{ fontSize: 12, color: "var(--text-sub)", margin: "4px 0 0 40px" }}>
-              Attach authentic DPRs, CA expenditure certificates, or monthly progress reports.
-            </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             style={{
-              background: "transparent",
-              border: "none",
+              background: "rgba(255, 255, 255, 0.05)",
+              border: "1px solid var(--border)",
+              borderRadius: 6,
               color: "var(--text-muted)",
               cursor: "pointer",
-              padding: 4,
+              padding: "6px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.15s ease",
             }}
+            title="Close dialog (Esc)"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Success Alert */}
-        {successMessage && (
+        {/* Form wrapping scrollable body and pinned footer */}
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            overflow: "hidden",
+            minHeight: 0,
+            margin: 0,
+          }}
+        >
+          {/* Scrollable Form Body */}
           <div
+            ref={modalBodyRef}
             style={{
-              padding: "12px 16px",
-              background: "rgba(16, 185, 129, 0.12)",
-              border: "1px solid rgba(16, 185, 129, 0.3)",
-              borderRadius: 8,
-              color: "#10b981",
-              fontSize: 13,
-              marginBottom: 16,
+              padding: "20px 24px",
+              overflowY: "auto",
+              flex: 1,
               display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontWeight: 600,
+              flexDirection: "column",
+              gap: 18,
             }}
           >
-            <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
-            <span>{successMessage}</span>
-          </div>
-        )}
+            {/* Success Alert */}
+            {successMessage && (
+              <div
+                style={{
+                  padding: "12px 16px",
+                  background: "rgba(16, 185, 129, 0.12)",
+                  border: "1px solid rgba(16, 185, 129, 0.3)",
+                  borderRadius: 8,
+                  color: "#10b981",
+                  fontSize: 13,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontWeight: 600,
+                }}
+              >
+                <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+                <span>{successMessage}</span>
+              </div>
+            )}
 
-        {/* Error Alert */}
-        {errorMessage && (
-          <div
-            style={{
-              padding: "12px 16px",
-              background: "rgba(244, 63, 94, 0.12)",
-              border: "1px solid rgba(244, 63, 94, 0.3)",
-              borderRadius: 8,
-              color: "#f43f5e",
-              fontSize: 13,
-              marginBottom: 16,
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontWeight: 500,
-            }}
-          >
-            <AlertCircle size={16} style={{ flexShrink: 0 }} />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            {/* Error Alert */}
+            {errorMessage && (
+              <div
+                style={{
+                  padding: "12px 16px",
+                  background: "rgba(244, 63, 94, 0.12)",
+                  border: "1px solid rgba(244, 63, 94, 0.3)",
+                  borderRadius: 8,
+                  color: "#f43f5e",
+                  fontSize: 13,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontWeight: 500,
+                }}
+              >
+                <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                <span>{errorMessage}</span>
+              </div>
+            )}
           {/* STEP 1: PROJECT SELECTION */}
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
@@ -776,27 +840,28 @@ export default function AddDocumentModal({
             </div>
           )}
 
-          {/* Pre-Upload Readiness Checklist Banner */}
+          </div>
+
+          {/* Pre-Upload Readiness Checklist Banner - Pinned Footer */}
           <div
             style={{
+              padding: "14px 24px",
+              borderTop: "1px solid var(--border)",
+              background: "var(--surface-2, #111827)",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               flexWrap: "wrap",
               gap: 12,
-              padding: "10px 14px",
-              background: "var(--surface-2)",
-              borderRadius: 8,
-              border: "1px solid var(--border)",
-              fontSize: 12,
+              flexShrink: 0,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-              <span style={{ color: selectedProject ? "#10b981" : "#f59e0b", display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
+              <span style={{ color: selectedProject ? "#10b981" : "#f59e0b", display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 600, fontSize: 12 }}>
                 {selectedProject ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
                 {selectedProject ? "Project Linked" : "Step 1: Pick Project"}
               </span>
-              <span style={{ color: file ? "#10b981" : "#f59e0b", display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
+              <span style={{ color: file ? "#10b981" : "#f59e0b", display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 600, fontSize: 12 }}>
                 {file ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
                 {file ? `PDF Ready (${(file.size / (1024 * 1024)).toFixed(1)} MB)` : "Step 2: Choose PDF"}
               </span>
@@ -836,4 +901,6 @@ export default function AddDocumentModal({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

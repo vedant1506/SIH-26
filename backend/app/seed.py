@@ -10,6 +10,7 @@ import re
 import numpy as np
 import pandas as pd
 from datetime import date, datetime, timedelta
+import json
 
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = os.path.dirname(BACKEND_DIR)
@@ -20,47 +21,6 @@ from app.core.database import Base, engine, SessionLocal
 from app.models.project import Project, RiskPrediction, Alert, Profile
 
 MOSPI_RAW_CSV = os.path.join(ROOT_DIR, "ml", "data", "raw", "mospi_paimana_april_2026.csv")
-
-# State approximate central coordinates for map visualization
-STATE_GEO = {
-    "Andhra Pradesh": (15.9129, 79.7400),
-    "Arunachal Pradesh": (28.2180, 94.7278),
-    "Assam": (26.2006, 92.9376),
-    "Bihar": (25.0961, 85.3131),
-    "Chhattisgarh": (21.2787, 81.8661),
-    "Goa": (15.2993, 74.1240),
-    "Gujarat": (22.2587, 71.1924),
-    "Haryana": (29.0588, 76.0856),
-    "Himachal Pradesh": (31.1048, 77.1734),
-    "Jharkhand": (23.6102, 85.2799),
-    "Karnataka": (15.3173, 75.7139),
-    "Kerala": (10.8505, 76.2711),
-    "Madhya Pradesh": (22.9734, 78.6569),
-    "Maharashtra": (19.7515, 75.7139),
-    "Manipur": (24.6637, 93.9063),
-    "Meghalaya": (25.4670, 91.3662),
-    "Mizoram": (23.1645, 92.9376),
-    "Nagaland": (26.1584, 94.5624),
-    "Odisha": (20.9517, 85.0985),
-    "Punjab": (31.1471, 75.3412),
-    "Rajasthan": (27.0238, 74.2179),
-    "Sikkim": (27.5330, 88.5122),
-    "Tamil Nadu": (11.1271, 78.6569),
-    "Telangana": (18.1124, 79.0193),
-    "Tripura": (23.9408, 91.9882),
-    "Uttar Pradesh": (26.8467, 80.9462),
-    "Uttarakhand": (30.0668, 79.0193),
-    "West Bengal": (22.9868, 87.8550),
-    "Delhi": (28.7041, 77.1025),
-    "Jammu and Kashmir": (33.7782, 76.5762),
-    "Ladakh": (34.1526, 77.5771),
-    "Andaman & Nicobar": (11.7401, 92.6586),
-    "Puducherry": (11.9416, 79.8083),
-    "Dadra & Nagar Haveli and Daman & Diu": (20.4283, 72.8397),
-    "PAN India": (22.5937, 78.9629),
-    "Offshore": (19.2000, 71.5000),
-}
-
 
 def parse_date_mm_yyyy(val):
     if not val or str(val).strip() in ("-", "NA", "nan", ""):
@@ -73,22 +33,17 @@ def parse_date_mm_yyyy(val):
     return None
 
 
-def get_coordinates(state_str):
-    if not state_str or str(state_str).strip() in ("-", "NA", "nan"):
-        return 22.5937, 78.9629
-    
-    st = str(state_str).strip()
-    # Check direct match
-    if st in STATE_GEO:
-        lat, lng = STATE_GEO[st]
-        return round(lat + (random.random() - 0.5) * 0.1, 4), round(lng + (random.random() - 0.5) * 0.1, 4)
-    
-    # Check partial match (Multi-States etc.)
-    for key, (lat, lng) in STATE_GEO.items():
-        if key.lower() in st.lower():
-            return round(lat + (random.random() - 0.5) * 0.1, 4), round(lng + (random.random() - 0.5) * 0.1, 4)
-            
-    return 22.5937, 78.9629
+GEO_MASTER_JSON = os.path.join(ROOT_DIR, "frontend", "app", "data", "geolocations_master.json")
+GEO_MASTER_RECORDS = {}
+if os.path.exists(GEO_MASTER_JSON):
+    try:
+        with open(GEO_MASTER_JSON, "r", encoding="utf-8") as f:
+            for item in json.load(f):
+                pid = str(item.get("project_id", "")).strip()
+                if pid:
+                    GEO_MASTER_RECORDS[pid] = item
+    except Exception as e:
+        print(f"Warning: Failed to load geolocations_master.json: {e}")
 
 
 def seed_real_mospi_dataset(force: bool = True):
@@ -153,8 +108,15 @@ def seed_real_mospi_dataset(force: bool = True):
             # Scale
             scale = "mega" if orig_cost >= 1000 else ("major" if orig_cost >= 150 else "other")
 
-            # Coordinates
-            lat, lng = get_coordinates(row.get("state"))
+            # Authoritative Geolocation Enrichment (No random jitter, no synthetic coordinates)
+            pid_str = str(row.get("project_id") or "").strip()
+            geo = GEO_MASTER_RECORDS.get(pid_str, {})
+            lat = float(geo["latitude"]) if geo.get("latitude") is not None else None
+            lng = float(geo["longitude"]) if geo.get("longitude") is not None else None
+            district = geo.get("district") or None
+            location_name = geo.get("place") or geo.get("location_name") or None
+            coord_status = geo.get("coordinate_status") or "approximate"
+            geocode_source = geo.get("coordinate_source") or "verified_district"
 
             # Calculate Delay months
             delay_months = 0.0
@@ -164,12 +126,17 @@ def seed_real_mospi_dataset(force: bool = True):
             pid = uuid.uuid4()
             proj = Project(
                 id=pid,
+                project_id=pid_str or None,
                 project_name=str(row.get("project_name") or f"Project #{idx+1}").strip(),
                 ministry=str(row.get("ministry") or "Central Ministry").strip(),
                 sector=str(row.get("sector") or "Infrastructure").strip(),
                 state=str(row.get("state") or "PAN India").strip(),
+                district=district,
+                location_name=location_name,
                 latitude=lat,
                 longitude=lng,
+                coordinate_status=coord_status,
+                geocode_source=geocode_source,
                 original_cost_cr=round(orig_cost, 2),
                 revised_cost_cr=round(rev_cost, 2),
                 cumulative_expenditure_cr=round(expenditure, 2),
@@ -214,11 +181,39 @@ def seed_real_mospi_dataset(force: bool = True):
 
             composite = round(0.55 * delay_prob + 0.45 * cost_prob, 4)
 
+            # ── Stagnation Overrides ────────────────────────────────────
+            # Same guardrails as ml_service._apply_critical_overrides()
+            _override_reason = ""
+            spi = progress / (time_elapsed * 100.0) if time_elapsed > 0 else 1.0
+            schedule_progress_gap_ratio = time_elapsed - (progress / 100.0)
+
+            if spi < 0.10 and time_elapsed >= 0.30:
+                composite = max(composite, 0.80)
+                _override_reason = (
+                    f"SPI Override: SPI={spi:.3f} (<0.10). Project executing at "
+                    f"{spi*100:.1f}% of required pace. CRITICAL tier enforced."
+                )
+            elif (time_elapsed >= 0.50 and progress < 15.0 and schedule_progress_gap_ratio >= 0.40):
+                composite = max(composite, 0.78)
+                _override_reason = (
+                    f"Stagnation Override: {time_elapsed*100:.0f}% elapsed but only "
+                    f"{progress:.1f}% progress (gap={schedule_progress_gap_ratio*100:.0f}ppts). CRITICAL."
+                )
+            elif orig_cost >= 500.0 and delay_months >= 36.0:
+                composite = max(composite, 0.76)
+                _override_reason = (
+                    f"Lag-Coupling Override: {delay_months:.0f}-month lag on ₹{orig_cost:,.0f} Cr project. CRITICAL."
+                )
+            elif orig_cost >= 500.0 and delay_months >= 12.0 and composite < 0.25:
+                composite = max(composite, 0.26)
+
             tier = "critical" if composite >= 0.70 else ("high" if composite >= 0.45 else ("medium" if composite >= 0.22 else "low"))
             overrun_amt = round(cost_prob * (rev_cost - orig_cost if rev_cost > orig_cost else orig_cost * 0.12), 2)
 
             if tier == "critical":
                 strat = "Immediate MoSPI executive intervention required. Conduct site audit within 48h and freeze unverified contractor claims."
+                if _override_reason:
+                    strat = f"STAGNATION ALERT: {_override_reason} Immediate site inspection and contractor mobilization review required within 7 days."
             elif tier == "high":
                 strat = "High risk detected. Expedite land clearance/ROW and mandate double-shift engineering deployment."
             elif tier == "medium":
@@ -260,7 +255,7 @@ def seed_real_mospi_dataset(force: bool = True):
                     },
                 ],
                 ai_risk_narrative=narrative,
-                model_version="sih26103-multi-snapshot-xgboost-v2+qwen2.5-qlora-v1.0",
+                model_version="sih26103-multi-snapshot-xgboost-v2+qwen2.5-qlora-v1.0+stagnation-guard-v1",
             )
             predictions.append(pred)
 

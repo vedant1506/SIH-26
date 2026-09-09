@@ -111,7 +111,10 @@ async def list_projects(
             "coordinate_status": gr[7],
             "coordinate_source": gr[8],
             "location_resolution_level": gr[9],
-            "geocoding_confidence": float(gr[10]) if gr[10] is not None else None,
+            "geocoding_confidence": (
+                float(gr[10]) if gr[10] is not None and str(gr[10]).replace('.', '', 1).isdigit()
+                else ({"high": 0.95, "medium": 0.75, "low": 0.50}.get(str(gr[10]).lower(), 0.90) if gr[10] is not None else None)
+            ),
             "state_match": bool(gr[11]) if gr[11] is not None else None,
             "district_match": bool(gr[12]) if gr[12] is not None else None,
             "location_validated": gr[13] == "VALIDATED" if gr[13] else None,

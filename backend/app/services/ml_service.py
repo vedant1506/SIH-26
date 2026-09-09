@@ -25,6 +25,24 @@ RISK_THRESHOLDS = {
     "low":      0.0,
 }
 
+# ─── Stagnation Override Thresholds ──────────────────────────────────────────
+# Projects can be misclassified as LOW even when severely stalled because
+# near-zero expenditure artificially suppresses the composite score.
+# These guardrails enforce correct tiering independent of the XGBoost output.
+STAGNATION_OVERRIDES = {
+    # Schedule Performance Index = physical_progress / time_elapsed_pct
+    # An SPI < 0.10 means the project is moving at < 10% of required pace — CRITICAL.
+    "spi_critical_threshold": 0.10,
+    # If elapsed > 50% of timeline but progress < 15% and gap > 40 ppts → CRITICAL
+    "stagnation_elapsed_min": 0.50,
+    "stagnation_progress_max": 15.0,
+    "stagnation_gap_min": 0.40,
+    # Forecasted lag (months) coupling: projects with large lag & high budget → at least HIGH
+    "lag_high_months": 12.0,
+    "lag_critical_months": 36.0,
+    "lag_cost_threshold_cr": 500.0,
+}
+
 SHAP_FEATURE_LABELS = {
     "burn_progress_gap":        "Expenditure / Progress Gap",
     "physical_progress_num":    "Current Physical Progress (%)",
@@ -215,38 +233,155 @@ def _score_to_tier(score: float) -> str:
     return "low"
 
 
+def _apply_critical_overrides(
+    tier: str,
+    composite: float,
+    time_elapsed_ratio: float,
+    physical_progress: float,
+    original_cost: float,
+    projected_months: float = 0.0,
+) -> tuple[str, float, str]:
+    """
+    Post-model guardrail overrides that correct the composite risk score and tier
+    for projects that XGBoost misclassifies due to near-zero expenditure masking
+    a severe schedule execution failure (stagnation / paralysis).
+
+    Returns (corrected_tier, corrected_composite, override_reason).
+    """
+    override_reason = ""
+
+    # ── Guard 1: Schedule Performance Index (SPI) ──────────────────────────
+    # SPI = physical_progress_pct / (time_elapsed_ratio * 100)
+    # SPI < 0.10 means work is proceeding at <10% of required pace — CRITICAL.
+    if time_elapsed_ratio > 0.0:
+        spi = physical_progress / (time_elapsed_ratio * 100.0)
+    else:
+        spi = 1.0  # No time elapsed yet, cannot assess
+
+    if spi < STAGNATION_OVERRIDES["spi_critical_threshold"] and time_elapsed_ratio >= 0.30:
+        if tier not in ("critical",):
+            tier = "critical"
+            composite = max(composite, 0.80)
+            override_reason = (
+                f"SPI Override: Schedule Performance Index = {spi:.3f} "
+                f"(< 0.10 threshold). Project executing at {spi * 100:.1f}% of required pace. "
+                "Classified CRITICAL due to severe schedule execution failure."
+            )
+            logger.warning(
+                "[STAGNATION OVERRIDE] SPI=%.3f < 0.10 at %.0f%% elapsed — forcing CRITICAL tier",
+                spi, time_elapsed_ratio * 100,
+            )
+            return tier, composite, override_reason
+
+    # ── Guard 2: Stagnation Pattern (large elapsed, negligible progress) ───
+    # Time > 50%, progress < 15%, schedule-progress gap > 40 ppts → CRITICAL
+    schedule_progress_gap = time_elapsed_ratio - (physical_progress / 100.0)
+    if (
+        time_elapsed_ratio >= STAGNATION_OVERRIDES["stagnation_elapsed_min"]
+        and physical_progress < STAGNATION_OVERRIDES["stagnation_progress_max"]
+        and schedule_progress_gap >= STAGNATION_OVERRIDES["stagnation_gap_min"]
+    ):
+        if tier not in ("critical",):
+            tier = "critical"
+            composite = max(composite, 0.78)
+            override_reason = (
+                f"Stagnation Override: {time_elapsed_ratio * 100:.0f}% of timeline elapsed "
+                f"but only {physical_progress:.1f}% physical progress achieved "
+                f"(gap = {schedule_progress_gap * 100:.0f} percentage points). "
+                "Project classified CRITICAL — possible site/clearance blockage or contractor default."
+            )
+            logger.warning(
+                "[STAGNATION OVERRIDE] %.0f%% elapsed, %.1f%% progress, gap=%.2f — forcing CRITICAL tier",
+                time_elapsed_ratio * 100, physical_progress, schedule_progress_gap,
+            )
+            return tier, composite, override_reason
+
+    # ── Guard 3: Forecasted Schedule Lag coupling ──────────────────────────
+    # Projects with >= 36-month projected lag and >= ₹500 Cr budget → at least CRITICAL
+    # Projects with >= 12-month projected lag and >= ₹500 Cr budget → at least HIGH
+    if original_cost >= STAGNATION_OVERRIDES["lag_cost_threshold_cr"]:
+        if projected_months >= STAGNATION_OVERRIDES["lag_critical_months"] and tier not in ("critical",):
+            tier = "critical"
+            composite = max(composite, 0.76)
+            override_reason = (
+                f"Lag-Coupling Override: Forecasted schedule lag = {projected_months:.0f} months "
+                f"on a ₹{original_cost:,.0f} Cr mega-project. "
+                "CRITICAL tier enforced per MoSPI escalation policy."
+            )
+            logger.warning(
+                "[LAG OVERRIDE] %.0f-month lag on ₹%.0f Cr project — forcing CRITICAL tier",
+                projected_months, original_cost,
+            )
+            return tier, composite, override_reason
+        elif projected_months >= STAGNATION_OVERRIDES["lag_high_months"] and tier == "low":
+            tier = "medium"
+            composite = max(composite, 0.26)
+            override_reason = (
+                f"Lag-Coupling Override: Forecasted schedule lag = {projected_months:.0f} months "
+                f"on a ₹{original_cost:,.0f} Cr project. Minimum MEDIUM tier enforced."
+            )
+            return tier, composite, override_reason
+
+    return tier, composite, override_reason
+
+
 def _stub_prediction(project_data: Dict[str, Any]) -> Dict[str, Any]:
     burn_gap = float(project_data.get("burn_progress_gap") or 0.0)
     time_elapsed = float(project_data.get("time_elapsed_ratio") or 0.0)
+    current_progress = float(project_data.get("physical_progress_pct") or 0.0)
+    original_cost = float(project_data.get("original_cost_cr") or 100.0)
 
     delay_prob = min(max((burn_gap / 100.0) * 0.6 + time_elapsed * 0.4, 0.0), 1.0)
     cost_prob = min(max((burn_gap / 100.0) * 0.7, 0.0), 1.0)
     composite = _composite_score(delay_prob, cost_prob)
+    tier = _score_to_tier(composite)
+
+    # Apply stagnation overrides even in stub/fallback path
+    tier, composite, override_reason = _apply_critical_overrides(
+        tier=tier,
+        composite=composite,
+        time_elapsed_ratio=time_elapsed,
+        physical_progress=current_progress,
+        original_cost=original_cost,
+        projected_months=round(delay_prob * 18, 1),
+    )
+
+    # SPI for SHAP explanation
+    spi = current_progress / (time_elapsed * 100.0) if time_elapsed > 0 else 1.0
+    shap_values = [
+        {
+            "feature": "burn_progress_gap",
+            "value": round(abs(burn_gap) / 100.0, 4),
+            "direction": "positive" if burn_gap > 0 else "negative",
+            "label": f"Budget spent {abs(burn_gap):.1f}% {'faster' if burn_gap > 0 else 'slower'} than physical progress",
+            "feature_value": burn_gap,
+        },
+        {
+            "feature": "time_elapsed_ratio",
+            "value": round(time_elapsed * 0.4, 4),
+            "direction": "positive" if time_elapsed > 0.7 else "negative",
+            "label": f"{time_elapsed * 100:.0f}% of scheduled time elapsed",
+            "feature_value": time_elapsed,
+        },
+        {
+            "feature": "schedule_performance_index",
+            "value": round(max(0.0, 1.0 - spi) * 0.30, 4),
+            "direction": "positive" if spi < 0.80 else "negative",
+            "label": f"Schedule Performance Index (SPI): {spi:.3f} — {'CRITICAL stagnation' if spi < 0.10 else ('severe delay' if spi < 0.50 else ('delayed' if spi < 0.80 else 'on track'))}",
+            "feature_value": round(spi, 4),
+        },
+    ]
 
     return {
         "delay_probability": round(delay_prob, 4),
         "delay_duration_months": round(delay_prob * 18, 1),
         "cost_overrun_probability": round(cost_prob, 4),
-        "cost_overrun_amount_cr": round(cost_prob * (project_data.get("original_cost_cr") or 100.0) * 0.3, 2),
+        "cost_overrun_amount_cr": round(cost_prob * original_cost * 0.3, 2),
         "composite_risk_score": composite,
-        "risk_tier": _score_to_tier(composite),
-        "predicted_next_physical_progress": round(min(100.0, (project_data.get("physical_progress_pct") or 0.0) + 2.5), 2),
-        "shap_values": [
-            {
-                "feature": "burn_progress_gap",
-                "value": round(abs(burn_gap) / 100.0, 4),
-                "direction": "positive" if burn_gap > 0 else "negative",
-                "label": f"Budget spent {abs(burn_gap):.1f}% {'faster' if burn_gap > 0 else 'slower'} than physical progress",
-                "feature_value": burn_gap,
-            },
-            {
-                "feature": "time_elapsed_ratio",
-                "value": round(time_elapsed * 0.4, 4),
-                "direction": "positive" if time_elapsed > 0.7 else "negative",
-                "label": f"{time_elapsed * 100:.0f}% of scheduled time elapsed",
-                "feature_value": time_elapsed,
-            },
-        ],
+        "risk_tier": tier,
+        "predicted_next_physical_progress": round(min(100.0, current_progress + 2.5), 2),
+        "shap_values": shap_values,
+        "ai_risk_narrative": override_reason if override_reason else None,
         "model_version": "stub-heuristic-v1",
     }
 
@@ -372,6 +507,21 @@ def predict(project_data: Dict[str, Any], models_path: str) -> Dict[str, Any]:
         composite = _composite_score(delay_prob, cost_prob)
         tier = _score_to_tier(composite)
 
+        # ── Apply stagnation / SPI / lag-coupling overrides ────────────────
+        # These guardrails correct the tier for projects that are severely stalled
+        # but appear low-risk due to near-zero expenditure masking the failure.
+        # Note: projected_months not yet calculated here; we run a pre-check pass
+        # using heuristic lag then a second pass after the full schedule analysis.
+        _pre_lag = round(delay_prob * 14.0, 1)  # heuristic estimate for pre-check
+        tier, composite, _override_reason = _apply_critical_overrides(
+            tier=tier,
+            composite=composite,
+            time_elapsed_ratio=time_elapsed_ratio,
+            physical_progress=current_progress,
+            original_cost=original_cost,
+            projected_months=_pre_lag,
+        )
+
         # Calculate project-specific delay duration in months using schedule dates, progress, & model risk
         s_dt_str = project_data.get("scheduled_completion_date")
         r_dt_str = project_data.get("revised_completion_date")
@@ -411,7 +561,20 @@ def predict(project_data: Dict[str, Any], models_path: str) -> Dict[str, Any]:
         else:
             # 4. Fallback based on model delay probability & burn progress divergence
             raw_delay = (delay_prob * 14.0) + (max(0.0, burn_progress_gap) * 0.20)
-            projected_months = round(min(max(0.0, raw_delay), 48.0), 1)
+            projected_months = round(min(max(0.0, raw_delay), 60.0), 1)
+
+        # ── Second-pass override: now that projected_months is fully computed ──
+        # Re-apply lag-coupling override with the real schedule delay value.
+        tier, composite, _override_reason_2 = _apply_critical_overrides(
+            tier=tier,
+            composite=composite,
+            time_elapsed_ratio=time_elapsed_ratio,
+            physical_progress=current_progress,
+            original_cost=original_cost,
+            projected_months=projected_months,
+        )
+        if _override_reason_2 and not _override_reason:
+            _override_reason = _override_reason_2
 
         # Calculate realistic fiscal exposure in ₹ Crore
         if revised_cost > original_cost:
@@ -466,6 +629,15 @@ def predict(project_data: Dict[str, Any], models_path: str) -> Dict[str, Any]:
                 "feature_value": cost_variation_pct,
             },
         ]
+        # Add SPI as a SHAP feature for explainability
+        spi = current_progress / (time_elapsed_ratio * 100.0) if time_elapsed_ratio > 0 else 1.0
+        shap_explanation.append({
+            "feature": "schedule_performance_index",
+            "value": round(max(0.0, 1.0 - spi) * 0.30, 4),
+            "direction": "positive" if spi < 0.80 else "negative",
+            "label": f"Schedule Performance Index (SPI): {spi:.3f} — {'CRITICAL stagnation' if spi < 0.10 else ('severe delay' if spi < 0.50 else ('delayed' if spi < 0.80 else 'on track'))}",
+            "feature_value": round(spi, 4),
+        })
         shap_explanation.sort(key=lambda x: x["value"], reverse=True)
 
         proj_name = str(project_data.get("project_name") or "Infrastructure Project")
@@ -474,6 +646,10 @@ def predict(project_data: Dict[str, Any], models_path: str) -> Dict[str, Any]:
         st_name = str(project_data.get("state") or "India")
         top_label = shap_explanation[0]["label"] if shap_explanation else "Financial burn rate divergence"
         top_feature = shap_explanation[0]["feature"] if shap_explanation else ""
+
+        # Prepend stagnation override context to narrative if override fired
+        if _override_reason:
+            top_label = f"[STAGNATION OVERRIDE ACTIVE] {_override_reason}"
 
         narrative = generate_dynamic_analysis_and_plan(
             proj_name=proj_name,

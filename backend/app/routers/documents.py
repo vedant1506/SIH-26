@@ -237,7 +237,7 @@ async def list_documents(
     Respects confidentiality levels.
     """
     query = db.query(Document, Project).join(Project, Document.project_id == Project.id)
-    query = query.filter(Document.status != "DELETED")
+    query = query.filter(Document.status.notin_(["DELETED", "ARCHIVED"]), Document.is_active != False)
 
     if project_id:
         from uuid import UUID
@@ -292,21 +292,21 @@ async def get_document_analytics(
     - Breakdown by document type
     - Recent uploads
     """
-    total = db.query(func.count(Document.id)).filter(Document.status != "DELETED").scalar() or 0
+    total = db.query(func.count(Document.id)).filter(Document.status.notin_(["DELETED", "ARCHIVED"]), Document.is_active != False).scalar() or 0
     processed = db.query(func.count(Document.id)).filter(
-        Document.status != "DELETED", Document.processing_status == "PROCESSED"
+        Document.status.notin_(["DELETED", "ARCHIVED"]), Document.is_active != False, Document.processing_status == "PROCESSED"
     ).scalar() or 0
     processing = db.query(func.count(Document.id)).filter(
-        Document.status != "DELETED", Document.processing_status.in_(["UPLOADED", "PROCESSING"])
+        Document.status.notin_(["DELETED", "ARCHIVED"]), Document.is_active != False, Document.processing_status.in_(["UPLOADED", "PROCESSING"])
     ).scalar() or 0
     attention = db.query(func.count(Document.id)).filter(
-        Document.status != "DELETED", Document.processing_status.in_(["FAILED", "PARTIAL"])
+        Document.status.notin_(["DELETED", "ARCHIVED"]), Document.is_active != False, Document.processing_status.in_(["FAILED", "PARTIAL"])
     ).scalar() or 0
 
     # Type breakdown
     type_counts = (
         db.query(Document.doc_type, func.count(Document.id))
-        .filter(Document.status != "DELETED")
+        .filter(Document.status.notin_(["DELETED", "ARCHIVED"]), Document.is_active != False)
         .group_by(Document.doc_type)
         .all()
     )
@@ -315,7 +315,7 @@ async def get_document_analytics(
     recent = (
         db.query(Document, Project)
         .join(Project, Document.project_id == Project.id)
-        .filter(Document.status != "DELETED")
+        .filter(Document.status.notin_(["DELETED", "ARCHIVED"]), Document.is_active != False)
         .order_by(desc(Document.created_at))
         .limit(5)
         .all()
@@ -664,10 +664,13 @@ async def delete_document(
 
     if permanent:
         if doc.file_path:
-            DocumentStorageService.delete_document_file(doc.file_path)
+            try:
+                DocumentStorageService.delete_document_file(doc.file_path)
+            except Exception:
+                pass
         db.delete(doc)
     else:
-        doc.status = "ARCHIVED"
+        doc.status = "DELETED"
         doc.is_active = False
 
     db.commit()
@@ -735,7 +738,7 @@ async def get_project_document_timeline(
 
     docs = (
         db.query(Document)
-        .filter(Document.project_id == project.id, Document.status != "DELETED")
+        .filter(Document.project_id == project.id, Document.status.notin_(["DELETED", "ARCHIVED"]), Document.is_active != False)
         .order_by(desc(Document.created_at))
         .all()
     )

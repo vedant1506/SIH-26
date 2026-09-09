@@ -121,16 +121,25 @@ export default function DocumentsPage() {
   }, [fetchDocs]);
 
   const handleDelete = async (docId: string) => {
-    if (!confirm("Archive this document? It will be safely moved to archived records.")) return;
+    if (!confirm("Are you sure you want to delete this document?")) return;
+    // Optimistically remove from view immediately
+    setDocs((prev) => prev.filter((d) => d.id !== docId));
+    setAnalytics((prev) => prev ? { ...prev, total_documents: Math.max(0, prev.total_documents - 1) } : null);
+
     try {
       const token = getToken();
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      await fetch(`${apiUrl}/api/v1/documents/${docId}`, { method: "DELETE", headers });
+      const res = await fetch(`${apiUrl}/api/v1/documents/${docId}?permanent=true`, { method: "DELETE", headers });
+      if (!res.ok && res.status !== 204) {
+        throw new Error("Failed to delete document.");
+      }
       fetchDocs();
     } catch (e) {
-      alert("Failed to archive document.");
+      console.error("Delete error:", e);
+      alert("Failed to delete document.");
+      fetchDocs();
     }
   };
 
@@ -642,6 +651,14 @@ export default function DocumentsPage() {
                           >
                             <Download size={12} />
                           </a>
+                          <button
+                            onClick={() => handleDelete(doc.id)}
+                            className="btn btn-secondary"
+                            style={{ fontSize: 11, padding: "4px 8px", color: "#f43f5e" }}
+                            title="Delete Document"
+                          >
+                            <Trash2 size={12} />
+                          </button>
                         </div>
                       </td>
                     </tr>
