@@ -132,7 +132,7 @@ export default function ProjectDetailPage() {
   return (
     <div>
       <TopBar title={project.project_name} subtitle={`${project.ministry || ""} - ${project.sector || ""} - ${project.state || ""}`} />
-      <div style={{ padding: "24px 24px 48px" }}>
+      <div className="responsive-container" style={{ paddingBottom: 48 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
           <div>
             <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
@@ -222,7 +222,7 @@ export default function ProjectDetailPage() {
             </svg>
             Project Timeline & Schedule Details
           </div>
-          <div className="responsive-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+          <div className="responsive-grid-4">
             <KpiCard
               label="Starting Date"
               value={project.original_start_date ? new Date(project.original_start_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
@@ -278,7 +278,7 @@ export default function ProjectDetailPage() {
             </svg>
             Financial & Execution Progress
           </div>
-          <div className="responsive-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+          <div className="responsive-grid-4">
             <KpiCard
               label="Original Cost"
               value={project.original_cost_cr != null ? `₹${project.original_cost_cr.toLocaleString("en-IN")} Cr` : "—"}
@@ -338,7 +338,7 @@ export default function ProjectDetailPage() {
               </span>
             )}
           </div>
-          <div className="responsive-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+          <div className="responsive-grid-4">
             <KpiCard
               label="XGBoost Delay Prob"
               value={prediction ? `${(prediction.delay_probability * 100).toFixed(1)}%` : "—"}
@@ -368,7 +368,7 @@ export default function ProjectDetailPage() {
 
 
         {/* Middle Charts Grid — Budget & Progress Gauges + Historical Trajectory */}
-        <div className="responsive-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: 16, marginBottom: 24 }}>
+        <div className="responsive-grid-2" style={{ marginBottom: 24 }}>
           <div className="card">
             <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 16 }}>
               Budget vs Progress (Burn Gap)
@@ -503,7 +503,7 @@ export default function ProjectDetailPage() {
         <StructuredMitigationSection project={project} prediction={prediction} />
 
         {/* Bottom Trend & What-If Simulation Grid */}
-        <div className="responsive-grid-2" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 24 }}>
+        <div className="responsive-grid-2" style={{ marginBottom: 24 }}>
           <div className="card">
             <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 12 }}>
               Risk Score Trend

@@ -44,23 +44,24 @@ async def predict_project_risk(
     project = None
     try:
         uid = UUID(str(project_id))
-        project = db.query(Project).filter(Project.id == uid).first()
+        project = db.query(Project).filter((Project.id == uid) | (Project.id == str(project_id))).first()
     except (ValueError, TypeError):
-        pass
+        project = db.query(Project).filter(Project.id == str(project_id)).first()
+
+    if not project:
+        clean_name = str(project_id).strip()
+        project = db.query(Project).filter(Project.project_name.ilike(clean_name)).first()
 
     if not project:
         digits = re.findall(r"\d+", str(project_id))
         for d in digits:
-            if len(d) >= 3:
+            if len(d) >= 4:
                 project = db.query(Project).filter(Project.project_name.ilike(f"%{d}%")).first()
                 if project:
                     break
 
     if not project:
-        project = db.query(Project).first()
-
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+        raise HTTPException(status_code=404, detail=f"Project '{project_id}' not found")
 
     # Build comprehensive project data dict for ML service with true identity
     orig_cost = float(project.original_cost_cr or 100.0)
@@ -183,9 +184,13 @@ async def get_project_predictions(
         project = db.query(Project).filter(Project.id == str(project_id)).first()
 
     if not project:
+        clean_name = str(project_id).strip()
+        project = db.query(Project).filter(Project.project_name.ilike(clean_name)).first()
+
+    if not project:
         digits = re.findall(r"\d+", str(project_id))
         for d in digits:
-            if len(d) >= 3:
+            if len(d) >= 4:
                 project = db.query(Project).filter(Project.project_name.ilike(f"%{d}%")).first()
                 if project:
                     break
@@ -242,8 +247,9 @@ async def get_portfolio_summary(
     delayed_count = 0
 
     for pred in latest_preds:
-        tier = pred.risk_tier or "low"
-        counts[tier] = counts.get(tier, 0) + 1
+        tier = (pred.risk_tier or "").lower()
+        if tier in counts:
+            counts[tier] += 1
 
         if tier in ("high", "critical"):
             project = db.query(Project).filter(Project.id == pred.project_id).first()

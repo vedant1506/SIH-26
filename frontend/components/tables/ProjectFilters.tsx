@@ -49,8 +49,8 @@ export default function ProjectFilters({ filters, onChange }: Props) {
     : SECTORS;
 
   return (
-    <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
-      <div style={{ flex: "1 1 200px" }}>
+    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
+      <div style={{ flex: "1 1 200px", minWidth: 0 }}>
         <div style={labelStyle}>Search</div>
         <div style={{ position: "relative" }}>
           <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", color: "var(--text-muted)", pointerEvents: "none" }}>
@@ -62,28 +62,28 @@ export default function ProjectFilters({ filters, onChange }: Props) {
           <input className="input" placeholder="Search by Project Name or ID..." value={filters.search || ""} onChange={e => set("search", e.target.value)} style={{ ...inputStyle, paddingLeft: 32, width: "100%" }} />
         </div>
       </div>
-      <div style={{ flex: "1 1 140px" }}>
+      <div style={{ flex: "1 1 140px", minWidth: 0 }}>
         <div style={labelStyle}>Ministry</div>
         <input id="filter-ministry" className="input" placeholder="Filter ministry…" value={filters.ministry || ""} onChange={e => set("ministry", e.target.value)} style={{ ...inputStyle, width: "100%" }} />
       </div>
-      <div style={{ flex: "1 1 160px" }}>
+      <div style={{ flex: "1 1 160px", minWidth: 0 }}>
         <div style={labelStyle}>Sector</div>
         <select id="filter-sector" className="input" value={filters.sector || ""} onChange={e => set("sector", e.target.value)} style={{ ...inputStyle, width: "100%" }}>
           <option value="">All Sectors</option>
           {sectorOptions.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
-      <div style={{ flex: "1 1 120px" }}>
+      <div style={{ flex: "1 1 120px", minWidth: 0 }}>
         <div style={labelStyle}>State</div>
         <input id="filter-state" className="input" placeholder="State…" value={filters.state || ""} onChange={e => set("state", e.target.value)} style={{ ...inputStyle, width: "100%" }} />
       </div>
-      <div style={{ flex: "1 1 120px" }}>
+      <div style={{ flex: "1 1 120px", minWidth: 0 }}>
         <div style={labelStyle}>Risk Tier</div>
         <select id="filter-tier" className="input" value={filters.risk_tier || ""} onChange={e => set("risk_tier", e.target.value)} style={{ ...inputStyle, width: "100%" }}>
           {TIERS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
       </div>
-      <div style={{ flex: "1 1 130px" }}>
+      <div style={{ flex: "1 1 130px", minWidth: 0 }}>
         <div style={labelStyle}>Schedule Status</div>
         <select
           id="filter-delayed"
@@ -102,13 +102,13 @@ export default function ProjectFilters({ filters, onChange }: Props) {
           <option value="true">Delayed Only</option>
         </select>
       </div>
-      <div style={{ flex: "1 1 130px" }}>
+      <div style={{ flex: "1 1 130px", minWidth: 0 }}>
         <div style={labelStyle}>Scale</div>
         <select id="filter-scale" className="input" value={filters.project_scale || ""} onChange={e => set("project_scale", e.target.value)} style={{ ...inputStyle, width: "100%" }}>
           {SCALES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
       </div>
-      <button className="btn" style={{ marginBottom: 1, background: "transparent", border: "1px solid var(--critical)", color: "var(--critical)", fontSize: 13, padding: "6px 12px", display: "flex", alignItems: "center", gap: 6 }} onClick={() => onChange({})}>
+      <button className="btn" style={{ marginBottom: 1, background: "transparent", border: "1px solid var(--critical)", color: "var(--critical)", fontSize: 13, padding: "6px 12px", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }} onClick={() => onChange({})}>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"/>
           <line x1="6" y1="6" x2="18" y2="18"/>

@@ -15,8 +15,10 @@ __pycache__/
 venv/
 ENV/
 env/
-*.db
 *.sqlite3
+*.db
+!backend/sql_app.db
+!sql_app.db
 *.db-shm
 *.db-wal
 *.db-journal

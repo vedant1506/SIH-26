@@ -45,6 +45,24 @@ if os.path.exists(GEO_MASTER_JSON):
     except Exception as e:
         print(f"Warning: Failed to load geolocations_master.json: {e}")
 
+PREDICTIONS_CSV = os.path.join(ROOT_DIR, "april_2026_predictions.csv")
+PREDICTIONS_BY_NAME = {}
+PREDICTIONS_BY_ID = {}
+if os.path.exists(PREDICTIONS_CSV):
+    try:
+        pdf = pd.read_csv(PREDICTIONS_CSV)
+        for _, pr in pdf.iterrows():
+            p_name = str(pr.get("project_name", "")).strip()
+            cid = str(pr.get("clean_project_id", "")).strip()
+            pdict = pr.to_dict()
+            if p_name:
+                PREDICTIONS_BY_NAME[p_name] = pdict
+            if cid and cid != "nan":
+                PREDICTIONS_BY_ID[cid] = pdict
+        print(f"Loaded {len(PREDICTIONS_BY_NAME)} authoritative predictions from {PREDICTIONS_CSV}")
+    except Exception as pe:
+        print(f"Warning: Failed to load april_2026_predictions.csv: {pe}")
+
 
 def seed_real_mospi_dataset(force: bool = True):
     print("=" * 60)
@@ -151,64 +169,57 @@ def seed_real_mospi_dataset(force: bool = True):
             )
             projects.append(proj)
 
-            # Use retrained XGBoost models for live inference
-            try:
-                import joblib
-                delay_m_path = os.path.join(ROOT_DIR, "ml", "models", "delay_model.pkl")
-                cost_m_path = os.path.join(ROOT_DIR, "ml", "models", "cost_model.pkl")
-                
-                feat_vals = np.array([[
-                    float(burn_rate),
-                    float(burn_gap),
-                    float(time_elapsed),
-                    float(progress),
-                    float(cost_var),
-                    float(orig_cost),
-                    float(rev_cost)
-                ]])
-                
-                if os.path.exists(delay_m_path) and os.path.exists(cost_m_path):
-                    dm = joblib.load(delay_m_path)
-                    cm = joblib.load(cost_m_path)
-                    delay_prob = float(dm.predict_proba(feat_vals)[:, 1][0])
-                    cost_prob = float(cm.predict_proba(feat_vals)[:, 1][0])
-                else:
+            # Authoritative prediction from april_2026_predictions.csv or ml_service.predict
+            pred_record = PREDICTIONS_BY_NAME.get(proj.project_name) or PREDICTIONS_BY_ID.get(pid_str)
+            if pred_record:
+                delay_prob = float(pred_record.get("delay_probability", 0.0))
+                cost_prob = float(pred_record.get("cost_overrun_probability", 0.0))
+                composite = float(pred_record.get("composite_risk_score", 0.0))
+                tier = str(pred_record.get("risk_tier", "low")).lower().strip()
+                delay_months = round(delay_prob * 18, 1)
+                overrun_amt = round(cost_prob * (rev_cost - orig_cost if rev_cost > orig_cost else orig_cost * 0.12), 2)
+                _override_reason = ""
+            else:
+                try:
+                    import joblib
+                    delay_m_path = os.path.join(ROOT_DIR, "ml", "models", "delay_model.pkl")
+                    cost_m_path = os.path.join(ROOT_DIR, "ml", "models", "cost_model.pkl")
+                    
+                    feat_vals = np.array([[
+                        float(burn_rate),
+                        float(burn_gap),
+                        float(time_elapsed),
+                        float(progress),
+                        float(cost_var),
+                        float(orig_cost),
+                        float(rev_cost)
+                    ]])
+                    
+                    if os.path.exists(delay_m_path) and os.path.exists(cost_m_path):
+                        dm = joblib.load(delay_m_path)
+                        cm = joblib.load(cost_m_path)
+                        delay_prob = float(dm.predict_proba(feat_vals)[:, 1][0])
+                        cost_prob = float(cm.predict_proba(feat_vals)[:, 1][0])
+                    else:
+                        delay_prob = min(max((burn_gap / 100.0) * 0.40 + (time_elapsed - 0.5) * 0.40 + (max(delay_months, 0) / 36.0) * 0.20, 0.04), 0.96)
+                        cost_prob = min(max((cost_var / 50.0) * 0.50 + (burn_gap / 100.0) * 0.40, 0.04), 0.96)
+                except Exception:
                     delay_prob = min(max((burn_gap / 100.0) * 0.40 + (time_elapsed - 0.5) * 0.40 + (max(delay_months, 0) / 36.0) * 0.20, 0.04), 0.96)
                     cost_prob = min(max((cost_var / 50.0) * 0.50 + (burn_gap / 100.0) * 0.40, 0.04), 0.96)
-            except Exception:
-                delay_prob = min(max((burn_gap / 100.0) * 0.40 + (time_elapsed - 0.5) * 0.40 + (max(delay_months, 0) / 36.0) * 0.20, 0.04), 0.96)
-                cost_prob = min(max((cost_var / 50.0) * 0.50 + (burn_gap / 100.0) * 0.40, 0.04), 0.96)
 
-            composite = round(0.55 * delay_prob + 0.45 * cost_prob, 4)
-
-            # ── Stagnation Overrides ────────────────────────────────────
-            # Same guardrails as ml_service._apply_critical_overrides()
-            _override_reason = ""
-            spi = progress / (time_elapsed * 100.0) if time_elapsed > 0 else 1.0
-            schedule_progress_gap_ratio = time_elapsed - (progress / 100.0)
-
-            if spi < 0.10 and time_elapsed >= 0.30:
-                composite = max(composite, 0.80)
-                _override_reason = (
-                    f"SPI Override: SPI={spi:.3f} (<0.10). Project executing at "
-                    f"{spi*100:.1f}% of required pace. CRITICAL tier enforced."
-                )
-            elif (time_elapsed >= 0.50 and progress < 15.0 and schedule_progress_gap_ratio >= 0.40):
-                composite = max(composite, 0.78)
-                _override_reason = (
-                    f"Stagnation Override: {time_elapsed*100:.0f}% elapsed but only "
-                    f"{progress:.1f}% progress (gap={schedule_progress_gap_ratio*100:.0f}ppts). CRITICAL."
-                )
-            elif orig_cost >= 500.0 and delay_months >= 36.0:
-                composite = max(composite, 0.76)
-                _override_reason = (
-                    f"Lag-Coupling Override: {delay_months:.0f}-month lag on ₹{orig_cost:,.0f} Cr project. CRITICAL."
-                )
-            elif orig_cost >= 500.0 and delay_months >= 12.0 and composite < 0.25:
-                composite = max(composite, 0.26)
-
-            tier = "critical" if composite >= 0.70 else ("high" if composite >= 0.45 else ("medium" if composite >= 0.22 else "low"))
-            overrun_amt = round(cost_prob * (rev_cost - orig_cost if rev_cost > orig_cost else orig_cost * 0.12), 2)
+                composite = round(0.55 * delay_prob + 0.45 * cost_prob, 4)
+                tier = "critical" if composite >= 0.70 else ("high" if composite >= 0.50 else ("medium" if composite >= 0.25 else "low"))
+                _override_reason = ""
+                spi = progress / (time_elapsed * 100.0) if time_elapsed > 0 else 1.0
+                if ((time_elapsed >= 0.50 and progress < 10.0) or (spi < 0.10 and time_elapsed >= 0.30)) and (burn_rate < 20.0 or expenditure < 25.0) and orig_cost >= 50.0:
+                    tier = "high"
+                    composite = max(composite, 0.55)
+                    _override_reason = f"Execution Stagnation: {time_elapsed*100:.0f}% elapsed with {progress:.1f}% progress (SPI: {spi:.3f}). HIGH tier."
+                elif time_elapsed >= 1.0 and progress < 50.0 and orig_cost >= 25.0:
+                    tier = "high"
+                    composite = max(composite, 0.55)
+                    _override_reason = f"Schedule Overrun: {time_elapsed*100:.0f}% elapsed (past scheduled completion). HIGH tier."
+                overrun_amt = round(cost_prob * (rev_cost - orig_cost if rev_cost > orig_cost else orig_cost * 0.12), 2)
 
             if tier == "critical":
                 strat = "Immediate MoSPI executive intervention required. Conduct site audit within 48h and freeze unverified contractor claims."

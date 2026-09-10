@@ -968,7 +968,19 @@ path.leaflet-interactive:hover {
 }
 
 .desktop-only {
-  /* Natural display on desktop */
+  /* Visible on desktop by default */
+}
+
+.laptop-hide {
+  /* Visible on desktop by default */
+}
+
+.tablet-hide {
+  /* Visible on desktop by default */
+}
+
+.phone-hide {
+  /* Visible on desktop by default */
 }
 
 /* ── Mobile Backdrop Overlay ── */
@@ -1000,7 +1012,17 @@ path.leaflet-interactive:hover {
 
 /* ── MEDIA QUERIES & RESPONSIVE ENGINE ── */
 
-/* Laptops & Desktops (<= 1200px) */
+/* Large Laptops & Split Desktops (<= 1350px) */
+@media (max-width: 1350px) {
+  .laptop-hide {
+    display: none !important;
+  }
+  .desktop-only {
+    display: none !important;
+  }
+}
+
+/* Laptops & Standard Desktops (<= 1200px) */
 @media (max-width: 1200px) {
   .responsive-grid-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -1029,6 +1051,14 @@ path.leaflet-interactive:hover {
     display: none !important;
   }
 
+  .laptop-hide {
+    display: none !important;
+  }
+
+  .tablet-hide {
+    display: none !important;
+  }
+
   .mobile-only {
     display: flex !important;
   }
@@ -1040,7 +1070,7 @@ path.leaflet-interactive:hover {
   .topbar {
     padding: 0 16px !important;
     height: 58px !important;
-    gap: 12px !important;
+    gap: 10px !important;
   }
 
   .sidebar-collapsed-padding {
@@ -1061,7 +1091,10 @@ path.leaflet-interactive:hover {
     padding: 12px 10px 24px !important;
   }
 
-  .tablet-hide {
+  .desktop-only,
+  .laptop-hide,
+  .tablet-hide,
+  .phone-hide {
     display: none !important;
   }
 

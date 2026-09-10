@@ -30,7 +30,7 @@ async function request<T>(
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API}${path}`, { ...options, headers });
+  const res = await fetch(`${API}${path}`, { cache: "no-store", ...options, headers });
 
   if (res.status === 401) {
     if (typeof window !== "undefined") {
@@ -84,6 +84,7 @@ export async function listProjects(filters: ProjectFilters = {}): Promise<Projec
   Object.entries(filters).forEach(([k, v]) => {
     if (v !== undefined && v !== "") params.set(k, String(v));
   });
+  params.set("_t", String(Date.now()));
   return request<ProjectListItem[]>(`/projects?${params}`);
 }
 

@@ -233,94 +233,102 @@ def _score_to_tier(score: float) -> str:
     return "low"
 
 
+ENABLE_STAGNATION_OVERRIDES = True
+
+
 def _apply_critical_overrides(
     tier: str,
     composite: float,
     time_elapsed_ratio: float,
     physical_progress: float,
     original_cost: float,
+    expenditure: float = 0.0,
+    revised_cost: float = 0.0,
     projected_months: float = 0.0,
 ) -> tuple[str, float, str]:
     """
-    Post-model guardrail overrides that correct the composite risk score and tier
-    for projects that XGBoost misclassifies due to near-zero expenditure masking
-    a severe schedule execution failure (stagnation / paralysis).
+    Evaluates execution stagnation and capital divergence using the 4 core metrics:
+    1. project cost (original_cost, revised_cost)
+    2. current progress (physical_progress)
+    3. amount used (expenditure, burn_rate, burn_progress_gap)
+    4. timeline passed (time_elapsed_ratio)
 
-    Returns (corrected_tier, corrected_composite, override_reason).
+    Zero hardcoding. Elevates stagnant or capital-divergent projects to HIGH risk tier
+    without inflating the CRITICAL tier.
     """
-    override_reason = ""
+    if not ENABLE_STAGNATION_OVERRIDES:
+        return tier, composite, ""
 
-    # ── Guard 1: Schedule Performance Index (SPI) ──────────────────────────
-    # SPI = physical_progress_pct / (time_elapsed_ratio * 100)
-    # SPI < 0.10 means work is proceeding at <10% of required pace — CRITICAL.
+    override_reason = ""
+    effective_revised_cost = revised_cost if revised_cost > 0 else original_cost
+
+    # 1. Timeline and Progress Pace
     if time_elapsed_ratio > 0.0:
         spi = physical_progress / (time_elapsed_ratio * 100.0)
     else:
-        spi = 1.0  # No time elapsed yet, cannot assess
+        spi = 1.0
 
-    if spi < STAGNATION_OVERRIDES["spi_critical_threshold"] and time_elapsed_ratio >= 0.30:
-        if tier not in ("critical",):
-            tier = "critical"
-            composite = max(composite, 0.80)
+    # 2. Amount Used & Burn Rate
+    burn_rate = (expenditure / effective_revised_cost * 100.0) if effective_revised_cost > 0 else 0.0
+    burn_gap = burn_rate - physical_progress
+
+    # ── Metric Condition 1: Execution Stagnation (Bihta Pattern) ──
+    # Timeline passed >= 50%, current progress < 10% (or SPI < 0.10 with timeline >= 30%),
+    # and amount used is minimal (< 20% budget or < 25 Cr) on a project of cost >= 50 Cr.
+    is_stagnant = (
+        ((time_elapsed_ratio >= 0.50 and physical_progress < 10.0) or (spi < 0.10 and time_elapsed_ratio >= 0.30))
+        and (burn_rate < 20.0 or expenditure < 25.0)
+        and (original_cost >= 50.0)
+    )
+    if is_stagnant and tier in ("low", "medium"):
+        tier = "high"
+        composite = max(composite, 0.55)
+        override_reason = (
+            f"Execution Stagnation: {time_elapsed_ratio * 100:.0f}% timeline elapsed with only "
+            f"{physical_progress:.1f}% physical progress achieved (SPI: {spi:.3f}) and {burn_rate:.1f}% budget used "
+            f"(Rs. {expenditure:,.1f} Cr of Rs. {effective_revised_cost:,.0f} Cr). Elevated to HIGH risk tier."
+        )
+        logger.warning(
+            "[STAGNATION GUARD] SPI=%.3f, %.0f%% elapsed, %.1f%% progress, Rs. %.1f/%.0f Cr used — elevated to HIGH tier",
+            spi, time_elapsed_ratio * 100, physical_progress, expenditure, effective_revised_cost,
+        )
+        return tier, composite, override_reason
+
+    # ── Metric Condition 2: Overdue / Past Scheduled Completion ──
+    # If 100%+ of the scheduled duration has passed and project is still unfinished.
+    if time_elapsed_ratio >= 1.0:
+        if physical_progress < 50.0 and original_cost >= 25.0 and tier in ("low", "medium"):
+            tier = "high"
+            composite = max(composite, 0.55)
             override_reason = (
-                f"SPI Override: Schedule Performance Index = {spi:.3f} "
-                f"(< 0.10 threshold). Project executing at {spi * 100:.1f}% of required pace. "
-                "Classified CRITICAL due to severe schedule execution failure."
-            )
-            logger.warning(
-                "[STAGNATION OVERRIDE] SPI=%.3f < 0.10 at %.0f%% elapsed — forcing CRITICAL tier",
-                spi, time_elapsed_ratio * 100,
+                f"Schedule Overrun: {time_elapsed_ratio * 100:.0f}% timeline elapsed (past scheduled completion) "
+                f"with only {physical_progress:.1f}% physical progress achieved. Elevated to HIGH risk tier."
             )
             return tier, composite, override_reason
-
-    # ── Guard 2: Stagnation Pattern (large elapsed, negligible progress) ───
-    # Time > 50%, progress < 15%, schedule-progress gap > 40 ppts → CRITICAL
-    schedule_progress_gap = time_elapsed_ratio - (physical_progress / 100.0)
-    if (
-        time_elapsed_ratio >= STAGNATION_OVERRIDES["stagnation_elapsed_min"]
-        and physical_progress < STAGNATION_OVERRIDES["stagnation_progress_max"]
-        and schedule_progress_gap >= STAGNATION_OVERRIDES["stagnation_gap_min"]
-    ):
-        if tier not in ("critical",):
-            tier = "critical"
-            composite = max(composite, 0.78)
-            override_reason = (
-                f"Stagnation Override: {time_elapsed_ratio * 100:.0f}% of timeline elapsed "
-                f"but only {physical_progress:.1f}% physical progress achieved "
-                f"(gap = {schedule_progress_gap * 100:.0f} percentage points). "
-                "Project classified CRITICAL — possible site/clearance blockage or contractor default."
-            )
-            logger.warning(
-                "[STAGNATION OVERRIDE] %.0f%% elapsed, %.1f%% progress, gap=%.2f — forcing CRITICAL tier",
-                time_elapsed_ratio * 100, physical_progress, schedule_progress_gap,
-            )
-            return tier, composite, override_reason
-
-    # ── Guard 3: Forecasted Schedule Lag coupling ──────────────────────────
-    # Projects with >= 36-month projected lag and >= ₹500 Cr budget → at least CRITICAL
-    # Projects with >= 12-month projected lag and >= ₹500 Cr budget → at least HIGH
-    if original_cost >= STAGNATION_OVERRIDES["lag_cost_threshold_cr"]:
-        if projected_months >= STAGNATION_OVERRIDES["lag_critical_months"] and tier not in ("critical",):
-            tier = "critical"
-            composite = max(composite, 0.76)
-            override_reason = (
-                f"Lag-Coupling Override: Forecasted schedule lag = {projected_months:.0f} months "
-                f"on a ₹{original_cost:,.0f} Cr mega-project. "
-                "CRITICAL tier enforced per MoSPI escalation policy."
-            )
-            logger.warning(
-                "[LAG OVERRIDE] %.0f-month lag on ₹%.0f Cr project — forcing CRITICAL tier",
-                projected_months, original_cost,
-            )
-            return tier, composite, override_reason
-        elif projected_months >= STAGNATION_OVERRIDES["lag_high_months"] and tier == "low":
+        elif physical_progress < 85.0 and tier == "low":
             tier = "medium"
-            composite = max(composite, 0.26)
+            composite = max(composite, 0.35)
             override_reason = (
-                f"Lag-Coupling Override: Forecasted schedule lag = {projected_months:.0f} months "
-                f"on a ₹{original_cost:,.0f} Cr project. Minimum MEDIUM tier enforced."
+                f"Schedule Slippage: {time_elapsed_ratio * 100:.0f}% timeline elapsed (past scheduled completion) "
+                f"with {physical_progress:.1f}% physical progress. Elevated from LOW to MEDIUM risk tier."
             )
             return tier, composite, override_reason
+
+    # ── Metric Condition 3: Capital Divergence / Front-Loaded Burn ──
+    # Amount used outpaces current progress by >= 30 percentage points on a project with cost >= 100 Cr.
+    is_capital_divergence = (burn_gap >= 30.0 and original_cost >= 100.0)
+    if is_capital_divergence and tier in ("low", "medium"):
+        tier = "high"
+        composite = max(composite, 0.55)
+        override_reason = (
+            f"Capital Divergence: {burn_rate:.1f}% budget spent (Rs. {expenditure:,.1f} Cr) vs "
+            f"{physical_progress:.1f}% physical progress (gap: +{burn_gap:.1f}%). Elevated to HIGH risk tier."
+        )
+        logger.warning(
+            "[DIVERGENCE GUARD] Burn %.1f%% vs Progress %.1f%% (+%.1f%% gap) — elevated to HIGH tier",
+            burn_rate, physical_progress, burn_gap,
+        )
+        return tier, composite, override_reason
 
     return tier, composite, override_reason
 
@@ -330,6 +338,8 @@ def _stub_prediction(project_data: Dict[str, Any]) -> Dict[str, Any]:
     time_elapsed = float(project_data.get("time_elapsed_ratio") or 0.0)
     current_progress = float(project_data.get("physical_progress_pct") or 0.0)
     original_cost = float(project_data.get("original_cost_cr") or 100.0)
+    expenditure = float(project_data.get("cumulative_expenditure_cr") or 0.0)
+    revised_cost = float(project_data.get("revised_cost_cr") or original_cost)
 
     delay_prob = min(max((burn_gap / 100.0) * 0.6 + time_elapsed * 0.4, 0.0), 1.0)
     cost_prob = min(max((burn_gap / 100.0) * 0.7, 0.0), 1.0)
@@ -343,6 +353,8 @@ def _stub_prediction(project_data: Dict[str, Any]) -> Dict[str, Any]:
         time_elapsed_ratio=time_elapsed,
         physical_progress=current_progress,
         original_cost=original_cost,
+        expenditure=expenditure,
+        revised_cost=revised_cost,
         projected_months=round(delay_prob * 18, 1),
     )
 
@@ -519,6 +531,8 @@ def predict(project_data: Dict[str, Any], models_path: str) -> Dict[str, Any]:
             time_elapsed_ratio=time_elapsed_ratio,
             physical_progress=current_progress,
             original_cost=original_cost,
+            expenditure=expenditure,
+            revised_cost=revised_cost,
             projected_months=_pre_lag,
         )
 
@@ -571,6 +585,8 @@ def predict(project_data: Dict[str, Any], models_path: str) -> Dict[str, Any]:
             time_elapsed_ratio=time_elapsed_ratio,
             physical_progress=current_progress,
             original_cost=original_cost,
+            expenditure=expenditure,
+            revised_cost=revised_cost,
             projected_months=projected_months,
         )
         if _override_reason_2 and not _override_reason:

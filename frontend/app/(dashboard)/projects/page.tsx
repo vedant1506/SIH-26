@@ -59,7 +59,15 @@ function ProjectsContent() {
     setLoading(true);
     try {
       const data = await listProjects({ ...filters, skip: page * pageSize, limit: pageSize });
-      setProjects(data);
+      // Strict filter membership:
+      // The filter must only perform: project.actualRiskTier === selectedRiskTier.
+      // If a risk_tier filter is active, exclude any project whose actual authoritative risk_tier does not match.
+      // The project's own authoritative risk data must remain untouched.
+      const targetTier = filters.risk_tier ? filters.risk_tier.toLowerCase().trim() : null;
+      const verifiedProjects = targetTier
+        ? data.filter((p) => (p.risk_tier || "").toLowerCase().trim() === targetTier)
+        : data;
+      setProjects(verifiedProjects);
     } catch {
       setProjects([]);
     } finally {
@@ -144,13 +152,24 @@ function ProjectsContent() {
   const isSectorFiltered = !!filters.sector;
   const isMinistryFiltered = !!filters.ministry;
   const isCriticalFiltered = filters.risk_tier?.toLowerCase() === "critical";
+  const isHighFiltered = filters.risk_tier?.toLowerCase() === "high";
+  const isMediumFiltered = filters.risk_tier?.toLowerCase() === "medium";
+  const isLowFiltered = filters.risk_tier?.toLowerCase() === "low";
   const isDelayedFiltered = filters.delayed === "true" || filters.delayed === "1" || filters.delayed === "yes";
 
-  const criticalTotal = summary?.critical_count ?? 106;
-  const delayedTotal = summary?.total_delayed_count ?? 334;
+  const criticalTotal = summary?.critical_count ?? 141;
+  const highTotal = summary?.high_count ?? 1256;
+  const mediumTotal = summary?.medium_count ?? 521;
+  const lowTotal = summary?.low_count ?? 63;
+  const delayedTotal = summary?.total_delayed_count ?? 1805;
   const allTotal = summary?.total_projects ?? 1981;
 
-  const totalEstimate = isCriticalFiltered ? criticalTotal : isDelayedFiltered ? delayedTotal : allTotal;
+  const totalEstimate = isCriticalFiltered ? criticalTotal
+    : isHighFiltered ? highTotal
+    : isMediumFiltered ? mediumTotal
+    : isLowFiltered ? lowTotal
+    : isDelayedFiltered ? delayedTotal
+    : allTotal;
 
   const pageTitle = isSectorFiltered
     ? `${filters.sector} Sector Projects`
@@ -160,6 +179,12 @@ function ProjectsContent() {
     ? "Delayed Infrastructure Projects"
     : isCriticalFiltered
     ? "Critical Risk Projects"
+    : isHighFiltered
+    ? "High Risk Projects"
+    : isMediumFiltered
+    ? "Medium Risk Projects"
+    : isLowFiltered
+    ? "Low Risk Projects"
     : "Project Risk Matrix";
 
   const pageSubtitle = isSectorFiltered
@@ -170,6 +195,12 @@ function ProjectsContent() {
     ? `${delayedTotal} Delayed Projects · Schedule Delay Probability > 50% · MoSPI April 2026 Baseline`
     : isCriticalFiltered
     ? `${criticalTotal} Critical Risk Projects · Require Immediate Intervention · MoSPI April 2026 Baseline`
+    : isHighFiltered
+    ? `${highTotal} High Risk Projects · MoSPI April 2026 Baseline`
+    : isMediumFiltered
+    ? `${mediumTotal} Medium Risk Projects · MoSPI April 2026 Baseline`
+    : isLowFiltered
+    ? `${lowTotal} Low Risk Projects · MoSPI April 2026 Baseline`
     : `Filterable risk matrix · ${allTotal.toLocaleString()} central sector projects · MoSPI April 2026 Baseline`;
 
   return (
@@ -191,7 +222,8 @@ function ProjectsContent() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              gap: 16,
+              flexWrap: "wrap",
+              gap: 12,
               boxShadow: "0 4px 16px rgba(168, 85, 247, 0.08)",
             }}
           >
@@ -255,7 +287,8 @@ function ProjectsContent() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              gap: 16,
+              flexWrap: "wrap",
+              gap: 12,
               boxShadow: "0 4px 16px rgba(244, 63, 94, 0.08)",
             }}
           >
@@ -320,7 +353,8 @@ function ProjectsContent() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              gap: 16,
+              flexWrap: "wrap",
+              gap: 12,
               boxShadow: "0 4px 16px rgba(56, 189, 248, 0.08)",
             }}
           >
@@ -435,6 +469,12 @@ function ProjectsContent() {
                   ? `Showing ${page * pageSize + 1}–${page * pageSize + projects.length} of ${delayedTotal} Delayed Projects`
                   : isCriticalFiltered
                   ? `Showing ${page * pageSize + 1}–${page * pageSize + projects.length} of ${criticalTotal} Critical Projects`
+                  : isHighFiltered
+                  ? `Showing ${page * pageSize + 1}–${page * pageSize + projects.length} of ${highTotal} High Risk Projects`
+                  : isMediumFiltered
+                  ? `Showing ${page * pageSize + 1}–${page * pageSize + projects.length} of ${mediumTotal} Medium Risk Projects`
+                  : isLowFiltered
+                  ? `Showing ${page * pageSize + 1}–${page * pageSize + projects.length} of ${lowTotal} Low Risk Projects`
                   : `Showing ${page * pageSize + 1}–${page * pageSize + projects.length} of ${allTotal.toLocaleString()} Projects`}
               </div>
             </div>

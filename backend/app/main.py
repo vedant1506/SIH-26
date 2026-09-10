@@ -14,7 +14,19 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Lightweight startup: do not preload heavy model weights into RAM on boot
+    # Auto-seed database if empty on fresh machine clone to ensure 100% data parity
+    try:
+        from app.core.database import SessionLocal, Base, engine
+        from app.models.project import Project
+        Base.metadata.create_all(bind=engine)
+        db = SessionLocal()
+        if db.query(Project).count() == 0:
+            from app.seed import seed_real_mospi_dataset, seed_demo_profiles
+            seed_real_mospi_dataset(force=True)
+            seed_demo_profiles()
+        db.close()
+    except Exception as se:
+        print(f"Startup database initialization check note: {se}")
     yield
 
 
@@ -42,6 +54,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def add_no_cache_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 # Register routers
 API_PREFIX = settings.api_prefix  # /api/v1

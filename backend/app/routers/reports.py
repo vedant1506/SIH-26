@@ -87,7 +87,7 @@ async def export_portfolio_csv(
     if ministry:
         query = query.filter(Project.ministry.ilike(f"%{ministry}%"))
     if risk_tier:
-        query = query.filter(RiskPrediction.risk_tier == risk_tier.lower())
+        query = query.filter(RiskPrediction.risk_tier == risk_tier.strip().lower())
 
     rows = query.order_by(desc(RiskPrediction.composite_risk_score)).all()
     data = _projects_to_rows(rows)
@@ -130,6 +130,8 @@ async def export_portfolio_json(
         query = query.filter(Project.sector.ilike(f"%{sector}%"))
     if ministry:
         query = query.filter(Project.ministry.ilike(f"%{ministry}%"))
+    if risk_tier:
+        query = query.filter(RiskPrediction.risk_tier == risk_tier.strip().lower())
 
     rows = query.order_by(desc(RiskPrediction.composite_risk_score)).all()
     data = _projects_to_rows(rows)

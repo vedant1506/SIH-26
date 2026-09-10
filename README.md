@@ -189,18 +189,43 @@ PRISM Platform Capabilities:
 
 ---
 
-## 📈 Authoritative Portfolio (April 2026)
+## 📈 Authoritative Portfolio (April 2026 Baseline)
 
-| Dimension | Primary Master (April 2026) |
-|---|---|
-| **Authoritative Register** | MoSPI PAIMANA Master Dataset |
-| **Monitored Projects** | **Exactly 1,981 Assets** |
-| **Total Capital Outlay** | **₹42.78 Lakh Crore** |
-| **Sectors Represented** | Roads & Highways, Railways, Petroleum, Power, Coal, Urban Transport, Aviation, Water Resources, etc. |
-| **Geospatial Integrity** | **100% Survey of India & State Boundary Verified** |
-| **Exact Site Resolution** | **1,545 Projects (78.0%)** |
-| **Approximate District Resolution** | **436 Projects (22.0%)** |
-| **Unresolved / Dropped Projects** | **0 (Zero)** |
+| Dimension | Primary Master (April 2026 Baseline) | Description / Coverage |
+|---|---|---|
+| **Authoritative Register** | MoSPI PAIMANA Master Dataset | Official Central Sector Project Register |
+| **Monitored Projects** | **Exactly 1,981 Assets** | 100% Accounted For (₹150+ Cr Capital Works) |
+| **Total Sanctioned Outlay** | **₹37.13 Lakh Crore** | Original Cabinet Sanctioned Baseline |
+| **Total Revised Outlay** | **₹42.78 Lakh Crore** | Latest Anticipated Completion Estimates |
+| **Cumulative Expenditure** | **₹20.36 Lakh Crore** | Actual Disbursed / Booked Capital Outlay |
+| **Total High + Critical Exposure** | **₹35.12 Lakh Crore** | Capital at Elevated Schedule / Cost Risk |
+| **Delayed Projects Count** | **1,805 Projects (91.1%)** | Projects with Schedule Delay Probability > 50% |
+| **Average Schedule Delay** | **34.2 Months** | Across Delayed Capital Assets Portfolio |
+| **Geospatial Integrity** | **100% Survey of India Verified** | 0 Out-of-Bounds · 0 Dropped · 0 Synthetic Hub Dumps |
+| **Exact Site Resolution** | **1,545 Projects (78.0%)** | Verified Facility / Site Level Coordinates |
+| **District Node Resolution** | **436 Projects (22.0%)** | Verified District Headquarters / Centroid |
+
+### 🎯 Authoritative Risk Tier Distribution
+
+| Risk Tier | Count | Share (%) | Portfolio Description & Governance Meaning |
+| :---: | :---: | :---: | :--- |
+| **CRITICAL** | **141** | **7.1%** | Severe systemic failure risk, catastrophic delay (>36 mo), massive cost escalation, or critical infrastructure bottlenecks requiring immediate cabinet-level intervention. |
+| **HIGH** | **1,256** | **63.4%** | Execution-stagnant projects (e.g. Bihta Airport: 74% elapsed timeline with only 1.28% progress, SPI < 0.10) or assets currently operating past their scheduled completion date. |
+| **MEDIUM** | **521** | **26.3%** | Ongoing projects with moderate variance (e.g. Kudankulam Transmission @ 46.7%, Keshod Airport @ 44.0%) under bi-weekly velocity tracking. |
+| **LOW** | **63** | **3.2%** | Genuinely healthy projects (newly sanctioned works with < 25% timeline elapsed, or projects with > 90% physical progress completed on schedule). |
+| **TOTAL** | **1,981** | **100.0%** | **Authoritative April 2026 Baseline Portfolio** |
+
+### ⚙️ The 4-Factor Dynamic Evaluation Architecture (Zero Hardcoding)
+
+To eliminate the "zero-spend" machine learning blind spot where severely stalled mega-projects were naively classified as low risk due to minimal budget burn, PRISM implements an audited 4-factor dynamic evaluation pipeline across every project:
+
+1. **Project Cost (`original_cost_cr`, `revised_cost_cr`)**: Establishes scale (Mega: $\ge ₹1,000\text{ Cr}$, Major: $₹150 - ₹1,000\text{ Cr}$) and cost variation percentage.
+2. **Physical Progress (`physical_progress_pct`)**: Audited milestone execution pace on the ground.
+3. **Amount Used (`cumulative_expenditure_cr`, `burn_rate_pct`)**: Tracks capital burn vs. progress divergence gap ($\text{Burn Gap} = \text{Burn Rate} - \text{Physical Progress}$).
+4. **Timeline Passed (`time_elapsed_ratio`, `Schedule Performance Index (SPI)`)**: Ratio of elapsed time to sanctioned duration, and speed of delivery ($\text{SPI} = \frac{\text{Physical Progress}}{\text{Timeline Elapsed} \times 100}$).
+
+> **Execution Stagnation Guardrail (Bihta Pattern)**:  
+> If $\ge 50\%$ of scheduled timeline has elapsed but physical progress is $< 10\%$ (or $\text{SPI} < 0.10$ at $\ge 30\%$ elapsed) on a project costing $\ge ₹50\text{ Cr}$, the system elevates the asset to **HIGH** risk tier ($0.55$ composite score) with an audited stagnation warning. Stalled mega-projects can never hide in the LOW tier.
 
 ---
 
@@ -275,7 +300,21 @@ npm run dev
 ```
 > PRISM Web Application accessible at: `http://localhost:3000`
 
-### 4. Running Geolocation Rebuild & Validation Test Suite
+### 4. Deterministic Cross-Machine Data Synchronization
+
+To ensure 100% data parity across every developer machine, laptop, and evaluation PC:
+- **Pre-Seeded Authoritative Database**: The pre-inferred SQLite database (`backend/sql_app.db`) is committed and tracked in git. When cloning the repository on another PC, all 1,981 projects with their authoritative April 2026 risk predictions are available immediately without running manual seeds.
+- **Zero-Config Auto-Initialization**: If `backend/sql_app.db` is ever absent or empty, the backend automatically detects this on startup (`backend/app/main.py`) and seeds the database directly from `april_2026_predictions.csv` in under 3 seconds.
+- **Manual Resync & Consistency Audit**:
+  ```bash
+  # Resync all 1,981 projects to canonical predictions
+  python sync_canonical_predictions.py
+
+  # Verify 100% list-to-detail and risk tier consistency across all 1,981 projects
+  python audit_consistency.py
+  ```
+
+### 5. Running Geolocation Rebuild & Validation Test Suite
 
 To re-run the authoritative geolocation rebuild pipeline:
 ```bash

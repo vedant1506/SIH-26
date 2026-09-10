@@ -22,6 +22,7 @@ async def list_projects(
     risk_tier: Optional[str] = Query(None, description="Filter by risk tier: low, medium, high, critical"),
     project_scale: Optional[str] = Query(None, description="Filter by scale: mega, major, other"),
     delayed: Optional[str] = Query(None, description="Filter for delayed projects (true/1/yes)"),
+    _t: Optional[str] = Query(None, description="Cache buster timestamp"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=2000),
     db: Session = Depends(get_db),
@@ -33,8 +34,24 @@ async def list_projects(
     Supports search and filtering by ministry, sector, state, risk tier, project scale, and delayed status.
     Used by the Risk Matrix Table on the main dashboard.
     """
+    search = str(search).strip() if (search and not hasattr(search, "default") and str(search).strip()) else None
+    ministry = str(ministry).strip() if (ministry and not hasattr(ministry, "default") and str(ministry).strip()) else None
+    sector = str(sector).strip() if (sector and not hasattr(sector, "default") and str(sector).strip()) else None
+    state = str(state).strip() if (state and not hasattr(state, "default") and str(state).strip()) else None
+    risk_tier = str(risk_tier).strip().lower() if (risk_tier and not hasattr(risk_tier, "default") and str(risk_tier).strip()) else None
+    project_scale = str(project_scale).strip().lower() if (project_scale and not hasattr(project_scale, "default") and str(project_scale).strip()) else None
+    delayed_val = str(delayed).strip().lower() if (delayed and not hasattr(delayed, "default") and str(delayed).strip()) else None
+    if hasattr(skip, "default"):
+        skip = 0
+    if hasattr(limit, "default"):
+        limit = 50
+
     from sqlalchemy import func
 
+    # Build a subquery of the LATEST prediction per project (by max predicted_at).
+    # This subquery is the single authoritative source for each project's current risk tier.
+    # Both the JOIN and the risk_tier filter operate against this same subquery to guarantee
+    # the filter never matches historical (non-latest) prediction rows.
     latest_pred_subq = (
         db.query(
             RiskPrediction.project_id,
@@ -43,6 +60,22 @@ async def list_projects(
         .group_by(RiskPrediction.project_id)
         .subquery()
     )
+
+    # When risk_tier filter is requested, build a tier-aware subquery so the JOIN
+    # is restricted to projects whose LATEST prediction matches the requested tier.
+    # This avoids any scenario where a WHERE clause on the outer join could match
+    # an older historical prediction instead of the actual latest one.
+    if risk_tier:
+        tier_filter_subq = (
+            db.query(RiskPrediction.project_id)
+            .join(
+                latest_pred_subq,
+                (RiskPrediction.project_id == latest_pred_subq.c.project_id)
+                & (RiskPrediction.predicted_at == latest_pred_subq.c.max_pred_at),
+            )
+            .filter(func.lower(RiskPrediction.risk_tier) == risk_tier)
+            .subquery()
+        )
 
     query = (
         db.query(Project, RiskPrediction)
@@ -54,8 +87,8 @@ async def list_projects(
         )
     )
 
-    if search and search.strip():
-        tokens = [t.strip() for t in search.strip().split() if len(t.strip()) > 1]
+    if search:
+        tokens = [t.strip() for t in search.split() if len(t.strip()) > 1]
         if tokens:
             for t in tokens:
                 term = f"%{t}%"
@@ -66,7 +99,7 @@ async def list_projects(
                     | (Project.state.ilike(term))
                 )
         else:
-            term = f"%{search.strip()}%"
+            term = f"%{search}%"
             query = query.filter(
                 (Project.project_name.ilike(term))
                 | (Project.ministry.ilike(term))
@@ -82,8 +115,11 @@ async def list_projects(
     if project_scale:
         query = query.filter(Project.project_scale == project_scale)
     if risk_tier:
-        query = query.filter(RiskPrediction.risk_tier == risk_tier.lower())
-    if delayed and str(delayed).lower() in ("true", "1", "yes"):
+        # Filter by joining to the tier-aware subquery — guarantees only projects
+        # whose ACTUAL LATEST prediction matches the requested tier are returned.
+        # This is immutable: it selects existing projects, never relabels them.
+        query = query.join(tier_filter_subq, Project.id == tier_filter_subq.c.project_id)
+    if delayed_val and delayed_val in ("true", "1", "yes"):
         query = query.filter(RiskPrediction.delay_probability > 0.5)
 
     rows = query.offset(skip).limit(limit).all()
@@ -152,7 +188,7 @@ async def list_projects(
             physical_progress_pct=p.physical_progress_pct,
             project_scale=p.project_scale,
             burn_progress_gap=p.burn_progress_gap,
-            risk_tier=pred.risk_tier if pred else None,
+            risk_tier=pred.risk_tier.lower() if (pred and pred.risk_tier) else None,
             composite_risk_score=pred.composite_risk_score if pred else None,
             delay_probability=pred.delay_probability if pred else None,
             cost_overrun_probability=pred.cost_overrun_probability if pred else None,

@@ -143,16 +143,18 @@ export default function TopBar({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 24px",
+        padding: "0 20px",
         position: "sticky",
         top: 0,
         zIndex: 40,
-        gap: 16,
+        gap: 12,
+        minWidth: 0,
+        overflow: "hidden",
         transition: "background 0.2s ease, border-color 0.2s ease",
       }}
     >
       {/* Left: Mobile Toggle + Title + Brand Emblem */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: "0 1 auto", overflow: "hidden" }}>
         {/* Mobile Hamburger Button */}
         <button
           onClick={toggleMobile}
@@ -189,7 +191,7 @@ export default function TopBar({
         >
           <img src="/logo.jpg" alt="PRISM" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
-        <div style={{ minWidth: 0 }}>
+        <div style={{ minWidth: 100, flexShrink: 1, overflow: "hidden" }}>
           <h1
             style={{
               fontSize: 15, fontWeight: 700, color: "var(--text)", margin: 0,
@@ -209,7 +211,7 @@ export default function TopBar({
 
         {/* Live Status Chip */}
         <div
-          className="phone-hide"
+          className="tablet-hide"
           style={{
             display: "flex", alignItems: "center", gap: 6,
             padding: "3px 8px",
@@ -247,6 +249,7 @@ export default function TopBar({
         {hideGlobalProjectCount ? (
           customProjectCount !== undefined && customProjectCount !== null ? (
             <div
+              className="laptop-hide"
               style={{
                 display: "flex", alignItems: "center", gap: 5,
                 padding: "4px 10px",
@@ -258,12 +261,13 @@ export default function TopBar({
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
               </svg>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.05em" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
                 {customProjectCount === 0 ? (customProjectLabel || "NO PROJECTS ANALYZED") : `${customProjectCount.toLocaleString("en-IN")} ${customProjectLabel || "ONGOING PROJECTS"}`}
               </span>
             </div>
           ) : (
             <div
+              className="laptop-hide"
               style={{
                 display: "flex", alignItems: "center", gap: 5,
                 padding: "4px 10px",
@@ -272,7 +276,7 @@ export default function TopBar({
                 borderRadius: 999, flexShrink: 0,
               }}
             >
-              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.05em" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
                 {customProjectLabel || "FILE SESSION · NO DOCUMENT ANALYZED"}
               </span>
             </div>
@@ -280,6 +284,7 @@ export default function TopBar({
         ) : (
           totalProjects !== null && (
             <div
+              className="laptop-hide"
               style={{
                 display: "flex", alignItems: "center", gap: 6,
                 padding: "4px 10px",
@@ -291,10 +296,10 @@ export default function TopBar({
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
               </svg>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.05em" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>
                 {totalProjects.toLocaleString("en-IN")} PROJECTS
               </span>
-              <span style={{ fontSize: 9.5, fontWeight: 600, color: "var(--text-sub)", borderLeft: "1px solid var(--border)", paddingLeft: 6, letterSpacing: "0.04em" }}>
+              <span className="desktop-only" style={{ fontSize: 9.5, fontWeight: 600, color: "var(--text-sub)", borderLeft: "1px solid var(--border)", paddingLeft: 6, letterSpacing: "0.04em", whiteSpace: "nowrap" }}>
                 APRIL 2026 BASELINE
               </span>
             </div>
@@ -303,13 +308,13 @@ export default function TopBar({
       </div>
 
       {/* Right: Actions */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-        {action && <div>{action}</div>}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, marginLeft: "auto" }}>
+        {action && <div className="tablet-hide">{action}</div>}
 
         {/* Public Citizen Portal Quick Link */}
         <Link
           href="/citizen"
-          className="phone-hide"
+          className="laptop-hide"
           style={{
             display: "flex",
             alignItems: "center",
@@ -323,37 +328,40 @@ export default function TopBar({
             background: "rgba(6,182,212,0.08)",
             border: "1px solid rgba(6,182,212,0.25)",
             transition: "all 0.15s ease",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
           }}
           title="Open Public Citizen Transparency Portal"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
           </svg>
-          <span>Citizen Portal</span>
+          <span className="desktop-only">Citizen Portal</span>
         </Link>
 
         {/* Live Clock */}
-        <div className="tablet-hide" style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+        <div className="laptop-hide" style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
           <span
             suppressHydrationWarning
             style={{
               fontFamily: "'JetBrains Mono', monospace",
               fontSize: 13, fontWeight: 600, color: "var(--text)", letterSpacing: "0.04em",
               lineHeight: 1.2,
+              whiteSpace: "nowrap",
             }}
           >
             {timeStr}
           </span>
           <span
             suppressHydrationWarning
-            style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: "0.04em", marginTop: 1 }}
+            style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: "0.04em", marginTop: 1, whiteSpace: "nowrap" }}
           >
             {dateStr} · IST
           </span>
         </div>
 
         {/* Divider */}
-        <div className="tablet-hide" style={{ width: 1, height: 28, background: "var(--border)" }} />
+        <div className="laptop-hide" style={{ width: 1, height: 28, background: "var(--border)", flexShrink: 0 }} />
 
         {/* Notifications Popover */}
         <div style={{ position: "relative" }} ref={notifRef}>
@@ -413,7 +421,7 @@ export default function TopBar({
                 position: "absolute",
                 top: "calc(100% + 10px)",
                 right: 0,
-                width: 360,
+                width: "min(360px, calc(100vw - 32px))",
                 maxHeight: 460,
                 background: "var(--surface)",
                 border: "1px solid var(--border)",

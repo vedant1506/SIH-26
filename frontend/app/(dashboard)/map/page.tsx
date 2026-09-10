@@ -58,31 +58,35 @@ export const BASEMAPS = {
   dark: {
     id: "dark",
     name: "Command Dark",
-    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-    attrib: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    subdomains: "abcd",
-    maxZoom: 20,
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    referenceUrl: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
+    attrib: "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ",
+    subdomains: "abc",
+    maxZoom: 18,
   },
   satellite: {
     id: "satellite",
     name: "Satellite Imagery",
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    referenceUrl: undefined as string | undefined,
     attrib: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP",
     subdomains: "abc",
     maxZoom: 18,
   },
   light: {
     id: "light",
-    name: "Clean Voyager",
-    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-    attrib: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    subdomains: "abcd",
-    maxZoom: 20,
+    name: "Clean Light",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    referenceUrl: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
+    attrib: "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ",
+    subdomains: "abc",
+    maxZoom: 18,
   },
   osm: {
     id: "osm",
     name: "Street Map",
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    referenceUrl: undefined as string | undefined,
     attrib: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     subdomains: "abc",
     maxZoom: 19,
@@ -230,7 +234,6 @@ export default function MapPage() {
   const [legendCollapsedDesktop, setLegendCollapsedDesktop] = useState<boolean>(false);
   const [legendLayout, setLegendLayout] = useState<"card" | "bar">("card");
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [showGeoDebugHud, setShowGeoDebugHud] = useState<boolean>(true);
 
   useEffect(() => {
     fetch("/india_states_simplified.geojson")
@@ -399,67 +402,6 @@ export default function MapPage() {
     return aggregateStateData(allProjects);
   }, [allProjects]);
 
-  // Dynamic Calculation of Geo Integrity & Debug HUD metrics (Section 51)
-  const geoDebugMetrics = useMemo(() => {
-    const sourceCount = allProjects.length;
-    const filteredCount = filteredProjects.length;
-    const markerRecordCount = filteredProjects.length;
-    const visibleObjectsCount = markersRef.current?.length || filteredProjects.length;
-
-    // Synthetic markers: generated from Math.random, angle, radius, NaN
-    const syntheticCount = filteredProjects.filter((p) =>
-      p.latitude == null || p.longitude == null || isNaN(p.latitude) || isNaN(p.longitude)
-    ).length;
-
-    // Duplicate project markers: check if duplicate project IDs exist
-    const pids = filteredProjects.map((p) => (p as any).project_id || p.id);
-    const uniquePids = new Set(pids);
-    const duplicateCount = pids.length - uniquePids.size;
-
-    // Invalid coordinates: outside India bounding box
-    const invalidCount = filteredProjects.filter((p) =>
-      !p.latitude || !p.longitude || p.latitude < 6.0 || p.latitude > 38.0 || p.longitude < 68.0 || p.longitude > 98.0
-    ).length;
-
-    // Wrong state
-    const wrongStateCount = selectedState !== "all"
-      ? filteredProjects.filter((p) => p.state && !projectMatchesState(p.state, selectedState)).length
-      : 0;
-
-    // Wrong district
-    const wrongDistrictCount = selectedDistrict !== "all"
-      ? filteredProjects.filter((p) => (p.district || p.location_name) !== selectedDistrict).length
-      : 0;
-
-    // Resolution quality
-    const exactCount = filteredProjects.filter((p) => (p as any).coordinate_status === "exact").length;
-    const approxCount = filteredProjects.filter((p) => (p as any).coordinate_status === "approximate").length;
-    const unresolvedCount = filteredProjects.filter((p) => !(p as any).coordinate_status || (p as any).coordinate_status === "unresolved").length;
-
-    // Project-ID mismatches
-    const idMismatchCount = 0;
-
-    // Overall Status
-    const status = (invalidCount === 0 && duplicateCount === 0 && syntheticCount === 0 && wrongStateCount === 0 && wrongDistrictCount === 0) ? "PASS" : "FAIL";
-
-    return {
-      sourceCount,
-      filteredCount,
-      markerRecordCount,
-      visibleObjectsCount,
-      syntheticCount,
-      duplicateCount,
-      invalidCount,
-      wrongStateCount,
-      wrongDistrictCount,
-      exactCount,
-      approxCount,
-      unresolvedCount,
-      idMismatchCount,
-      status,
-    };
-  }, [allProjects, filteredProjects, selectedState, selectedDistrict]);
-
   // Category / Sector options with exact counts
   const sectorOptionsWithCount = useMemo(() => {
     const map = new Map<string, number>();
@@ -525,13 +467,23 @@ export default function MapPage() {
         tileLayerRef.current.remove();
       }
       const cfg = BASEMAPS[baseLayer] || BASEMAPS.dark;
-      const newLyr = L.tileLayer(cfg.url, {
+      const baseLyr = L.tileLayer(cfg.url, {
         attribution: cfg.attrib,
         subdomains: cfg.subdomains,
         maxZoom: cfg.maxZoom,
-      }).addTo(leafletMapRef.current);
-      tileLayerRef.current = newLyr;
-      newLyr.bringToBack();
+      });
+      const layers: any[] = [baseLyr];
+      if (cfg.referenceUrl) {
+        layers.push(
+          L.tileLayer(cfg.referenceUrl, {
+            subdomains: cfg.subdomains,
+            maxZoom: cfg.maxZoom,
+          })
+        );
+      }
+      const group = L.layerGroup(layers).addTo(leafletMapRef.current);
+      tileLayerRef.current = group;
+      baseLyr.bringToBack();
     });
   }, [baseLayer]);
 
@@ -545,12 +497,23 @@ export default function MapPage() {
         leafletMapRef.current = map;
 
         const cfg = BASEMAPS[baseLayer] || BASEMAPS.dark;
-        const initialTile = L.tileLayer(cfg.url, {
+        const baseLyr = L.tileLayer(cfg.url, {
           attribution: cfg.attrib,
           subdomains: cfg.subdomains,
           maxZoom: cfg.maxZoom,
-        }).addTo(map);
-        tileLayerRef.current = initialTile;
+        });
+        const layers: any[] = [baseLyr];
+        if (cfg.referenceUrl) {
+          layers.push(
+            L.tileLayer(cfg.referenceUrl, {
+              subdomains: cfg.subdomains,
+              maxZoom: cfg.maxZoom,
+            })
+          );
+        }
+        const initialGroup = L.layerGroup(layers).addTo(map);
+        tileLayerRef.current = initialGroup;
+        baseLyr.bringToBack();
 
         setMapLoading(false);
 
@@ -1207,28 +1170,6 @@ export default function MapPage() {
             </button>
           </div>
 
-          {/* Geo Debug HUD Toggle Button (Section 51) */}
-          <button
-            onClick={() => setShowGeoDebugHud(!showGeoDebugHud)}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              padding: "4px 8px",
-              borderRadius: 6,
-              fontSize: 10,
-              fontWeight: 800,
-              border: "1px solid",
-              borderColor: geoDebugMetrics.status === "PASS" ? "rgba(16, 185, 129, 0.4)" : "rgba(239, 68, 68, 0.4)",
-              background: showGeoDebugHud ? "rgba(15, 23, 42, 0.9)" : "transparent",
-              color: geoDebugMetrics.status === "PASS" ? "#10b981" : "#ef4444",
-              cursor: "pointer",
-            }}
-            title="Toggle Dynamic Geo Map Integrity HUD"
-          >
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: geoDebugMetrics.status === "PASS" ? "#10b981" : "#ef4444" }} />
-            <span>GEO DEBUG</span>
-          </button>
 
           {/* Reopen / Toggle Drawer button on mobile if closed */}
           {!isDrawerOpen && (
@@ -1636,94 +1577,6 @@ export default function MapPage() {
           </div>
         )}
 
-        {/* Development GEO DEBUG HUD (Section 51) */}
-        {showGeoDebugHud && (
-          <div
-            id="geo-map-debug-hud"
-            className="animate-fade"
-            style={{
-              position: "absolute",
-              top: 64,
-              left: 16,
-              zIndex: 35,
-              background: "rgba(15, 23, 42, 0.95)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid rgba(6, 182, 212, 0.35)",
-              borderRadius: 10,
-              padding: "12px 14px",
-              minWidth: 250,
-              maxWidth: 300,
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.65)",
-              fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, paddingBottom: 6, borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: geoDebugMetrics.status === "PASS" ? "#10b981" : "#ef4444", boxShadow: geoDebugMetrics.status === "PASS" ? "0 0 8px #10b981" : "0 0 8px #ef4444" }} />
-                <span style={{ fontSize: 11, fontWeight: 800, color: "#f8fafc", letterSpacing: "0.05em" }}>GEO MAP DEBUG</span>
-              </div>
-              <button
-                onClick={() => setShowGeoDebugHud(false)}
-                style={{ background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 12, padding: "0 2px" }}
-                title="Minimize HUD"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", rowGap: 4, fontSize: 11, color: "#cbd5e1" }}>
-              <span>Source Projects:</span>
-              <span style={{ fontWeight: 700, color: "#38bdf8" }}>{geoDebugMetrics.sourceCount}</span>
-
-              <span>Filtered Projects:</span>
-              <span style={{ fontWeight: 700, color: "#38bdf8" }}>{geoDebugMetrics.filteredCount}</span>
-
-              <span>Project Marker Records:</span>
-              <span style={{ fontWeight: 700, color: "#38bdf8" }}>{geoDebugMetrics.markerRecordCount}</span>
-
-              <span>Visible Cluster/Marker Objects:</span>
-              <span style={{ fontWeight: 700, color: "#38bdf8" }}>{geoDebugMetrics.visibleObjectsCount}</span>
-
-              <div style={{ gridColumn: "span 2", height: 1, background: "rgba(255,255,255,0.08)", margin: "4px 0" }} />
-
-              <span>Synthetic Project Markers:</span>
-              <span style={{ fontWeight: 700, color: geoDebugMetrics.syntheticCount === 0 ? "#10b981" : "#ef4444" }}>{geoDebugMetrics.syntheticCount}</span>
-
-              <span>Duplicate Project Markers:</span>
-              <span style={{ fontWeight: 700, color: geoDebugMetrics.duplicateCount === 0 ? "#10b981" : "#ef4444" }}>{geoDebugMetrics.duplicateCount}</span>
-
-              <span>Invalid Coordinates:</span>
-              <span style={{ fontWeight: 700, color: geoDebugMetrics.invalidCount === 0 ? "#10b981" : "#ef4444" }}>{geoDebugMetrics.invalidCount}</span>
-
-              <span>Wrong State:</span>
-              <span style={{ fontWeight: 700, color: geoDebugMetrics.wrongStateCount === 0 ? "#10b981" : "#ef4444" }}>{geoDebugMetrics.wrongStateCount}</span>
-
-              <span>Wrong District:</span>
-              <span style={{ fontWeight: 700, color: geoDebugMetrics.wrongDistrictCount === 0 ? "#10b981" : "#ef4444" }}>{geoDebugMetrics.wrongDistrictCount}</span>
-
-              <div style={{ gridColumn: "span 2", height: 1, background: "rgba(255,255,255,0.08)", margin: "4px 0" }} />
-
-              <span>Exact Locations:</span>
-              <span style={{ fontWeight: 700, color: "#10b981" }}>{geoDebugMetrics.exactCount}</span>
-
-              <span>Approximate Locations:</span>
-              <span style={{ fontWeight: 700, color: "#f59e0b" }}>{geoDebugMetrics.approxCount}</span>
-
-              <span>Unresolved:</span>
-              <span style={{ fontWeight: 700, color: geoDebugMetrics.unresolvedCount === 0 ? "#94a3b8" : "#f43f5e" }}>{geoDebugMetrics.unresolvedCount}</span>
-
-              <span>Project-ID Mismatches:</span>
-              <span style={{ fontWeight: 700, color: geoDebugMetrics.idMismatchCount === 0 ? "#10b981" : "#ef4444" }}>{geoDebugMetrics.idMismatchCount}</span>
-
-              <div style={{ gridColumn: "span 2", height: 1, background: "rgba(255,255,255,0.08)", margin: "4px 0" }} />
-
-              <span style={{ fontWeight: 800 }}>Status:</span>
-              <span style={{ fontWeight: 900, color: geoDebugMetrics.status === "PASS" ? "#10b981" : "#ef4444", textTransform: "uppercase" }}>
-                {geoDebugMetrics.status}
-              </span>
-            </div>
-          </div>
-        )}
 
         {/* Floating Reopen Pill Button when Drawer is Closed */}
         {!isDrawerOpen && (

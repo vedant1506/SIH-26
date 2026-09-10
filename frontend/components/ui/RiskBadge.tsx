@@ -9,7 +9,11 @@ const CONFIG: Record<RiskTier, { label: string; color: string; bg: string }> = {
 
 export default function RiskBadge({ tier, size = "sm", suffix }: { tier: RiskTier | null | undefined; size?: "sm" | "md" | "lg"; suffix?: string }) {
   if (!tier) return <span style={{ color: "#64748b", fontSize: 11 }}>—</span>;
-  const c = CONFIG[tier] || CONFIG.low;
+  // Normalize to lowercase to handle any API case inconsistency (e.g. "HIGH" → "high")
+  const normalizedTier = (tier as string).toLowerCase() as RiskTier;
+  const c = CONFIG[normalizedTier];
+  // Guard: if tier is unrecognized, show neutral indicator rather than mislabeling
+  if (!c) return <span style={{ color: "#64748b", fontSize: 11 }}>—</span>;
   const fontSize = size === "lg" ? 13 : size === "md" ? 12 : 11;
   const padding = size === "lg" ? "4px 14px" : size === "md" ? "3px 10px" : "2px 8px";
   return (
