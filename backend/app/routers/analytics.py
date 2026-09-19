@@ -432,6 +432,8 @@ async def get_early_warnings(
             RiskPrediction.delay_probability, RiskPrediction.delay_duration_months,
             RiskPrediction.cost_overrun_probability,
             RiskPrediction.shap_values,
+            Project.source_pdf_page,
+            Project.report_month,
         )
         .outerjoin(latest_pred_subq, Project.id == latest_pred_subq.c.project_id)
         .outerjoin(RiskPrediction,
@@ -659,6 +661,11 @@ async def get_early_warnings(
             "project_cost_cr": rev_cost,
             "original_cost_cr": orig_cost,
             "cumulative_expenditure_cr": cum_exp,
+            "source_pdf_page": r.source_pdf_page,
+            "sl_no": getattr(r, "sl_no", None),
+            "report_month": getattr(r, "report_month", "April 2026") or "April 2026",
+            "source_document": f"FlashReport_{(getattr(r, 'report_month', 'April 2026') or 'April 2026').replace(' ', '_')}.pdf",
+            "source_type": "MoSPI Flash Report",
         })
 
     # Severity counts across full set before any query filter (synchronized with April 2026 dataset)

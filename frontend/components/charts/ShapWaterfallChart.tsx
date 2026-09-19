@@ -1,12 +1,17 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import type { SHAPValue } from "@/lib/types";
+import SourceCitation from "@/components/ui/SourceCitation";
 
 interface Props {
   values: SHAPValue[];
   baselineScore?: number;
   riskTier?: string | null;
   modelVersion?: string | null;
+  sourcePdfPage?: number | null;
+  reportMonth?: string | null;
+  sourceDocument?: string | null;
+  slNo?: number | null;
 }
 
 // ── Feature Metadata & Plain Language Configuration ───────────
@@ -331,7 +336,16 @@ function getFeatureMeta(featureKey: string): FeatureMeta {
   };
 }
 
-export default function ShapWaterfallChart({ values, baselineScore, riskTier }: Props) {
+export default function ShapWaterfallChart({
+  values,
+  baselineScore,
+  riskTier,
+  modelVersion,
+  sourcePdfPage,
+  reportMonth,
+  sourceDocument,
+  slNo,
+}: Props) {
   const [filterMode, setFilterMode] = useState<"all" | "increasing" | "reducing">("all");
   const [activeTab, setActiveTab] = useState<"lineByLine" | "compactWaterfall">("compactWaterfall");
   const [allExpanded, setAllExpanded] = useState<boolean>(true);
@@ -1231,6 +1245,21 @@ export default function ShapWaterfallChart({ values, baselineScore, riskTier }: 
                         <span style={{ color: "#e2e8f0" }}>{item.explanation.actionAdvice}</span>
                       </div>
                     </div>
+
+                    {/* Official Flash Report Evidentiary Ground */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginTop: 4, paddingTop: 8, borderTop: "1px dashed rgba(255,255,255,0.08)" }}>
+                      <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                        Evidentiary Basis:
+                      </span>
+                      <SourceCitation
+                        source_document={sourceDocument || `FlashReport_${(reportMonth || "April 2026").replace(" ", "_")}.pdf`}
+                        source_page={sourcePdfPage}
+                        sl_no={slNo}
+                        source_type="MoSPI Flash Report"
+                        source_title={`Factor Attribution Ground: ${item.meta.title}`}
+                        variant="inline"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -1418,6 +1447,16 @@ export default function ShapWaterfallChart({ values, baselineScore, riskTier }: 
               </strong>.
             </span>
           )}
+        </div>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+          <SourceCitation
+            source_document={sourceDocument || `FlashReport_${(reportMonth || "April 2026").replace(" ", "_")}.pdf`}
+            source_page={sourcePdfPage}
+            sl_no={slNo}
+            source_type="MoSPI Flash Report"
+            source_title="Attribution Model Baseline Data"
+            variant="badge"
+          />
         </div>
       </div>
 

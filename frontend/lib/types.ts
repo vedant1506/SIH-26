@@ -57,6 +57,12 @@ export interface Project {
   burn_rate_pct: number | null;
   burn_progress_gap: number | null;
   time_elapsed_ratio: number | null;
+  source_pdf_page?: number | null;
+  report_month?: string | null;
+  source_document?: string | null;
+  source_type?: string | null;
+  sl_no?: number | null;
+  gfr175_screening?: GFR175ScreeningResult;
   created_at: string;
   updated_at: string;
   milestones: Milestone[];
@@ -91,6 +97,10 @@ export interface ProjectListItem {
   delay_duration_months?: number | null;
   risk_trend?: string | null;
   report_month?: string | null;
+  source_pdf_page?: number | null;
+  source_document?: string | null;
+  source_type?: string | null;
+  sl_no?: number | null;
 }
 
 export type AlertStatus = "NEW" | "ACKNOWLEDGED" | "UNDER_REVIEW" | "ACTION_ASSIGNED" | "RESOLVED";
@@ -108,6 +118,11 @@ export interface Alert {
   is_acknowledged: boolean;
   acknowledged_by?: string | null;
   acknowledged_at?: string | null;
+  source_pdf_page?: number | null;
+  report_month?: string | null;
+  source_document?: string | null;
+  source_type?: string | null;
+  sl_no?: number | null;
 }
 
 export type ActionPriority = "critical" | "high" | "medium" | "low";
@@ -484,6 +499,42 @@ export interface CitizenGrievanceOut {
 }
 
 // =============================================
+// GFR 175 STATUTORY COMPLIANCE SCREENING TYPES
+// =============================================
+
+export type GFR175ScreeningStatus =
+  | "No Integrity Indicators Detected"
+  | "Compliance Review Required"
+  | "Potential Integrity Concern";
+
+export type GFR175StatusColor = "GREEN" | "YELLOW" | "RED";
+
+export interface GFR175Evidence {
+  source_document?: string | null;
+  source_page?: number | null;
+  sl_no?: number | null;
+  report_month?: string | null;
+  description: string;
+}
+
+export interface GFR175ScreeningResult {
+  contractor_id: string;
+  contractor_name: string;
+  project_id?: string;
+  project_name?: string;
+  risk_score: number;
+  risk_tier: string;
+  gfr175_screening_status: GFR175ScreeningStatus;
+  status_color: GFR175StatusColor;
+  indicators: string[];
+  evidence: GFR175Evidence;
+  explanation: string;
+  generated_at: string;
+  advisory_only: boolean;
+  advisory_notice: string;
+}
+
+// =============================================
 // FRAUD & CARTEL FORENSICS TYPES
 // =============================================
 
@@ -505,6 +556,12 @@ export interface PhantomProject {
   severity: "CRITICAL" | "HIGH";
   flag_reason: string;
   recommended_action: string;
+  source_pdf_page?: number | null;
+  report_month?: string | null;
+  source_document?: string | null;
+  source_type?: string | null;
+  sl_no?: number | null;
+  gfr175_screening?: GFR175ScreeningResult;
 }
 
 export interface BillingSpike {
@@ -520,6 +577,12 @@ export interface BillingSpike {
   anomaly_type: string;
   flag_reason: string;
   recommended_action: string;
+  source_pdf_page?: number | null;
+  report_month?: string | null;
+  source_document?: string | null;
+  source_type?: string | null;
+  sl_no?: number | null;
+  gfr175_screening?: GFR175ScreeningResult;
 }
 
 export interface RceEscalation {
@@ -534,6 +597,12 @@ export interface RceEscalation {
   escalation_pct: number;
   flag_reason: string;
   recommended_action: string;
+  source_pdf_page?: number | null;
+  report_month?: string | null;
+  source_document?: string | null;
+  source_type?: string | null;
+  sl_no?: number | null;
+  gfr175_screening?: GFR175ScreeningResult;
 }
 
 export interface ContractorCartelItem {
@@ -548,6 +617,7 @@ export interface ContractorCartelItem {
   cartel_risk_score: number;
   risk_tier: "CRITICAL" | "HIGH" | "MODERATE";
   forensic_indicators: string[];
+  gfr175_screening?: GFR175ScreeningResult;
 }
 
 export interface FraudAnalyticsResponse {
@@ -558,6 +628,11 @@ export interface FraudAnalyticsResponse {
     rce_escalations_count: number;
     flagged_contractors_count: number;
     total_audited_projects: number;
+    gfr175_summary?: {
+      green_count: number;
+      yellow_count: number;
+      red_count: number;
+    };
   };
   phantom_projects: PhantomProject[];
   billing_spikes: BillingSpike[];

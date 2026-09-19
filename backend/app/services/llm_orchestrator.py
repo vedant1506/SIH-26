@@ -2160,17 +2160,17 @@ def generate_dynamic_mitigation_plan(
             logger.warning("[MITIGATION] Provider %s failed: %s", prov["name"], e)
 
     # 5. Synthesis & Dynamic Generation
-    primary_model = "Qwen 2.5 (Dynamic Risk Reasoner)"
+    primary_model = "Deterministic Risk Reasoner"
     validator_model = "DeepSeek-R1 / Independent Policy Auditor"
-    models_used = ["Qwen 2.5 (Dynamic Risk Reasoner)"]
-    gen_mode = "Project-Specific Deep Risk Intelligence"
+    models_used = ["Deterministic Domain Synthesis Engine"]
+    gen_mode = "FALLBACK / EMPIRICAL SYNTHESIS"
     final_plan: Optional[StructuredMitigationPlan] = None
 
     if model_outputs:
         chosen_key = list(model_outputs.keys())[0]
         primary_model = providers[chosen_key]["name"]
         models_used = list(called_models)
-        gen_mode = f"LLM Generation ({primary_model})"
+        gen_mode = f"AI GENERATED ({primary_model})"
 
         try:
             raw_plan = model_outputs[chosen_key]
@@ -2194,8 +2194,9 @@ def generate_dynamic_mitigation_plan(
     if not final_plan:
         final_plan = _generate_empirical_project_plan(context, variation_seed=0)
         if not model_outputs:
-            primary_model = "Qwen 2.5 (Dynamic Risk Reasoner)"
-            gen_mode = "Project-Specific Deep Risk Synthesis"
+            primary_model = "Deterministic Risk Reasoner"
+            gen_mode = "FALLBACK / EMPIRICAL SYNTHESIS"
+            models_used = ["Deterministic Domain Synthesis Engine"]
 
     # 6. Second Independent AI Validator / Quality Gate (with multi-attempt diversification)
     val_res = validate_plan_with_second_ai(final_plan, context)

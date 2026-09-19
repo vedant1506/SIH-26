@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],

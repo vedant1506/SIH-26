@@ -37,6 +37,7 @@ geo_validation_report.csv
 
 # Scratch / Temp
 scratch/
+bhuvan_caps_*.xml
 
 
 # System & IDE

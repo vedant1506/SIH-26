@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { getProject, predictProject, getProjectPredictions } from "@/lib/api";
-import type { Project, RiskPrediction } from "@/lib/types";
+import { getProject, predictProject, getProjectPredictions, getProjectGFR175Screening } from "@/lib/api";
+import type { Project, RiskPrediction, GFR175ScreeningResult } from "@/lib/types";
 import TopBar from "@/components/layout/TopBar";
 import RiskBadge from "@/components/ui/RiskBadge";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -16,12 +16,15 @@ import BurnProgressGauge from "@/components/charts/BurnProgressGauge";
 import WhatIfPanel from "@/components/features/WhatIfPanel";
 import StructuredMitigationSection from "@/components/features/StructuredMitigationSection";
 import ProjectDocumentsSection from "@/components/documents/ProjectDocumentsSection";
+import SourceCitation from "@/components/ui/SourceCitation";
+import GFR175ComplianceCard from "@/components/compliance/GFR175ComplianceCard";
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [prediction, setPrediction] = useState<RiskPrediction | null>(null);
   const [history, setHistory] = useState<RiskPrediction[]>([]);
+  const [gfr175Screening, setGfr175Screening] = useState<GFR175ScreeningResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [predicting, setPredicting] = useState(false);
   const [error, setError] = useState("");
@@ -35,6 +38,15 @@ export default function ProjectDetailPage() {
       .then(async (p) => {
         if (!p) throw new Error("Project not found");
         setProject(p);
+
+        // Load GFR 175 compliance screening
+        if (p.gfr175_screening) {
+          setGfr175Screening(p.gfr175_screening);
+        } else {
+          getProjectGFR175Screening(p.id)
+            .then((scr) => setGfr175Screening(scr))
+            .catch(() => null);
+        }
 
         // Always run a fresh AI prediction on page open — never show stale seed data
         try {
@@ -58,20 +70,9 @@ export default function ProjectDetailPage() {
           setPredicting(false);
         }
       })
-      .catch(async (e) => {
-        // Graceful auto-recovery fallback: if UUID not found, retrieve active portfolio project
-        try {
-          const { listProjects } = await import("@/lib/api");
-          const list = await listProjects({ limit: 5 });
-          if (list && list.length > 0) {
-            const fallbackP = await getProject(list[0].id);
-            if (fallbackP) {
-              setProject(fallbackP);
-              return;
-            }
-          }
-        } catch (_) {}
-        setError(e.message || "Failed to load project details");
+      .catch((e) => {
+        setProject(null);
+        setError(e.message || `Project '${id}' not found`);
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -139,22 +140,77 @@ export default function ProjectDetailPage() {
               <Link href="/projects" style={{ fontSize: 12, color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
                 ← Back to Risk Matrix
               </Link>
-              <Link href="/map" style={{ fontSize: 12, color: "var(--text-sub)", textDecoration: "none", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
+              <Link
+                href={`/map?project_id=${encodeURIComponent(project.id)}&basemap=bhuvan`}
+                style={{
+                  fontSize: 12,
+                  color: "#38bdf8",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  background: "rgba(56, 189, 248, 0.12)",
+                  padding: "3px 8px",
+                  borderRadius: 6,
+                  border: "1px solid rgba(56, 189, 248, 0.25)",
+                }}
+              >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
                   <line x1="9" y1="3" x2="9" y2="18"/>
                   <line x1="15" y1="6" x2="15" y2="21"/>
                 </svg>
-                View on Map
+                Locate on GIS (Bhuvan)
               </Link>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
               <RiskBadge tier={prediction?.risk_tier} size="lg" />
               {prediction && (
                 <span className="tabular" style={{ fontSize: 13, color: "var(--text-sub)", fontWeight: 600 }}>
                   Composite Risk Score: {(prediction.composite_risk_score * 100).toFixed(0)}%
                 </span>
               )}
+              {gfr175Screening && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "4px 9px",
+                    borderRadius: 6,
+                    background:
+                      gfr175Screening.status_color === "RED"
+                        ? "rgba(239, 68, 68, 0.16)"
+                        : gfr175Screening.status_color === "YELLOW"
+                        ? "rgba(245, 158, 11, 0.16)"
+                        : "rgba(16, 185, 129, 0.16)",
+                    color:
+                      gfr175Screening.status_color === "RED"
+                        ? "#f87171"
+                        : gfr175Screening.status_color === "YELLOW"
+                        ? "#fbbf24"
+                        : "#34d399",
+                    border:
+                      "1px solid " +
+                      (gfr175Screening.status_color === "RED"
+                        ? "rgba(239, 68, 68, 0.35)"
+                        : gfr175Screening.status_color === "YELLOW"
+                        ? "rgba(245, 158, 11, 0.35)"
+                        : "rgba(16, 185, 129, 0.35)"),
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  GFR 175: {gfr175Screening.gfr175_screening_status.toUpperCase()}
+                </span>
+              )}
+              <SourceCitation
+                source_document={project.source_document || `FlashReport_${(project.report_month || "April 2026").replace(" ", "_")}.pdf`}
+                source_page={project.source_pdf_page}
+                sl_no={project.sl_no}
+                source_type={project.source_type || "MoSPI Flash Report"}
+                source_title={project.project_name}
+                variant="banner"
+              />
             </div>
             {/* Stagnation Alert Banner — shown when project is severely behind schedule */}
             {project.time_elapsed_ratio != null &&
@@ -213,14 +269,24 @@ export default function ProjectDetailPage() {
 
         {/* Timing & Schedule Row */}
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            Project Timeline & Schedule Details
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Project Timeline & Schedule Dossier
+            </div>
+            <SourceCitation
+              source_document={project.source_document || `FlashReport_${(project.report_month || "April 2026").replace(" ", "_")}.pdf`}
+              source_page={project.source_pdf_page}
+              sl_no={project.sl_no}
+              source_type="MoSPI Flash Report"
+              source_title={`${project.project_name} — Timeline Baseline`}
+              variant="badge"
+            />
           </div>
           <div className="responsive-grid-4">
             <KpiCard
@@ -440,6 +506,17 @@ export default function ProjectDetailPage() {
           </div>
         )}
 
+        {/* Statutory GFR 175 Compliance Screening Layer */}
+        <div style={{ marginBottom: 24 }}>
+          <GFR175ComplianceCard
+            screening={gfr175Screening}
+            projectId={project.id}
+            projectRiskTier={prediction?.risk_tier || "medium"}
+            projectName={project.project_name}
+            variant="card"
+          />
+        </div>
+
         {/* Full-width Explainable AI (TreeSHAP) Factor Attribution Section */}
         <div className="card" style={{ marginBottom: 24, border: "1px solid var(--border-2)", boxShadow: "0 4px 24px rgba(0,0,0,0.25)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
@@ -491,7 +568,16 @@ export default function ProjectDetailPage() {
             )}
           </div>
           {prediction ? (
-            <ShapWaterfallChart values={prediction.shap_values} baselineScore={prediction.composite_risk_score} riskTier={prediction.risk_tier} modelVersion={prediction.model_version} />
+            <ShapWaterfallChart
+              values={prediction.shap_values}
+              baselineScore={prediction.composite_risk_score}
+              riskTier={prediction.risk_tier}
+              modelVersion={prediction.model_version}
+              sourcePdfPage={project.source_pdf_page}
+              reportMonth={project.report_month}
+              sourceDocument={project.source_document}
+              slNo={project.sl_no}
+            />
           ) : (
             <div style={{ color: "var(--text-muted)", fontSize: 13, padding: "24px 0", textAlign: "center" }}>
               Run a risk prediction to compute live SHAP vector attributions
@@ -529,6 +615,10 @@ export default function ProjectDetailPage() {
           projectName={project.project_name}
           masterRevisedCost={project.revised_cost_cr || project.original_cost_cr}
           masterProgress={project.physical_progress_pct}
+          sourcePdfPage={project.source_pdf_page}
+          reportMonth={project.report_month}
+          sourceDocument={project.source_document}
+          slNo={project.sl_no}
         />
 
         {/* Milestones Table */}

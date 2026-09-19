@@ -5,6 +5,7 @@ import TopBar from "@/components/layout/TopBar";
 import { getEarlyWarnings } from "@/lib/api";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorState from "@/components/ui/ErrorState";
+import SourceCitation from "@/components/ui/SourceCitation";
 
 interface EarlyWarningItem {
   project_id: string;
@@ -32,6 +33,11 @@ interface EarlyWarningItem {
   scheduled_completion: string | null;
   revised_completion: string | null;
   project_cost_cr: number;
+  source_pdf_page?: number | null;
+  report_month?: string | null;
+  source_document?: string | null;
+  source_type?: string | null;
+  sl_no?: number | null;
 }
 
 interface EarlyWarningResponse {
@@ -514,8 +520,17 @@ export default function EarlyWarningPage() {
                           >
                             {item.project_name}
                           </Link>
-                          <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>
-                            {item.state} · {item.sector}
+                          <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                            <span>{item.state} · {item.sector}</span>
+                            <SourceCitation
+                              source_document={item.source_document || `FlashReport_${(item.report_month || "April 2026").replace(" ", "_")}.pdf`}
+                              source_page={item.source_pdf_page}
+                              sl_no={item.sl_no}
+                              source_type="MoSPI Flash Report"
+                              source_title={item.project_name}
+                              variant="badge"
+                              compact={true}
+                            />
                           </div>
                         </td>
 
@@ -716,11 +731,44 @@ export default function EarlyWarningPage() {
                             </span>
                             <span>{item.recommended_action}</span>
                           </div>
+                          <div style={{ marginTop: 6 }}>
+                            <SourceCitation
+                              source_document={item.source_document || `FlashReport_${(item.report_month || "April 2026").replace(" ", "_")}.pdf`}
+                              source_page={item.source_pdf_page}
+                              sl_no={item.sl_no}
+                              source_type="MoSPI Flash Report"
+                              source_title={`Evidentiary Basis: ${item.likely_driver}`}
+                              variant="inline"
+                            />
+                          </div>
                         </td>
 
                         {/* Actions */}
                         <td style={{ padding: "14px 16px", textAlign: "right", whiteSpace: "nowrap" }}>
-                          <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                          <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", alignItems: "center" }}>
+                            <Link
+                              href={`/map?project_id=${encodeURIComponent(item.project_id)}&basemap=bhuvan`}
+                              className="btn btn-secondary"
+                              style={{
+                                padding: "5px 9px",
+                                fontSize: 11,
+                                textDecoration: "none",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                background: "rgba(6, 182, 212, 0.12)",
+                                color: "#38bdf8",
+                                borderColor: "rgba(56, 189, 248, 0.3)",
+                              }}
+                              title="Locate project on ISRO Bhuvan satellite GIS map"
+                            >
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                                <line x1="9" y1="3" x2="9" y2="18"/>
+                                <line x1="15" y1="6" x2="15" y2="21"/>
+                              </svg>
+                              GIS
+                            </Link>
                             <Link
                               href={`/projects/${item.project_id}`}
                               className="btn btn-secondary"

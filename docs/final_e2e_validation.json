@@ -1,0 +1,138 @@
+{
+  "timestamp": "2026-09-19T16:07:00+05:30",
+  "overall_status": "PASS",
+  "categories": {
+    "PIPELINE_IDENTITY": {
+      "status": "PASS",
+      "passed_checks": 106,
+      "total_checks": 106
+    },
+    "XGBOOST_RISK_CONSISTENCY": {
+      "status": "PASS",
+      "passed_checks": 1,
+      "total_checks": 1
+    },
+    "QWEN_FAILURE_HANDLING": {
+      "status": "PASS",
+      "passed_checks": 3,
+      "total_checks": 3
+    },
+    "ACTION_WORKFLOW": {
+      "status": "PASS",
+      "passed_checks": 3,
+      "total_checks": 3
+    }
+  },
+  "canonical_projects": [
+    {
+      "project_id": "0e799709-e7a9-41d6-b86e-db1399594070",
+      "project_name": "6-laning of km 9.900 to km 19/948 Aramgarh to Shamshabad Section of Hyderabad- Bangalore section of NH-44 Under NHO EPC basis in the state of Telangana",
+      "sector": "Roads & Highways",
+      "state": "Telangana",
+      "risk_tier": "critical",
+      "composite_risk_score": 0.8423,
+      "gfr175_status": "Potential Integrity Concern",
+      "plan_id": "MP-2026-8A7B4FF3",
+      "action_id": "16d1289c-6f40-44db-aa61-f55bb6e03c27"
+    },
+    {
+      "project_id": "09a335b9-415e-4565-8f0f-331811e61a09",
+      "project_name": "Doubling of Daund Manmad Line [247.6 km]",
+      "sector": "Railways",
+      "state": "Maharashtra",
+      "risk_tier": "critical",
+      "composite_risk_score": 0.8394,
+      "gfr175_status": "Compliance Review Required",
+      "plan_id": "MP-2026-94FE0A73",
+      "action_id": "9b034765-8db6-435e-8fbe-064ef3ed69ad"
+    },
+    {
+      "project_id": "000b6801-0b2f-49ec-a8a7-1820f785a88c",
+      "project_name": "NILJAI EXPANSION DEEP OCP",
+      "sector": "Coal",
+      "state": "Maharashtra",
+      "risk_tier": "high",
+      "composite_risk_score": 0.5233,
+      "gfr175_status": "No Integrity Indicators Detected",
+      "plan_id": "MP-2026-4C1130CF",
+      "action_id": "58cee612-7ae0-4482-a1d6-4612505216bd"
+    },
+    {
+      "project_id": "04e8e3d8-442b-4c35-8e21-af014d7ee7b6",
+      "project_name": "City Gas Distribution Project at Beed, Jalgaon and Jalna Districts",
+      "sector": "Oil & Gas",
+      "state": "Maharashtra",
+      "risk_tier": "high",
+      "composite_risk_score": 0.55,
+      "gfr175_status": "No Integrity Indicators Detected",
+      "plan_id": "MP-2026-9E1DD336",
+      "action_id": "7c46b138-c66d-4249-841e-96d7e6a213dc"
+    },
+    {
+      "project_id": "040a1507-7c74-4175-bdd4-e2b2a3c715c8",
+      "project_name": "Inter-regional [NR-WR] Transmission System strengthening to relieve the loading of 765 kV Vindhyachal-Varanasi D/c line",
+      "sector": "Transmission & Distribution",
+      "state": "Multi-States (Bihar, Uttar Pradesh)",
+      "risk_tier": "high",
+      "composite_risk_score": 0.55,
+      "gfr175_status": "No Integrity Indicators Detected",
+      "plan_id": "MP-2026-B82DF7A6",
+      "action_id": "bf118f8a-2203-424e-88d1-45a03e1c7c97"
+    },
+    {
+      "project_id": "214b9a40-16db-4cb8-968e-849d69ee6d28",
+      "project_name": "Development of Keshod Airport.",
+      "sector": "Aviation & Aviation Infrastructure",
+      "state": "Gujarat",
+      "risk_tier": "medium",
+      "composite_risk_score": 0.4398,
+      "gfr175_status": "No Integrity Indicators Detected",
+      "plan_id": "MP-2026-C93E9FB5",
+      "action_id": "d95f9f44-7be1-4e2c-86b9-e1b85520dfa8"
+    },
+    {
+      "project_id": "2ede523b-ddf2-4d47-8a9c-c5f4a70389b1",
+      "project_name": "PCMC To Nigdi- Extension Of North South Corridor Of Phase-1",
+      "sector": "Urban Public Transport",
+      "state": "Maharashtra",
+      "risk_tier": "medium",
+      "composite_risk_score": 0.3466,
+      "gfr175_status": "No Integrity Indicators Detected",
+      "plan_id": "MP-2026-4A1E05FA",
+      "action_id": "0162a401-1bd0-46eb-9321-5250d6de4c0a"
+    },
+    {
+      "project_id": "07dfe7cc-fb4e-452b-8103-54df32e5bc9a",
+      "project_name": "Jamrani Dam Multipurpose Project",
+      "sector": "Water Resources",
+      "state": "Uttarakhand",
+      "risk_tier": "medium",
+      "composite_risk_score": 0.4519,
+      "gfr175_status": "Compliance Review Required",
+      "plan_id": "MP-2026-98D5F459",
+      "action_id": "baa41494-d713-4714-8c11-8328f15a4652"
+    },
+    {
+      "project_id": "14fac455-fcd5-4817-a6cb-c4f7c6d1a56a",
+      "project_name": "Construction of Bypass to Madurai Achambathu Viratipathu in between km 6/850 10/382 of NH 49 Extn New NH 85 including Land Acquisition on Engineering, Procurement & Construction EPC basis Contract under NH O Annual Plan 2021-22 in the state of Tamil Nadu job No.NH-49 Extn New NH 85 - TN-2021-22-997",
+      "sector": "Roads & Highways",
+      "state": "Tamil Nadu",
+      "risk_tier": "low",
+      "composite_risk_score": 0.1806,
+      "gfr175_status": "No Integrity Indicators Detected",
+      "plan_id": "MP-2026-28F863A8",
+      "action_id": "c21d9b6f-2d90-411d-bbf4-714cd63dda7b"
+    },
+    {
+      "project_id": "06bf48bf-f041-47db-b3a0-db32fd3b0fa6",
+      "project_name": "4L Godibandha to Ballhar Chhak, Ballhar Chhak to Banarpal & Banarpal to Start of Angul bypass at Km.314.130 to Km.321.035 of NH53, at Km.75.200 to Km.84.000 of NH149 & at Km.84.000 to Km.86.100 of NH55",
+      "sector": "Roads & Highways",
+      "state": "Odisha",
+      "risk_tier": "low",
+      "composite_risk_score": 0.1544,
+      "gfr175_status": "No Integrity Indicators Detected",
+      "plan_id": "MP-2026-96B7A0B4",
+      "action_id": "52d62f4e-71b4-4f98-97b6-76fc0986c494"
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import type { Project, RiskPrediction, StructuredMitigationPlan, MitigationPlanResponse, ModelMetadata } from "@/lib/types";
 import { generateMitigationPlan, downloadMitigationPdf } from "@/lib/api";
+import SourceCitation from "@/components/ui/SourceCitation";
 
 interface Props {
   project: Project;
@@ -246,8 +247,16 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
                         {d.impact}
                       </span>
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--text-sub)", lineHeight: 1.5 }}>
-                      {d.evidence}
+                    <div style={{ fontSize: 11, color: "var(--text-sub)", lineHeight: 1.5, display: "flex", flexDirection: "column", gap: 6 }}>
+                      <div>{d.evidence}</div>
+                      <SourceCitation
+                        source_document={project.source_document || `FlashReport_${(project.report_month || "April 2026").replace(" ", "_")}.pdf`}
+                        source_page={project.source_pdf_page}
+                        sl_no={project.sl_no}
+                        source_type="MoSPI Flash Report"
+                        source_title={`Risk Driver Evidence: ${d.factor}`}
+                        variant="inline"
+                      />
                     </div>
                   </div>
                 ))}
@@ -270,8 +279,18 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
                     <div style={{ fontSize: 11.5, color: "var(--text-sub)", lineHeight: 1.5, marginBottom: 4 }}>
                       <strong style={{ color: "var(--text)" }}>Likely Cause:</strong> {rc.cause}
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                      <strong style={{ color: "var(--text-sub)" }}>Observed Evidence:</strong> {rc.evidence}
+                    <div style={{ fontSize: 11, color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
+                      <div>
+                        <strong style={{ color: "var(--text-sub)" }}>Observed Evidence:</strong> {rc.evidence}
+                      </div>
+                      <SourceCitation
+                        source_document={project.source_document || `FlashReport_${(project.report_month || "April 2026").replace(" ", "_")}.pdf`}
+                        source_page={project.source_pdf_page}
+                        sl_no={project.sl_no}
+                        source_type="MoSPI Flash Report"
+                        source_title={`Root Cause Ground: ${rc.risk}`}
+                        variant="inline"
+                      />
                     </div>
                   </div>
                 ))}
@@ -297,8 +316,16 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
                         {act.action}
                       </div>
                       {act.evidence && (
-                        <div style={{ fontSize: 11, color: "var(--accent)", background: "rgba(6, 182, 212, 0.08)", padding: "4px 8px", borderRadius: 4, marginBottom: 6, display: "inline-block" }}>
-                          <strong>Project Evidence:</strong> {act.evidence}
+                        <div style={{ fontSize: 11, color: "var(--accent)", background: "rgba(6, 182, 212, 0.08)", padding: "4px 8px", borderRadius: 4, marginBottom: 6, display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                          <span><strong>Project Evidence:</strong> {act.evidence}</span>
+                          <SourceCitation
+                            source_document={project.source_document || `FlashReport_${(project.report_month || "April 2026").replace(" ", "_")}.pdf`}
+                            source_page={project.source_pdf_page}
+                            sl_no={project.sl_no}
+                            source_type="MoSPI Flash Report"
+                            source_title={`Action Basis: ${act.action}`}
+                            variant="inline"
+                          />
                         </div>
                       )}
                       <div style={{ fontSize: 11.5, color: "var(--text-sub)", lineHeight: 1.5, marginBottom: 8 }}>
@@ -334,8 +361,16 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
                         {act.action}
                       </div>
                       {act.evidence && (
-                        <div style={{ fontSize: 11, color: "var(--accent)", background: "rgba(6, 182, 212, 0.08)", padding: "4px 8px", borderRadius: 4, marginBottom: 6, display: "inline-block" }}>
-                          <strong>Project Evidence:</strong> {act.evidence}
+                        <div style={{ fontSize: 11, color: "var(--accent)", background: "rgba(6, 182, 212, 0.08)", padding: "4px 8px", borderRadius: 4, marginBottom: 6, display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                          <span><strong>Project Evidence:</strong> {act.evidence}</span>
+                          <SourceCitation
+                            source_document={project.source_document || `FlashReport_${(project.report_month || "April 2026").replace(" ", "_")}.pdf`}
+                            source_page={project.source_pdf_page}
+                            sl_no={project.sl_no}
+                            source_type="MoSPI Flash Report"
+                            source_title={`Action Basis: ${act.action}`}
+                            variant="inline"
+                          />
                         </div>
                       )}
                       <div style={{ fontSize: 11.5, color: "var(--text-sub)", lineHeight: 1.5, marginBottom: 8 }}>
@@ -421,6 +456,34 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
           {/* Section 8: AI Generation Information & Provenance Box */}
           <div style={{ background: "var(--surface-2)", borderRadius: 8, padding: "12px 16px", border: "1px solid var(--border)", fontSize: 11, color: "var(--text-muted)", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{
+                padding: "2px 8px",
+                borderRadius: 4,
+                fontSize: 10,
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                background: modelMetadata?.generation_mode?.toLowerCase().includes("fallback")
+                  ? "rgba(245, 158, 11, 0.15)"
+                  : "rgba(6, 182, 212, 0.15)",
+                color: modelMetadata?.generation_mode?.toLowerCase().includes("fallback")
+                  ? "#fbbf24"
+                  : "#38bdf8",
+                border: `1px solid ${
+                  modelMetadata?.generation_mode?.toLowerCase().includes("fallback")
+                    ? "rgba(245, 158, 11, 0.35)"
+                    : "rgba(56, 189, 248, 0.35)"
+                }`,
+              }}>
+                {modelMetadata?.generation_mode?.toLowerCase().includes("fallback")
+                  ? "FALLBACK / TEMPLATE"
+                  : "AI GENERATED"}
+              </span>
+              <span>|</span>
+              <div>
+                <strong>Model:</strong> <span style={{ color: "var(--text)" }}>{modelMetadata?.primary_model || "Qwen 2.5"}</span>
+              </div>
+              <span>|</span>
               <div>
                 <strong>Plan ID:</strong> <span style={{ color: "var(--text)", fontFamily: "monospace" }}>{planId}</span>
               </div>

@@ -75,6 +75,11 @@ class AlertOut(BaseModel):
     is_acknowledged: bool
     acknowledged_by: Optional[UUID] = None
     acknowledged_at: Optional[datetime] = None
+    source_pdf_page: Optional[int] = None
+    report_month: Optional[str] = "April 2026"
+    source_document: Optional[str] = None
+    source_type: Optional[str] = "MoSPI Flash Report"
+    sl_no: Optional[int] = None
 
     model_config = {"from_attributes": True}
 

@@ -10,6 +10,7 @@ import {
   getTemporaryJsonUrl,
   deleteTemporarySession,
   getFileAnalysisModelStatuses,
+  setDataMode,
 } from "@/lib/api";
 import { exportMitigationPlanPdf } from "@/lib/exportMitigationPdf";
 
@@ -564,6 +565,21 @@ export default function FileAnalysisHub() {
                 <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.6 }}>{validationError.detail}</div>
                 <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
                   Expected: Monthly MoSPI/PAIMANA Central Sector Infrastructure Flash Report PDF, or structured project CSV with canonical 19-column schema.
+                </div>
+                <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+                  <button
+                    onClick={() => {
+                      setDataMode("OFFLINE FALLBACK MODE", "User selected demo preview", true);
+                      setValidationError(null);
+                      handleRunAnalysis();
+                    }}
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: 11, display: "inline-flex", alignItems: "center", gap: 5 }}
+                  >
+                    <span>⚡</span>
+                    Load with Offline Demo Fallback
+                  </button>
                 </div>
               </div>
             </div>

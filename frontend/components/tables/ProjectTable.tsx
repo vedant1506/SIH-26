@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import type { ProjectListItem } from "@/lib/types";
 import RiskBadge from "@/components/ui/RiskBadge";
+import SourceCitation from "@/components/ui/SourceCitation";
 
 interface Props { projects: ProjectListItem[]; loading?: boolean; }
 
@@ -17,12 +18,12 @@ export default function ProjectTable({ projects, loading }: Props) {
       <table className="data-table">
         <thead style={{ borderBottom: "1px solid var(--border-2)" }}>
           <tr>
-            <th>Project Name</th>
-            <th>Ministry</th>
-            <th>Location</th>
-            <th className="num">Financial Scale</th>
-            <th className="num">AI Risk Score</th>
-            <th>Status</th>
+            <th style={{ minWidth: 320 }}>Project Name</th>
+            <th style={{ minWidth: 160 }}>Ministry</th>
+            <th style={{ minWidth: 120 }}>Location</th>
+            <th className="num" style={{ minWidth: 120 }}>Financial Scale</th>
+            <th className="num" style={{ minWidth: 130 }}>AI Risk Score</th>
+            <th style={{ minWidth: 100 }}>Status</th>
           </tr>
         </thead>
         <tbody>
@@ -53,8 +54,38 @@ export default function ProjectTable({ projects, loading }: Props) {
                 onClick={() => router.push(`/projects/${p.id}`)}
                 style={{ cursor: "pointer" }}
               >
-                <td style={{ maxWidth: 260, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "var(--text)", fontWeight: 700 }}>
-                  {p.project_name}
+                <td style={{ minWidth: 320, maxWidth: 500, color: "var(--text)", padding: "12px 14px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <span
+                      title={p.project_name}
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 13.5,
+                        color: "var(--text, #f8fafc)",
+                        lineHeight: 1.4,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {p.project_name}
+                    </span>
+                    {(p.source_pdf_page || p.sl_no) && (
+                      <div onClick={e => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                        <SourceCitation
+                          source_document={p.source_document || `FlashReport_${(p.report_month || "April 2026").replace(" ", "_")}.pdf`}
+                          source_page={p.source_pdf_page}
+                          sl_no={p.sl_no}
+                          source_type="MoSPI Flash Report"
+                          source_title={p.project_name}
+                          variant="badge"
+                          compact={true}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </td>
                 <td style={{ maxWidth: 160, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.ministry}</td>
                 <td>{p.state}</td>

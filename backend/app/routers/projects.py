@@ -9,6 +9,8 @@ from app.core.security import get_current_user, get_optional_user, require_role,
 from app.models.project import Project, RiskPrediction, Profile, Milestone, ProjectMonthlySnapshot
 from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectOut, ProjectListItem
 from app.schemas.prediction import PortfolioSummary
+from app.services.gfr175_service import screen_project_gfr175
+from app.routers.fraud import get_assigned_contractor
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
@@ -193,6 +195,9 @@ async def list_projects(
             delay_probability=pred.delay_probability if pred else None,
             cost_overrun_probability=pred.cost_overrun_probability if pred else None,
             report_month=report_month,
+            source_pdf_page=getattr(p, "source_pdf_page", None),
+            source_document=f"FlashReport_{report_month.replace(' ', '_')}.pdf",
+            sl_no=getattr(p, "sl_no", None),
             paimana_project_id=geo.get("paimana_project_id"),
             coordinate_status=geo.get("coordinate_status"),
             coordinate_source=geo.get("coordinate_source"),
@@ -225,7 +230,7 @@ async def get_portfolio_summary_projects_alias(
 async def get_project(
     project_id: str,
     db: Session = Depends(get_db),
-    current_user: Profile = Depends(get_current_user),
+    current_user: Optional[Profile] = Depends(get_optional_user),
 ):
     """Returns full project details including milestones strictly matching the requested project."""
     import re
@@ -244,7 +249,24 @@ async def get_project(
     except (ValueError, TypeError):
         pass
 
-    # 2. Check if project_id is an OCMS / PAIMANA numeric ID in project_geolocations
+    # 2. Check if project_id matches project_id or sl_no directly
+    if not project:
+        clean_id = str(project_id).strip()
+        project = (
+            db.query(Project)
+            .options(joinedload(Project.milestones))
+            .filter(Project.project_id == clean_id)
+            .first()
+        )
+        if not project and clean_id.isdigit():
+            project = (
+                db.query(Project)
+                .options(joinedload(Project.milestones))
+                .filter(Project.sl_no == int(clean_id))
+                .first()
+            )
+
+    # 3. Check if project_id is in project_geolocations
     if not project:
         clean_id = str(project_id).strip()
         try:
@@ -288,6 +310,35 @@ async def get_project(
 
     if not project:
         raise HTTPException(status_code=404, detail=f"Project '{project_id}' not found")
+
+    pred = db.query(RiskPrediction).filter(RiskPrediction.project_id == project.id).order_by(desc(RiskPrediction.predicted_at)).first()
+    contractor = get_assigned_contractor(project)
+    orig = float(project.original_cost_cr or 0.0)
+    rev = float(project.revised_cost_cr or orig)
+    spent = float(project.cumulative_expenditure_cr or 0.0)
+    prog = float(project.physical_progress_pct or 0.0)
+    burn = float(project.burn_rate_pct or (spent / rev * 100 if rev > 0 else 0.0))
+    gap = float(project.burn_progress_gap or (burn - prog))
+    risk_tier = pred.risk_tier if pred else (getattr(project, "risk_tier", None) or "medium")
+    risk_score = pred.composite_risk_score if pred else (getattr(project, "composite_risk_score", None) or 0.5)
+
+    project.gfr175_screening = screen_project_gfr175(
+        project_id=str(project.id),
+        project_name=project.project_name,
+        contractor_name=contractor,
+        original_cost_cr=orig,
+        revised_cost_cr=rev,
+        cumulative_expenditure_cr=spent,
+        physical_progress_pct=prog,
+        burn_rate_pct=burn,
+        burn_progress_gap=gap,
+        source_pdf_page=getattr(project, "source_pdf_page", None),
+        report_month=getattr(project, "report_month", "April 2026") or "April 2026",
+        sl_no=getattr(project, "sl_no", None),
+        contractor_multi_state_count=2,
+        existing_risk_tier=risk_tier,
+        existing_risk_score=risk_score,
+    )
 
     return project
 

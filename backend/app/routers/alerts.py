@@ -51,6 +51,9 @@ async def list_alerts(
             Alert.is_acknowledged,
             Alert.acknowledged_by,
             Alert.acknowledged_at,
+            Project.source_pdf_page,
+            Project.report_month,
+            Project.sl_no,
         )
         .outerjoin(Project, Alert.project_id == Project.id)
         .order_by(desc(tier_weight), desc(Alert.triggered_at))
@@ -77,6 +80,7 @@ async def list_alerts(
     result = []
     for r in rows:
         resolved_status = r.status or ("ACKNOWLEDGED" if r.is_acknowledged else "NEW")
+        rpt_month = getattr(r, "report_month", "April 2026") or "April 2026"
         result.append(AlertOut(
             id=r.id,
             project_id=r.project_id,
@@ -90,6 +94,11 @@ async def list_alerts(
             is_acknowledged=bool(r.is_acknowledged),
             acknowledged_by=r.acknowledged_by,
             acknowledged_at=r.acknowledged_at,
+            source_pdf_page=r.source_pdf_page,
+            report_month=rpt_month,
+            source_document=f"FlashReport_{rpt_month.replace(' ', '_')}.pdf",
+            source_type="MoSPI Flash Report",
+            sl_no=r.sl_no,
         ))
 
     return result

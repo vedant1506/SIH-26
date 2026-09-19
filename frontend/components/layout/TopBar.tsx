@@ -12,6 +12,8 @@ import {
 import { toggleTheme, getStoredTheme, type Theme } from "@/lib/theme";
 import type { Notification } from "@/lib/types";
 import { useNav } from "@/lib/nav-context";
+import { useDataMode, setDataMode } from "@/lib/fallback-state";
+import { toast } from "sonner";
 
 interface TopBarProps {
   title: string;
@@ -72,6 +74,21 @@ export default function TopBar({
   const [totalProjects, setTotalProjects] = useState<number | null>(null);
   const [theme, setTheme] = useState<Theme>("dark");
   const { toggleMobile } = useNav();
+  const { isFallback } = useDataMode();
+
+  const handleToggleDataMode = () => {
+    if (isFallback) {
+      setDataMode("LIVE DATA MODE", undefined, true);
+      toast.success("Switched to LIVE DATA MODE — Connected to backend API.");
+    } else {
+      setDataMode("OFFLINE FALLBACK MODE", "Manual user selection", true);
+      toast.info("Switched to OFFLINE FALLBACK MODE — Showing demo & cached intelligence.");
+    }
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("prism:refetch-live-data"));
+      window.location.reload();
+    }
+  };
 
   const loadNotifications = () => {
     getUnreadNotificationCount()
@@ -209,41 +226,101 @@ export default function TopBar({
           )}
         </div>
 
-        {/* Live Status Chip */}
-        <div
+        {/* Live Status / Offline Fallback Interactive Button */}
+        <button
+          onClick={handleToggleDataMode}
+          type="button"
           className="tablet-hide"
+          title={
+            isFallback
+              ? "Offline Fallback Mode is currently active (demo intelligence). Click to switch to Live API."
+              : "Live Data Mode is active. Click to switch to Offline Fallback Mode (Demo Data)."
+          }
           style={{
-            display: "flex", alignItems: "center", gap: 6,
-            padding: "3px 8px",
-            background: status === "error"
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "4px 10px",
+            background: isFallback
+              ? "rgba(245, 158, 11, 0.18)"
+              : status === "error"
               ? "var(--critical-bg)"
               : status === "inferencing"
               ? "var(--high-bg)"
-              : "var(--low-bg)",
+              : "rgba(16, 185, 129, 0.12)",
             border: `1px solid ${
-              status === "error"
+              isFallback
+                ? "rgba(245, 158, 11, 0.5)"
+                : status === "error"
                 ? "var(--critical-border)"
                 : status === "inferencing"
                 ? "var(--high-border)"
-                : "var(--low-border)"
+                : "rgba(16, 185, 129, 0.35)"
             }`,
             borderRadius: 999,
             flexShrink: 0,
+            cursor: "pointer",
+            outline: "none",
+            transition: "all 0.15s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.02)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
           }}
         >
           <span
-            className={status === "inferencing" ? "live-dot warn animate-pulse" : status === "error" ? "live-dot danger" : "live-dot animate-glow"}
-            style={{ flexShrink: 0 }}
+            className={
+              isFallback
+                ? "live-dot warn animate-pulse"
+                : status === "inferencing"
+                ? "live-dot warn animate-pulse"
+                : status === "error"
+                ? "live-dot danger"
+                : "live-dot animate-glow"
+            }
+            style={{
+              flexShrink: 0,
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background: isFallback ? "#f59e0b" : status === "error" ? "var(--critical)" : "#10b981",
+              boxShadow: isFallback ? "0 0 6px #f59e0b" : "0 0 6px #10b981",
+            }}
           />
           <span
             style={{
-              fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
-              color: status === "error" ? "var(--critical)" : status === "inferencing" ? "var(--high)" : "var(--low)",
+              fontSize: 9.5,
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: isFallback
+                ? "#fbbf24"
+                : status === "error"
+                ? "var(--critical)"
+                : status === "inferencing"
+                ? "var(--high)"
+                : "#34d399",
             }}
           >
-            {status === "inferencing" ? "Inferencing…" : status === "error" ? "Error" : "Live"}
+            {isFallback ? "FALLBACK (DEMO)" : status === "inferencing" ? "Inferencing…" : status === "error" ? "Error" : "Live API"}
           </span>
-        </div>
+          <span
+            style={{
+              fontSize: 8.5,
+              fontWeight: 700,
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              color: isFallback ? "#fef3c7" : "rgba(255, 255, 255, 0.85)",
+              background: isFallback ? "rgba(245, 158, 11, 0.3)" : "rgba(255, 255, 255, 0.12)",
+              padding: "1px 5px",
+              borderRadius: 4,
+            }}
+          >
+            {isFallback ? "Switch Live" : "Offline Option"}
+          </span>
+        </button>
 
         {/* Projects count chip */}
         {hideGlobalProjectCount ? (

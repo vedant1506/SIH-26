@@ -20,12 +20,17 @@ import { getProjectDocumentTimeline } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import AddDocumentModal from "./AddDocumentModal";
 import PdfPreviewModal from "./PdfPreviewModal";
+import SourceCitation from "@/components/ui/SourceCitation";
 
 interface ProjectDocumentsSectionProps {
   projectId: string;
   projectName?: string;
   masterRevisedCost?: number | null;
   masterProgress?: number | null;
+  sourcePdfPage?: number | null;
+  reportMonth?: string | null;
+  sourceDocument?: string | null;
+  slNo?: number | null;
 }
 
 export default function ProjectDocumentsSection({
@@ -33,6 +38,10 @@ export default function ProjectDocumentsSection({
   projectName,
   masterRevisedCost,
   masterProgress,
+  sourcePdfPage,
+  reportMonth,
+  sourceDocument,
+  slNo,
 }: ProjectDocumentsSectionProps) {
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -158,6 +167,18 @@ export default function ProjectDocumentsSection({
             <Upload size={14} /> Upload Project Document
           </button>
         </div>
+      </div>
+
+      {/* Authoritative Ministry Dossier Citation */}
+      <div style={{ marginBottom: 20 }}>
+        <SourceCitation
+          source_document={sourceDocument || `FlashReport_${(reportMonth || "April 2026").replace(" ", "_")}.pdf`}
+          source_page={sourcePdfPage}
+          sl_no={slNo}
+          source_type="MoSPI Flash Report"
+          source_title={`Official Ministry Dossier Record: ${projectName || "Project Baseline"}`}
+          variant="card"
+        />
       </div>
 
       {/* KPI Micro-Bar when documents exist */}

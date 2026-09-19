@@ -4,6 +4,7 @@ import { listAlerts, acknowledgeAlert, acknowledgeAllAlerts, updateAlertStatus }
 import type { Alert } from "@/lib/types";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import SourceCitation from "@/components/ui/SourceCitation";
 
 const TIER_VAR: Record<string, string> = {
   critical: "var(--critical)",
@@ -680,11 +681,46 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
                       </span>
                     );
                   })()}
+
+                  <SourceCitation
+                    source_document={a.source_document || `FlashReport_${(a.report_month || "April 2026").replace(" ", "_")}.pdf`}
+                    source_page={a.source_pdf_page}
+                    sl_no={a.sl_no}
+                    source_type={a.source_type || "MoSPI Flash Report"}
+                    source_title={a.project_name}
+                    variant="badge"
+                    compact={compact}
+                  />
                 </div>
               </div>
 
               {!compact && (
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+                  {/* Locate on GIS */}
+                  <Link
+                    href={`/map?project_id=${encodeURIComponent(a.project_id)}&basemap=bhuvan`}
+                    className="btn btn-secondary btn-sm"
+                    style={{
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      textDecoration: "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      background: "rgba(6, 182, 212, 0.12)",
+                      color: "#38bdf8",
+                      borderColor: "rgba(56, 189, 248, 0.3)",
+                    }}
+                    title="Locate project on ISRO Bhuvan satellite GIS map"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                      <line x1="9" y1="3" x2="9" y2="18"/>
+                      <line x1="15" y1="6" x2="15" y2="21"/>
+                    </svg>
+                    GIS
+                  </Link>
+
                   {/* 1-Click Action Assignment */}
                   <Link
                     href={`/actions?project_id=${a.project_id}&alert_id=${a.id}&title=${encodeURIComponent(`Resolve Alert: ${a.message || a.alert_type}`)}&priority=${(a.new_tier || 'medium').toLowerCase()}&action=new`}

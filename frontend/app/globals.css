@@ -1724,7 +1724,9 @@ path.leaflet-interactive:hover {
   position: absolute;
   top: 42px;
   left: 0;
-  width: 190px;
+  min-width: 220px;
+  width: max-content;
+  max-width: 260px;
   background: rgba(13, 19, 33, 0.96);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);

@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import date, datetime
 from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
@@ -25,6 +25,9 @@ class ProjectBase(BaseModel):
     actual_completion_date: Optional[date] = None
     project_scale: Optional[str] = None
     report_month: Optional[str] = Field("April 2026", description="Reporting period of the project dataset")
+    source_pdf_page: Optional[int] = Field(None, description="Source page number in MoSPI Flash Report PDF")
+    source_document: Optional[str] = Field("FlashReport_April_2026.pdf", description="Filename of source PDF report")
+    sl_no: Optional[int] = Field(None, description="Serial number in Flash Report Table")
 
     @field_validator("project_scale")
     @classmethod
@@ -96,6 +99,9 @@ class ProjectListItem(BaseModel):
     delay_probability: Optional[float] = None
     cost_overrun_probability: Optional[float] = None
     report_month: Optional[str] = "April 2026"
+    source_pdf_page: Optional[int] = None
+    source_document: Optional[str] = "FlashReport_April_2026.pdf"
+    sl_no: Optional[int] = None
     # Geo metadata from project_geolocations
     paimana_project_id: Optional[str] = None          # Numeric PAIMANA/OCMS ID
     coordinate_status: Optional[str] = None           # exact | approximate | unresolved
@@ -105,5 +111,6 @@ class ProjectListItem(BaseModel):
     state_match: Optional[bool] = None
     district_match: Optional[bool] = None
     location_validated: Optional[bool] = None
+    gfr175_screening: Optional[Dict[str, Any]] = None
 
     model_config = {"from_attributes": True}

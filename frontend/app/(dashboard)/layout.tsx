@@ -6,6 +6,8 @@ import Sidebar from "@/components/layout/Sidebar";
 import { NavProvider, useNav } from "@/lib/nav-context";
 import { AuthProvider } from "@/lib/auth-context";
 
+import OfflineFallbackBanner from "@/components/ui/OfflineFallbackBanner";
+
 function DashboardShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { collapsed, setCollapsed, mobileOpen, closeMobile } = useNav();
@@ -35,6 +37,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {/* Main Content Area — Fully Responsive */}
       <div className={`main-dashboard-content ${collapsed ? "collapsed" : "expanded"}`}>
+        <OfflineFallbackBanner />
         <main style={{ flex: 1, width: "100%" }}>{children}</main>
       </div>
     </div>
