@@ -1,23 +1,26 @@
 <div align="center">
 
 # ⚡ PRISM: Predictive Risk & Infrastructure Status Monitoring
-### *Next-Generation AI Intelligence & Geospatial Analytics Platform for National Infrastructure*
+### *Next-Generation AI Intelligence, Statutory Procurement Auditing & Geospatial Analytics Platform for National Infrastructure*
 #### **Smart India Hackathon 2026 (SIH26103) · Ministry of Statistics and Programme Implementation (MoSPI)**
 
 [![Next.js 16](https://img.shields.io/badge/Next.js-16.3.3%20(Turbopack)-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React 19](https://img.shields.io/badge/React-19.2.8-blue?style=for-the-badge&logo=react)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Python 3.11+](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python)](https://python.org/)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.14-3776AB?style=for-the-badge&logo=python)](https://python.org/)
 [![XGBoost 2.0](https://img.shields.io/badge/XGBoost-Explainable%20AI-EB6536?style=for-the-badge)](https://xgboost.readthedocs.io/)
 [![TreeSHAP](https://img.shields.io/badge/TreeSHAP-Factor%20Attribution-8A2BE2?style=for-the-badge)](https://github.com/slundberg/shap)
-[![Leaflet GIS](https://img.shields.io/badge/Leaflet-Authoritative%20Geo%20Risk%20Map-199900?style=for-the-badge&logo=leaflet)](https://leafletjs.com/)
+[![ISRO Bhuvan GIS](https://img.shields.io/badge/ISRO%20Bhuvan-NRSC%20Satellite%20GIS-199900?style=for-the-badge)](https://bhuvan.nrsc.gov.in/)
+[![GFR-175 Compliance](https://img.shields.io/badge/GFR--175-Procurement%20Integrity-0052CC?style=for-the-badge)](backend/app/services/gfr175_service.py)
+[![Ephemeral Hub](https://img.shields.io/badge/File%20Analysis-0%20DB%20Writes-purple?style=for-the-badge)](backend/app/routers/temporary_analysis.py)
+[![Consistency 100%](https://img.shields.io/badge/Consistency-100%25%20Verified-success?style=for-the-badge)](audit_consistency.py)
 [![System Architecture](https://img.shields.io/badge/Architecture-Interactive%20Mermaid%20Docs-FF6F00?style=for-the-badge)](ARCHITECTURE.md)
 
 <br />
 
-**PRISM** is an enterprise-grade infrastructure intelligence and project governance platform engineered for central ministries, state project monitoring units, and project authorities across India. It ingests official **MoSPI PAIMANA** datasets and monthly **Flash Reports**, transforming fragmented oversight into **explainable predictive risk forecasts**, **dynamic S-curve early warnings**, **TreeSHAP root-cause attributions**, **high-precision geospatial mapping**, **intelligent document lifecycle verification**, and **automated executive mitigation roadmaps** across **1,981 projects** totaling **₹42.78+ Lakh Crore** of capital assets.
+**PRISM** is an enterprise-grade infrastructure intelligence and project governance platform engineered for central ministries, state project monitoring units, and project authorities across India. Ingesting official **MoSPI PAIMANA** datasets and monthly **Flash Reports**, it transforms fragmented oversight into **explainable predictive risk forecasts**, **dynamic S-curve early warnings**, **TreeSHAP root-cause attributions**, **ISRO Bhuvan satellite geospatial mapping**, **GFR Rule 175 statutory procurement compliance screening**, **ephemeral document intelligence with zero database contamination**, and **automated executive mitigation roadmaps** across **1,981 projects** totaling **₹42.78+ Lakh Crore** of capital assets.
 
-[🏛️ Executive Summary](#-executive-summary) • [📐 System Architecture](#-system-architecture) • [🗺️ Authoritative Geolocation Engine](#-authoritative-geolocation-engine) • [🚀 Core Platform Modules](#-core-platform-modules) • [📈 Authoritative Portfolio](#-authoritative-portfolio-april-2026) • [🏁 Quick Start](#-quick-start) • [🔌 API Directory](#-api-directory) • [📑 Architecture Specification](ARCHITECTURE.md)
+[🏛️ Executive Summary](#-executive-summary) • [📐 System Architecture](#-system-architecture) • [🗺️ Authoritative Geolocation & Bhuvan GIS](#-authoritative-geolocation--isro-bhuvan-gis) • [🚀 Core Platform Modules](#-core-platform-modules) • [📈 Authoritative Portfolio (April 2026)](#-authoritative-portfolio-april-2026-baseline) • [⚖️ GFR Rule 175 Screening](#-gfr-rule-175-statutory-compliance-screening) • [⚡ Ephemeral File Analysis Hub](#-ephemeral-file-analysis-hub) • [🏁 Quick Start](#-quick-start) • [🔌 API Directory](#-api-directory) • [📑 Architecture Specification](ARCHITECTURE.md)
 
 </div>
 
@@ -25,24 +28,26 @@
 
 ## 🏛️ Executive Summary
 
-India's central sector infrastructure monitoring mechanism tracks capital projects each costing ₹150 Crore or more. Historical oversight has relied on lagging post-hoc reviews and static tabular flash reports, allowing schedule slips and budget escalations to compound undetected.
+India's central sector infrastructure monitoring mechanism oversees capital projects each costing ₹150 Crore or more. Historical oversight has relied on lagging post-hoc reviews and static tabular flash reports, allowing schedule slips and budget escalations to compound undetected.
 
 ```mermaid
 flowchart LR
-    A["Raw Flash Reports & PAIMANA Data\n(160+ Page Unstructured PDFs / CSVs)"] --> B["PRISM Autonomous Ingestion\n(1,981 Ongoing Projects)"]
+    A["Raw Flash Reports & PAIMANA Data\n(160+ Page Unstructured PDFs / CSVs)"] --> B["PRISM Autonomous Ingestion\n(1,981 Ongoing Projects · ₹42.78L Cr)"]
     B --> C["Dual XGBoost & TreeSHAP Core\n(Delay & Cost Overrun Predictions)"]
-    C --> D["Dynamic Early Warning & S-Curve\n(3-State Burn & Deterioration Triggers)"]
-    D --> E["Authoritative Geo Risk Map\n(100% Boundary Containment & Zero Dumping)"]
-    E --> F["Action Lifecycle & Executive Briefings\n(Targeted Interventions & PDF Exports)"]
+    B --> G["GFR Rule 175 Integrity Audit\n(Phantom Outflow & Billing Surges)"]
+    C --> D["Dynamic Early Warning & S-Curve\n(3-State Fiscal Burn & Stagnation Guard)"]
+    D --> E["ISRO Bhuvan GIS Command Map\n(100% Boundary Containment · Zero Dumping)"]
+    E --> F["Action Lifecycle & Executive Briefings\n(SLA Timers & Audit Timeline)"]
 ```
 
 ### The Key Technological Pillars of PRISM
 
-1. **Explainable Dual-Engine Machine Learning**: Forecasts both timeline slippage probability (months) and cost overrun severity (₹ Crore) before physical milestones breach, attributing exact feature importances via TreeSHAP.
-2. **Authoritative Geolocation Engine**: Resolves 100% of the 1,981 April 2026 projects to their actual on-ground geographic sites, authentic districts, and states with zero dropped projects, zero false hub dumps, and 100% state boundary containment.
-3. **Dynamic S-Curve & Multi-Trigger Early Warning**: Models construction cadence using mathematical logistic S-curves, tracking progress gaps against financial burn divergence to categorize severe overburns and trigger targeted mitigations.
-4. **Intelligent Document Lifecycle Management**: Integrates SHA-256 authenticated document uploads, automated OCR/NLP metadata extraction, and in-browser interactive PDF previewing with multi-category filtering.
-5. **Autonomous Ephemeral Document Extraction**: Ingests multi-hundred-page MoSPI Flash Report PDFs and extracts the authoritative **Table 6 (Pan-India All Ongoing Projects)** in under 40 seconds with 100% schema consistency and zero database contamination.
+1. **Explainable Dual-Engine Machine Learning**: Forecasts timeline slippage probability (months) and cost overrun severity (₹ Crore) before physical milestones breach, attributing exact feature importances via TreeSHAP.
+2. **Authoritative Geolocation Engine & ISRO Bhuvan GIS**: Resolves 100% of the 1,981 April 2026 projects to their actual on-ground geographic sites, authentic districts, and states with zero dropped projects, zero false hub dumps, and 100% Survey of India boundary containment, paired with ISRO NRSC Bhuvan satellite mosaics and vector boundary overlays.
+3. **GFR Rule 175 Statutory Procurement Integrity Screening**: Automatically screens public procurement metrics against General Financial Rules (GFR) Rule 175 integrity standards, flagging phantom capital outflows, milestone front-loading, and contractor concentration risks without legal adjudication overreach.
+4. **Dynamic S-Curve & Multi-Trigger Early Warning**: Models construction cadence using mathematical logistic S-curves, tracking progress gaps against financial burn divergence to categorize severe overburns and enforce execution stagnation guardrails (preventing stalled mega-projects from masquerading as low-risk).
+5. **Autonomous Ephemeral File Analysis Hub**: Ingests multi-hundred-page MoSPI Flash Report PDFs or CSVs and extracts the authoritative **Table 6 (Pan-India All Ongoing Projects)** in memory with 100% schema consistency, dynamic 4-factor risk scoring matching the Command Center, and zero database contamination.
+6. **Intelligent Document Lifecycle Management**: Integrates SHA-256 authenticated document uploads, automated OCR/NLP metadata extraction, and in-browser interactive PDF previewing with direct deep-link citations to official MoSPI Flash Report pages.
 
 ---
 
@@ -54,12 +59,14 @@ flowchart LR
 ```mermaid
 flowchart TB
     subgraph Client_Layer["Client Presentation Layer (Next.js 16 · Turbopack · React 19)"]
-        UI_DASH["Executive Command Center\n(Portfolio KPIs & Risk Tiers)"]
-        UI_GIS["Geospatial GIS Command Map\n(100% Inland Coordinate Engine)"]
-        UI_WARN["Dynamic Early Warning System\n(S-Curve & Deterioration Triggers)"]
-        UI_ACT["Action Item Tracker\n(SLA Timers & Audit Timeline)"]
-        UI_DOC["Intelligent Document Vault\n(OCR · Hash Check · PDF Viewer)"]
-        UI_CIT["Citizen Transparency Portal\n(Geotagged Photo Verification)"]
+        UI_DASH["Executive Command Center\n(1,981 Portfolio KPIs · 4 Risk Tiers)"]
+        UI_GIS["Geospatial GIS Command Map\n(ISRO Bhuvan WMS · MapLibre GL)"]
+        UI_WARN["Dynamic Early Warning System\n(S-Curve & 3-State Burn Variance)"]
+        UI_FILE["Ephemeral File Analysis Hub\n(Table 6 Parser · 0 DB Writes)"]
+        UI_GFR["GFR-175 Integrity & Fraud Radar\n(Procurement Code of Integrity)"]
+        UI_ACT["Governance Action Tracker\n(SLA Timers & Cryptographic Audit)"]
+        UI_DOC["Intelligent Document Vault\n(SHA-256 · Inline PDF Preview)"]
+        UI_CIT["Citizen Transparency Portal\n(Geotagged Photo Evidence)"]
     end
 
     subgraph Gateway_Layer["API Gateway & Security Layer (FastAPI ASGI :8000)"]
@@ -67,24 +74,26 @@ flowchart TB
         JWT["JWT Bearer Authentication"]
         RBAC["Role-Based Access Control"]
         CORS["CORS & Rate Limiting"]
+        SANDBOX["Ephemeral Sandbox Router\n(/api/v1/file-analysis)"]
     end
 
     subgraph Service_Engine["Modular Microservices & Domain Routers"]
         S_PROJ["Projects & Milestones"]
         S_ML["Dual XGBoost & TreeSHAP"]
+        S_GFR["GFR-175 Compliance Engine"]
         S_WARN["Early Warning Analytics"]
-        S_ACT["Governance Actions"]
-        S_DOC["Document Intelligence"]
-        S_FRAUD["Fraud & Red-Flag Anomaly"]
-        S_GEO["Spatial Geo Engine"]
+        S_TEMP["Ephemeral Monthly Flash Parser\n(Lazy-Loaded Canonical Parity)"]
+        S_ACT["Governance Actions State Machine"]
+        S_DOC["Document Intelligence & OCR"]
+        S_GEO["Spatial Geo Engine (Shapely)"]
         S_AUDIT["Tamper-Evident Audit Logs"]
     end
 
-    subgraph Data_Storage["Persistence & Storage Layer"]
+    subgraph Data_Storage["Persistence & Memory Layer"]
         DB_PG[("PostgreSQL Master Database\n(Port 6543 PgBouncer)")]
         DB_SQLITE[("SQLite Edge Engine\n(sql_app.db & backend/sql_app.db)")]
         VAULT[("Secure Storage Vault\n(backend/storage/project-documents)")]
-        CACHE[("In-Memory Ephemeral Cache\n(TTL 2-Hour Isolation)")]
+        CACHE[("In-Memory Ephemeral Registry\n(Zero DB Writes · Session TTL)")]
     end
 
     subgraph National_Gateways["National Digital Ecosystem Connectors"]
@@ -92,26 +101,28 @@ flowchart TB
         EXT2["PFMS Disbursals"]
         EXT3["GeM Procurement"]
         EXT4["Railways CRIS / NHAI"]
+        EXT5["ISRO NRSC Bhuvan Servers"]
     end
 
     Client_Layer ==>|"REST APIs & WebSockets"| GW
     GW --> JWT --> RBAC --> CORS --> Service_Engine
+    GW --> SANDBOX --> S_TEMP --> CACHE
     Service_Engine <==>|"SQLAlchemy 2.0 ORM"| DB_PG
     Service_Engine -.->|"Active Local / Edge Engine"| DB_SQLITE
     S_DOC <--> VAULT
-    GW <--> CACHE
+    UI_GIS <==>|"WMS / Raster Tiles"| EXT5
     Service_Engine <==>|"REST Integrations"| National_Gateways
 ```
 
 ---
 
-## 🗺️ Authoritative Geolocation Engine
+## 🗺️ Authoritative Geolocation & ISRO Bhuvan GIS
 
-PRISM features a purpose-built geographic resolution and spatial integrity pipeline (`scripts/rebuild_authoritative_geolocations.py`) that strictly guarantees every project is mapped to its **real site, authentic district, and verified state**.
+PRISM features a dual-layer geographic resolution and spatial integrity pipeline (`scripts/rebuild_authoritative_geolocations.py` and `frontend/lib/bhuvan-maplibre-style.ts`) that strictly guarantees every project is mapped to its **real site, authentic district, and verified state** with official Indian national satellite integration.
 
 ```mermaid
 flowchart TD
-    RAW["Authoritative MoSPI PAIMANA Dataset\n(1,981 Real Infrastructure Projects)"] --> P1{"Priority 1: Verified Facility Registry\n(Gosikhurd, Mehsana, AIIMS, Refineries, Airports)"}
+    RAW["Authoritative MoSPI PAIMANA Dataset\n(1,981 Real Infrastructure Projects)"] --> P1{"Priority 1: Verified Facility Registry\n(Gosikhurd, Mehsana, AIIMS, Refineries, Ports)"}
     P1 -- Matched --> R_FAC["Exact Facility / Site Resolved\n(High Confidence · Level: project_site)"]
     P1 -- No Match --> P2{"Priority 2: Google Maps Geocoding API\n(Address Component & State Validation)"}
     P2 -- Matched & Validated --> R_GGL["Google Verified Coordinates"]
@@ -123,11 +134,20 @@ flowchart TD
     P5 --> R_DST["Authoritative District Node"]
 
     R_FAC & R_GGL & R_GAZ & R_PRE & R_DST --> PIP["Step G: Shapely Point-in-Polygon Engine\n(State Boundary Containment & Snapping)"]
-    PIP --> MICRO["Micro-Diversity Site Perimeter Offset\n(40m-80m Dispersion for Same-Site Co-locations)"]
+    PIP --> MICRO["Micro-Diversity Site Perimeter Offset\n(40m-80m Dispersion for Co-located Projects)"]
     MICRO --> SYNC["Atomic Multi-Target Persistence\n(sql_app.db · backend/sql_app.db · geolocations_master.json)"]
 ```
 
-### Key Invariants Satisfied
+### Multi-Layer ISRO Bhuvan Map Architecture
+
+| Layer Hierarchy | Data Source | Protocol & Endpoint | Fallback Strategy |
+|---|---|---|---|
+| **Layer 1 (Base)** | Esri World Imagery | Raster TMS (`server.arcgisonline.com`) | Always active, eliminates black-screen hazards |
+| **Layer 2 (Satellite)** | ISRO NRSC Bhuvan OCM | WMS TileCache (`bhuvan-ras1.nrsc.gov.in`) | Seamlessly blends high-resolution Indian imagery |
+| **Layer 3 (Boundaries)**| ISRO Bhuvan Admin Vector | WMS 1.1.1 (`bhuvan-vec1.nrsc.gov.in`) | Official Survey of India state & district vectors |
+| **Layer 4 (Risk Pins)** | PRISM Geolocation Engine | GeoJSON Vector Layer (`MapLibre GL`) | Dynamic risk coloring, pulse animation & tooltips |
+
+### Geolocation Invariants Satisfied
 
 | Invariant / Check | Target Requirement | Rebuilt Dataset Status |
 |---|---|---|
@@ -152,40 +172,19 @@ flowchart TD
 PRISM Platform Capabilities:
 ├── 1. Command Center Dashboard      ── Real-time risk distribution, ministry outlay & exposure heatmaps
 ├── 2. Early Warning Intelligence    ── S-curve expected progress, 3-state burn & deterioration triggers
-├── 3. Geospatial Command Map        ── Authoritative GIS map with 1,981 project dots at actual locations
-├── 4. Explainable AI & SHAP         ── Dual XGBoost delay/cost inference with waterfall attributions
-├── 5. Governance Action Tracker     ── Tamper-evident remediation state machine with SLA countdowns
-├── 6. Intelligent Document Vault    ── SHA-256 deduplication, OCR text extraction & inline PDF preview
-├── 7. File Analysis Hub (Ephemeral) ── 160+ page Table 6 boundary parser with 0 database contamination
-├── 8. Fraud & Anomaly Triangulation ── Red-flag heuristics, ghost milestone checks & bid concentration
-├── 9. Infrastructure Benchmarking   ── Cross-sector efficiency KPIs, cost-per-km & delay comparisons
-├── 10. Cost Escalation Drivers      ── Deep dive on raw material inflation, land acquisition & RoW stalls
-├── 11. National Gateway Connectors  ── PM GatiShakti, PFMS, GeM, CRIS, and NHAI integration bus
-├── 12. Citizen Transparency Portal  ── Public grievance reporting with EXIF geotagged photo proofs
-└── 13. Model Governance & Drift     ── ROC-AUC, calibration curves, and feature distribution tracking
+├── 3. Geospatial Command Map        ── ISRO Bhuvan satellite + MapLibre GL map with 1,981 inland projects
+├── 4. GFR-175 Statutory Integrity   ── Public procurement code of integrity screening & indicators
+├── 5. Ephemeral File Analysis Hub   ── 160+ page Table 6 parser with 100% Command Center risk parity (0 DB writes)
+├── 6. Explainable AI & SHAP         ── Dual XGBoost delay/cost inference with waterfall feature attributions
+├── 7. Governance Action Tracker     ── Tamper-evident remediation state machine with SLA countdowns
+├── 8. Intelligent Document Vault    ── SHA-256 deduplication, OCR text extraction & inline PDF preview
+├── 9. High-Precision Project Table  ── 2-line layout with direct MoSPI Flash Report citation deep-links
+├── 10. Fraud & Anomaly Triangulation── Red-flag heuristics, ghost milestone checks & bid concentration
+├── 11. Infrastructure Benchmarking  ── Cross-sector efficiency KPIs, cost-per-km & delay comparisons
+├── 12. National Gateway Connectors  ── PM GatiShakti, PFMS, GeM, CRIS, and NHAI integration bus
+├── 13. Citizen Transparency Portal  ── Public grievance reporting with EXIF geotagged photo proofs
+└── 14. Model Governance & Drift     ── ROC-AUC, calibration curves, and feature distribution tracking
 ```
-
-### Module Highlights
-
-#### 1. ⚡ Early Warning System & Dynamic S-Curve Analytics
-- **Analytical S-Curve Expected Progress**: Uses mathematical logistic formulation $P_{\text{expected}}(t) = \frac{100}{1 + e^{-k(t-0.5)}}$ to compare actual physical milestone completion against elapsed timeline.
-- **3-State Financial Burn Variance**: Classifies fiscal pacing into **Severe Overburn** ($>20\%$ divergence), **Moderate Overburn** ($5-20\%$), and **Balanced Execution** ($\le 5\%$).
-- **Dynamic Contextual Triggers & Actions**: Synthesizes sector-specific drivers (Right-of-Way, Forest Clearances, Equipment Mobilization) and recommends immediate executive actions.
-
-#### 2. 🗺️ Authoritative Geospatial Geo Risk Map
-- **100% On-Ground Real Locations**: Every single project is represented at its actual project site, district, and state.
-- **Zero False Hub Dumping**: Broad expressway corridors, regional coal mines, and suburban rail networks are placed at their true stretches instead of dumping onto state capitals or terminal railway stations.
-- **Micro-Diversity Site Perimeter Offset**: Legitimate co-located projects (e.g. multi-phase airport works or dam command areas) are offset by 40m–80m along the site perimeter, preventing artificial concentric orbiting circles while remaining 100% within the state polygon.
-- **Interactive Multi-Basemap GIS**: Switch between **Command Dark**, **Satellite Imagery**, **Clean Voyager**, and **Street Map** with dynamic Risk Tier and Sector coloring modes.
-
-#### 3. 📄 Intelligent Document Repository & In-Browser PDF Preview
-- **SHA-256 Content Deduplication**: Computes cryptographic hashes upon upload to prevent redundant files and verify document authenticity.
-- **Interactive Full-Screen PDF Preview**: Review official project documents, DPRs, expenditure reports, and milestone approvals directly in the browser with zoom and navigation controls.
-- **Category-Based Filtering**: Instantly filter documents by Detailed Project Report (DPR), Environmental Clearance, Tender & Contract, Site Inspection, and Progress Report.
-
-#### 4. 🛡️ Governance Actions & SLA Enforcement
-- **Audited State Machine**: Actions transition through `pending` $\to$ `assigned` $\to$ `in_progress` $\to$ `under_review` $\to$ `verified` $\to$ `closed`.
-- **Immutable Timeline**: Every reassignment, priority shift, and review comment is cryptographically preserved in `intervention_action_history`.
 
 ---
 
@@ -229,6 +228,65 @@ To eliminate the "zero-spend" machine learning blind spot where severely stalled
 
 ---
 
+## ⚖️ GFR Rule 175 Statutory Compliance Screening
+
+PRISM incorporates an automated screening engine (`backend/app/services/gfr175_service.py`) enforcing the statutory **Code of Integrity for Public Procurement** under Rule 175 of the General Financial Rules (GFR), 2017.
+
+```
+Statutory Screening Indicators Evaluated:
+├── 1. Phantom Capital Outflow      ── High budget burn (≥35%) with minimal ground reality (≤15%)
+├── 2. Milestone Front-Loading      ── Cumulative burn rate >2.2x higher than validated physical completion
+├── 3. Scope & Cost Escalation      ── Sanction expansion exceeding 40% (+₹75 Cr) over sanctioned cost
+└── 4. Contractor Concentration     ── EPC operates across 4+ states with concurrent schedule-budget variances
+```
+
+### Statutory Status Classifications
+
+| Status Badge | Regulatory Classification | Action Required |
+|---|---|---|
+| 🟢 **GREEN** | `No Integrity Indicators Detected` | Standard periodic monitoring |
+| 🟡 **YELLOW** | `Compliance Review Required` | Internal engineering & expenditure audit |
+| 🔴 **RED** | `Potential Integrity Concern` | Cabinet note / Administrative show-cause review |
+
+> [!IMPORTANT]
+> **Regulatory Safeguards**: The GFR-175 module operates as an advisory screening tool for administrative oversight. It does not perform legal adjudication or impose contractor blacklisting. All determinations remain strictly with competent administrative authorities.
+
+---
+
+## ⚡ Ephemeral File Analysis Hub
+
+The **File Analysis Hub** (`backend/app/routers/temporary_analysis.py`, `temp_analysis_service.py`) allows officers to drag and drop monthly MoSPI Flash Report PDFs (160+ pages) or structured CSVs for instantaneous ad-hoc analysis.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Officer as Monitoring Officer
+    participant Hub as File Analysis Hub (Frontend)
+    participant API as FastAPI Ephemeral Router
+    participant Service as Temp Analysis Service
+    participant Memory as Volatile Session Cache (0 DB Writes)
+
+    Officer->>Hub: Upload FlashReport_April_2026.pdf
+    Hub->>API: POST /api/v1/file-analysis/upload
+    API->>Service: Validate Document & Extract Table 6
+    Service->>Service: Generate Canonical 19-Col CSV & Re-Read
+    Service->>Service: Compute Dynamic 4-Factor Risk & Overrides
+    Service->>Memory: Store Session (1,981 Scored Projects)
+    Service-->>Hub: Return Complete Portfolio & Quality Metrics
+    Note over Service,Memory: Exactly 141 Critical, 1256 High, 521 Medium, 63 Low
+    Officer->>Hub: Request Project Mitigation Roadmap
+    Hub->>API: POST /api/v1/file-analysis/{session_id}/projects/{id}/mitigation
+    API->>Service: On-Demand LLM Generation (Single Project Scope)
+    Service-->>Hub: Structured 4-Phase Mitigation Plan
+```
+
+### Key Guarantees
+- **100% Risk Parity**: Implements identical dynamic elapsed ratio computations and critical overrides as the primary Command Center (`april_2026_predictions.csv` parity). End-to-end verified on `FlashReport_April_2026.pdf` yielding exactly **141 Critical, 1,256 High, 521 Medium, and 63 Low** projects.
+- **Zero Database Contamination**: All tables and mitigations live strictly in volatile in-memory session cache (`SESSION_REGISTRY`), preventing test or draft reports from touching the production SQLite or PostgreSQL databases.
+- **Dual Export Formats**: Export official canonical 19-column CSVs or complete 30-column risk-enriched CSVs with predictive scores and TreeSHAP vectors.
+
+---
+
 ## 🛠️ Technology Stack
 
 ```
@@ -237,7 +295,7 @@ Frontend Architecture:
 ├── Core: React 19.2.8 & TypeScript 5
 ├── Animations: Framer Motion 12+
 ├── Notifications: Sonner Toast Notifications
-├── GIS Engine: Leaflet 1.9 & MapLibre GL
+├── GIS Engine: ISRO NRSC Bhuvan WMS + MapLibre GL 5+ & Leaflet 1.9
 ├── Charting: Recharts 3.10
 ├── Icons: Lucide React
 └── Design: Custom Modern Dark CSS Design System + Tailwind CSS v4
@@ -246,6 +304,7 @@ Backend & AI Architecture:
 ├── ASGI Framework: FastAPI 0.115+ (Starlette, Pydantic v2)
 ├── Predictive Modeling: XGBoost 2.0+ (Dual Classifier & Regressor)
 ├── Factor Attribution: TreeSHAP (Tree-based Shapley Additive Explanations)
+├── Statutory Auditing: GFR-175 Procurement Integrity Engine
 ├── Geospatial Analytics: Shapely (Point-in-Polygon Boundary Verification)
 ├── PDF Document Extraction: PyMuPDF (fitz) & pdfplumber
 ├── Data Engineering: Pandas 2.2 & NumPy
@@ -259,7 +318,7 @@ Backend & AI Architecture:
 
 ### System Prerequisites
 - **Node.js**: `v20.x` or higher
-- **Python**: `v3.11` or `v3.12`
+- **Python**: `v3.11`, `v3.12`, or `v3.14`
 - **Git**
 
 ### 1. Clone Repository
@@ -269,7 +328,7 @@ cd SIH-26
 ```
 
 ### 2. Single-Command Launch (Recommended)
-You can launch both the backend API server and frontend application concurrently using the master runner:
+Launch both the FastAPI backend and Next.js frontend concurrently using the unified launcher:
 ```bash
 python start_all.py
 ```
@@ -314,21 +373,20 @@ To ensure 100% data parity across every developer machine, laptop, and evaluatio
   python audit_consistency.py
   ```
 
-### 5. Running Geolocation Rebuild & Validation Test Suite
+### 5. Running the Verification & Test Suites
 
-To re-run the authoritative geolocation rebuild pipeline:
 ```bash
-python scripts/rebuild_authoritative_geolocations.py --skip-google
-```
+# Run Temporary Analysis & GFR-175 statutory test suites (13 of 13 PASS)
+python -m pytest backend/tests/test_temporary_analysis.py backend/app/tests/test_gfr175_compliance.py
 
-To run the post-rebuild validation report:
-```bash
-python scripts/validate_after_rebuild.py
-```
-
-To run the full 23-stage master geospatial validation test suite:
-```bash
+# Run Master Geospatial 23-Stage Validation
 python tests/test_master_geo_validation.py
+
+# Run Full Post-Rebuild Geolocation Report
+python scripts/validate_after_rebuild.py
+
+# Run Browser-Level Bhuvan GIS Acceptance Suite (Playwright)
+python run_phase6_acceptance_suite.py
 ```
 
 ---
@@ -340,7 +398,7 @@ python tests/test_master_geo_validation.py
 | **Auth** | `POST` | `/api/v1/auth/login` | Authenticate officer & issue signed JWT bearer token | Public |
 | **Auth** | `GET` | `/api/v1/auth/me` | Fetch authenticated profile, ministry & assigned roles | Officer+ |
 | **Projects** | `GET` | `/api/v1/projects` | Filterable project matrix with pagination, search & state filters | All Roles |
-| **Projects** | `GET` | `/api/v1/projects/{id}` | Project detail, financial breakdown & milestone history | All Roles |
+| **Projects** | `GET` | `/api/v1/projects/{id}` | Project detail, financial breakdown, milestones & GFR-175 screening | All Roles |
 | **AI / ML** | `POST` | `/api/v1/projects/{id}/predict` | Execute dual XGBoost inference & compute TreeSHAP vectors | All Roles |
 | **AI / ML** | `POST` | `/api/v1/projects/{id}/mitigation` | Synthesize grounded multi-action mitigation roadmap | All Roles |
 | **Early Warning** | `GET` | `/api/v1/analytics/early-warning` | Dynamic S-curve expected progress, triggers & 3-state burn | All Roles |
@@ -351,12 +409,17 @@ python tests/test_master_geo_validation.py
 | **Actions** | `PUT` | `/api/v1/actions/{id}/status` | Transition action status with audit note & evidence URL | Officer+ |
 | **Documents** | `GET` | `/api/v1/projects/{id}/documents` | List project documents, OCR status & metadata | All Roles |
 | **Documents** | `POST` | `/api/v1/projects/{id}/documents` | Upload document, compute SHA-256 & trigger async OCR | Officer+ |
+| **GFR-175** | `GET` | `/api/v1/analytics/fraud-detection/gfr175/{id}` | Screen project against statutory GFR Rule 175 integrity triggers | All Roles |
+| **Fraud** | `GET` | `/api/v1/fraud/anomalies` | Query detected red flags, ghost milestones & GFR-175 summaries | Decision Maker |
+| **File Hub** | `POST` | `/api/v1/file-analysis/upload` | Ingest MoSPI Flash Report PDF/CSV into ephemeral session (0 DB writes) | All Roles |
+| **File Hub** | `GET` | `/api/v1/file-analysis/sessions` | List active ephemeral analysis sessions in memory | All Roles |
+| **File Hub** | `GET` | `/api/v1/file-analysis/{id}/projects` | List scored projects for ephemeral session with TreeSHAP | All Roles |
+| **File Hub** | `POST` | `/api/v1/file-analysis/{id}/projects/{pid}/mitigation` | On-demand LLM mitigation generation for single project | All Roles |
+| **File Hub** | `GET` | `/api/v1/file-analysis/{id}/csv` | Download canonical 19-column CSV export | All Roles |
+| **File Hub** | `GET` | `/api/v1/file-analysis/{id}/risk-csv` | Download 30-column risk-enriched CSV with ML scores | All Roles |
 | **Citizen** | `POST` | `/api/v1/citizen/grievances` | Submit public grievance with geotagged photo evidence | Public |
 | **Citizen** | `GET` | `/api/v1/citizen/grievances` | Query citizen feedback register with spatial validation | Officer+ |
-| **Fraud** | `GET` | `/api/v1/fraud/anomalies` | Query detected red flags, ghost milestones & vendor risk | Decision Maker |
 | **Integrations** | `GET` | `/api/v1/integrations/status` | Query sync health with GatiShakti, PFMS, GeM, and CRIS | Admin |
-| **Ephemeral** | `POST` | `/api/v1/temporary-analysis/upload` | Ingest MoSPI Flash Report PDF/CSV into ephemeral session | Ephemeral |
-| **Ephemeral** | `GET` | `/api/v1/temporary-analysis/{id}/csv` | Download verified canonical 19-column CSV export | Ephemeral |
 
 ---
 
@@ -366,6 +429,7 @@ python tests/test_master_geo_validation.py
 - **PgBouncer Transaction Pooling**: High-concurrency production database connection pooling on port 6543 prevents socket exhaustion during cabinet briefings.
 - **Ephemeral Sandbox Isolation**: Flash Report parsing runs strictly in volatile RAM (`temp_analysis_service.py`), ensuring draft files never overwrite authoritative records.
 - **Survey of India Spatial Compliance**: All project coordinates are audited against authoritative territorial polygons to maintain 100% inland accuracy.
+- **Advisory Statutory Screening**: GFR Rule 175 checks are explicitly structured as advisory integrity screenings for executive decision-makers, strictly avoiding ungrounded legal allegations.
 
 ---
 
