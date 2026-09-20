@@ -240,24 +240,30 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 10 }}>
                 {plan.risk_drivers.map((d, i) => (
-                  <div key={i} style={{ background: "var(--surface-2)", borderRadius: 8, padding: "12px 14px", border: "1px solid var(--border)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>{d.factor}</span>
-                      <span style={{ fontSize: 10, fontWeight: 600, padding: "1px 6px", borderRadius: 4, background: "rgba(244, 63, 94, 0.12)", color: "#f43f5e" }}>
-                        {d.impact}
-                      </span>
+                  <div key={i} style={{ background: "var(--surface-2)", borderRadius: 8, padding: "12px 14px", border: "1px solid var(--border)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>{d.factor}</span>
+                        <span style={{ fontSize: 10, fontWeight: 600, padding: "1px 6px", borderRadius: 4, background: "rgba(244, 63, 94, 0.12)", color: "#f43f5e" }}>
+                          {d.impact}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--text-sub)", lineHeight: 1.5 }}>
+                        {d.evidence}
+                      </div>
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--text-sub)", lineHeight: 1.5, display: "flex", flexDirection: "column", gap: 6 }}>
-                      <div>{d.evidence}</div>
-                      <SourceCitation
-                        source_document={project.source_document || `FlashReport_${(project.report_month || "April 2026").replace(" ", "_")}.pdf`}
-                        source_page={project.source_pdf_page}
-                        sl_no={project.sl_no}
-                        source_type="MoSPI Flash Report"
-                        source_title={`Risk Driver Evidence: ${d.factor}`}
-                        variant="inline"
-                      />
-                    </div>
+                    {i === 0 && (
+                      <div style={{ marginTop: 8 }}>
+                        <SourceCitation
+                          source_document={project.source_document || `FlashReport_${(project.report_month || "April 2026").replace(" ", "_")}.pdf`}
+                          source_page={project.source_pdf_page}
+                          sl_no={project.sl_no}
+                          source_type="MoSPI Flash Report"
+                          source_title={`Risk Driver Evidence: ${d.factor}`}
+                          variant="inline"
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -279,18 +285,8 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
                     <div style={{ fontSize: 11.5, color: "var(--text-sub)", lineHeight: 1.5, marginBottom: 4 }}>
                       <strong style={{ color: "var(--text)" }}>Likely Cause:</strong> {rc.cause}
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
-                      <div>
-                        <strong style={{ color: "var(--text-sub)" }}>Observed Evidence:</strong> {rc.evidence}
-                      </div>
-                      <SourceCitation
-                        source_document={project.source_document || `FlashReport_${(project.report_month || "April 2026").replace(" ", "_")}.pdf`}
-                        source_page={project.source_pdf_page}
-                        sl_no={project.sl_no}
-                        source_type="MoSPI Flash Report"
-                        source_title={`Root Cause Ground: ${rc.risk}`}
-                        variant="inline"
-                      />
+                    <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                      <strong style={{ color: "var(--text-sub)" }}>Observed Evidence:</strong> {rc.evidence}
                     </div>
                   </div>
                 ))}
@@ -318,14 +314,6 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
                       {act.evidence && (
                         <div style={{ fontSize: 11, color: "var(--accent)", background: "rgba(6, 182, 212, 0.08)", padding: "4px 8px", borderRadius: 4, marginBottom: 6, display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                           <span><strong>Project Evidence:</strong> {act.evidence}</span>
-                          <SourceCitation
-                            source_document={project.source_document || `FlashReport_${(project.report_month || "April 2026").replace(" ", "_")}.pdf`}
-                            source_page={project.source_pdf_page}
-                            sl_no={project.sl_no}
-                            source_type="MoSPI Flash Report"
-                            source_title={`Action Basis: ${act.action}`}
-                            variant="inline"
-                          />
                         </div>
                       )}
                       <div style={{ fontSize: 11.5, color: "var(--text-sub)", lineHeight: 1.5, marginBottom: 8 }}>
@@ -363,14 +351,6 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
                       {act.evidence && (
                         <div style={{ fontSize: 11, color: "var(--accent)", background: "rgba(6, 182, 212, 0.08)", padding: "4px 8px", borderRadius: 4, marginBottom: 6, display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                           <span><strong>Project Evidence:</strong> {act.evidence}</span>
-                          <SourceCitation
-                            source_document={project.source_document || `FlashReport_${(project.report_month || "April 2026").replace(" ", "_")}.pdf`}
-                            source_page={project.source_pdf_page}
-                            sl_no={project.sl_no}
-                            source_type="MoSPI Flash Report"
-                            source_title={`Action Basis: ${act.action}`}
-                            variant="inline"
-                          />
                         </div>
                       )}
                       <div style={{ fontSize: 11.5, color: "var(--text-sub)", lineHeight: 1.5, marginBottom: 8 }}>
