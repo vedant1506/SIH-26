@@ -207,8 +207,8 @@ export default function FraudDetectionPage() {
           {/* GFR 175 Statutory Compliance Summary Bar & Filters */}
           <div
             style={{
-              background: "linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%)",
-              border: "1px solid var(--border-2, rgba(255, 255, 255, 0.12))",
+              background: "var(--surface)",
+              border: "1px solid var(--border-2)",
               borderRadius: 12,
               padding: "16px 20px",
               marginBottom: 24,
@@ -217,14 +217,15 @@ export default function FraudDetectionPage() {
               alignItems: "center",
               flexWrap: "wrap",
               gap: 16,
+              boxShadow: "var(--shadow-sm)",
             }}
           >
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 4, background: "rgba(56, 189, 248, 0.15)", color: "#38bdf8", border: "1px solid rgba(56, 189, 248, 0.3)" }}>
+                <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 4, background: "rgba(56, 189, 248, 0.15)", color: "var(--accent)", border: "1px solid var(--border-2)" }}>
                   STATUTORY SCREENING RADAR
                 </span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>
                   GFR 175 Code of Integrity Screening Status
                 </span>
               </div>
@@ -243,9 +244,9 @@ export default function FraudDetectionPage() {
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: "pointer",
-                  background: complianceFilter === "ALL" ? "var(--accent, #06b6d4)" : "rgba(255, 255, 255, 0.05)",
-                  color: complianceFilter === "ALL" ? "#000" : "var(--text-sub)",
-                  border: "1px solid " + (complianceFilter === "ALL" ? "var(--accent, #06b6d4)" : "rgba(255, 255, 255, 0.1)"),
+                  background: complianceFilter === "ALL" ? "var(--accent)" : "var(--surface-2)",
+                  color: complianceFilter === "ALL" ? "#ffffff" : "var(--text-sub)",
+                  border: "1px solid " + (complianceFilter === "ALL" ? "var(--accent)" : "var(--border)"),
                   transition: "all 0.15s ease",
                 }}
               >
@@ -260,16 +261,16 @@ export default function FraudDetectionPage() {
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: "pointer",
-                  background: complianceFilter === "RED" ? "rgba(239, 68, 68, 0.25)" : "rgba(239, 68, 68, 0.08)",
-                  color: "#f87171",
-                  border: "1px solid " + (complianceFilter === "RED" ? "#ef4444" : "rgba(239, 68, 68, 0.3)"),
+                  background: complianceFilter === "RED" ? "var(--critical-bg)" : "var(--surface-2)",
+                  color: "var(--critical)",
+                  border: "1px solid " + (complianceFilter === "RED" ? "var(--critical)" : "var(--border)"),
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 6,
                   transition: "all 0.15s ease",
                 }}
               >
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444" }} />
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--critical)" }} />
                 Potential Integrity Concern ({complianceCounts.red})
               </button>
 
@@ -281,16 +282,16 @@ export default function FraudDetectionPage() {
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: "pointer",
-                  background: complianceFilter === "YELLOW" ? "rgba(245, 158, 11, 0.25)" : "rgba(245, 158, 11, 0.08)",
-                  color: "#fbbf24",
-                  border: "1px solid " + (complianceFilter === "YELLOW" ? "#f59e0b" : "rgba(245, 158, 11, 0.3)"),
+                  background: complianceFilter === "YELLOW" ? "var(--high-bg)" : "var(--surface-2)",
+                  color: "var(--high)",
+                  border: "1px solid " + (complianceFilter === "YELLOW" ? "var(--high)" : "var(--border)"),
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 6,
                   transition: "all 0.15s ease",
                 }}
               >
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b" }} />
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--high)" }} />
                 Compliance Review Required ({complianceCounts.yellow})
               </button>
 
@@ -302,16 +303,16 @@ export default function FraudDetectionPage() {
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: "pointer",
-                  background: complianceFilter === "GREEN" ? "rgba(16, 185, 129, 0.25)" : "rgba(16, 185, 129, 0.08)",
-                  color: "#34d399",
-                  border: "1px solid " + (complianceFilter === "GREEN" ? "#10b981" : "rgba(16, 185, 129, 0.3)"),
+                  background: complianceFilter === "GREEN" ? "var(--low-bg)" : "var(--surface-2)",
+                  color: "var(--low)",
+                  border: "1px solid " + (complianceFilter === "GREEN" ? "var(--low)" : "var(--border)"),
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 6,
                   transition: "all 0.15s ease",
                 }}
               >
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981" }} />
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--low)" }} />
                 No Integrity Indicators ({complianceCounts.green})
               </button>
             </div>

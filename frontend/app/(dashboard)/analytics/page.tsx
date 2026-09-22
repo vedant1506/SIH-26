@@ -174,8 +174,12 @@ export default function AnalyticsPage() {
                   </defs>
                   <CartesianGrid stroke="var(--border-2)" strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(v) => v + "%"} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="sector" width={140} tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: "var(--surface-2)", border: "1px solid var(--border-2)", borderRadius: 8, fontSize: 12 }} formatter={(v) => [v + "%", "Avg Risk Score"]} />
+                  <Tooltip
+                    contentStyle={{ background: "var(--surface)", border: "1px solid var(--border-2)", borderRadius: 8, fontSize: 12, color: "var(--text)" }}
+                    itemStyle={{ color: "var(--text)" }}
+                    labelStyle={{ color: "var(--text)", fontWeight: 700 }}
+                    formatter={(v) => [v + "%", "Avg Risk Score"]}
+                  />
                   <Bar dataKey="avgRisk" fill="url(#grad-sector-bar)" radius={[0, 4, 4, 0]} maxBarSize={18} />
                 </BarChart>
               </ResponsiveContainer>

@@ -328,7 +328,7 @@ export default function ModelValidationPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--background, #080c14)", color: "var(--text, #f8fafc)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text)" }}>
       {/* Top Header */}
       <TopBar
         title="Machine Learning Model Validation & Scientific Rigor"
@@ -426,7 +426,7 @@ export default function ModelValidationPage() {
                 className="card"
                 style={{
                   padding: "14px 16px",
-                  background: "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)",
+                  background: "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--surface) 100%)",
                   borderLeft: "3px solid #10b981",
                   position: "relative",
                   overflow: "hidden",
@@ -456,7 +456,7 @@ export default function ModelValidationPage() {
                 style={{
                   padding: "14px 16px",
                   borderLeft: "3px solid #38bdf8",
-                  background: "linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)",
+                  background: "linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, var(--surface) 100%)",
                 }}
               >
                 <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.06em" }}>
@@ -477,7 +477,7 @@ export default function ModelValidationPage() {
                 style={{
                   padding: "14px 16px",
                   borderLeft: "3px solid #a855f7",
-                  background: "linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)",
+                  background: "linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, var(--surface) 100%)",
                 }}
               >
                 <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.06em" }}>
@@ -498,7 +498,7 @@ export default function ModelValidationPage() {
                 style={{
                   padding: "14px 16px",
                   borderLeft: "3px solid #f59e0b",
-                  background: "linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)",
+                  background: "linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, var(--surface) 100%)",
                 }}
               >
                 <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.06em" }}>
@@ -519,7 +519,7 @@ export default function ModelValidationPage() {
                 style={{
                   padding: "14px 16px",
                   borderLeft: "3px solid #10b981",
-                  background: "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)",
+                  background: "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--surface) 100%)",
                 }}
               >
                 <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.06em" }}>
@@ -600,10 +600,11 @@ export default function ModelValidationPage() {
                   className="card"
                   style={{
                     marginBottom: 22,
-                    background: "linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(168, 85, 247, 0.06) 100%)",
-                    border: "1px solid rgba(56, 189, 248, 0.35)",
+                    background: "var(--surface)",
+                    border: "1px solid var(--border-2)",
                     borderRadius: 12,
                     padding: "22px 24px",
+                    boxShadow: "var(--shadow)",
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 14, marginBottom: 16 }}>
@@ -659,10 +660,10 @@ export default function ModelValidationPage() {
                           textAlign: "center",
                         }}
                       >
-                        <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "#38bdf8" }}>
+                        <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "var(--accent)" }}>
                           F1 Gain
                         </div>
-                        <div style={{ fontSize: 22, fontWeight: 800, color: "#38bdf8" }}>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: "var(--accent)" }}>
                           {data.experiment.improvement_f1}
                         </div>
                       </div>
@@ -672,10 +673,10 @@ export default function ModelValidationPage() {
                   {/* Interactive Laboratory Toggle */}
                   <div style={{ marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
                     <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
-                      <Sliders size={13} style={{ color: "#38bdf8" }} />
+                      <Sliders size={13} style={{ color: "var(--accent)" }} />
                       <span>Simulate Real Infrastructure Scenario:</span>
                     </div>
-                    <div style={{ display: "inline-flex", background: "rgba(0,0,0,0.3)", padding: 3, borderRadius: 8, border: "1px solid var(--border)" }}>
+                    <div style={{ display: "inline-flex", background: "var(--surface-2)", padding: 3, borderRadius: 8, border: "1px solid var(--border)" }}>
                       <button
                         onClick={() => setCufSimMode("standard")}
                         style={{
@@ -685,7 +686,7 @@ export default function ModelValidationPage() {
                           borderRadius: 6,
                           border: "none",
                           background: cufSimMode === "standard" ? "rgba(56, 189, 248, 0.2)" : "transparent",
-                          color: cufSimMode === "standard" ? "#38bdf8" : "var(--text-muted)",
+                          color: cufSimMode === "standard" ? "var(--accent)" : "var(--text-muted)",
                           cursor: "pointer",
                         }}
                       >
@@ -715,7 +716,7 @@ export default function ModelValidationPage() {
                       display: "grid",
                       gridTemplateColumns: "1fr 1fr",
                       gap: 16,
-                      background: "rgba(0,0,0,0.35)",
+                      background: "var(--surface-2)",
                       padding: 16,
                       borderRadius: 10,
                       border: "1px solid var(--border)",
@@ -728,11 +729,11 @@ export default function ModelValidationPage() {
                         <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>
                           Conventional Baseline (CUF Only)
                         </span>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: "#94a3b8" }}>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: "var(--text-sub)" }}>
                           AUC: {data.experiment.cuf_only.auc} | F1: {data.experiment.cuf_only.f1}
                         </span>
                       </div>
-                      <div style={{ width: "100%", height: 10, background: "rgba(255,255,255,0.08)", borderRadius: 5, overflow: "hidden" }}>
+                      <div style={{ width: "100%", height: 10, background: "var(--border-2)", borderRadius: 5, overflow: "hidden" }}>
                         <div style={{ width: `${data.experiment.cuf_only.auc * 100}%`, height: "100%", background: "#64748b" }} />
                       </div>
                       <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8, lineHeight: 1.45 }}>
@@ -757,7 +758,7 @@ export default function ModelValidationPage() {
                           AUC: {data.experiment.cuf_plus_all.auc} | F1: {data.experiment.cuf_plus_all.f1}
                         </span>
                       </div>
-                      <div style={{ width: "100%", height: 10, background: "rgba(255,255,255,0.08)", borderRadius: 5, overflow: "hidden" }}>
+                      <div style={{ width: "100%", height: 10, background: "var(--border-2)", borderRadius: 5, overflow: "hidden" }}>
                         <div
                           style={{
                             width: `${data.experiment.cuf_plus_all.auc * 100}%`,
@@ -939,12 +940,15 @@ export default function ModelValidationPage() {
                             <YAxis stroke="var(--text-muted)" fontSize={11} domain={[0.55, 1.0]} />
                             <Tooltip
                               contentStyle={{
-                                background: "var(--surface, #0f172a)",
-                                borderColor: "var(--border, #334155)",
+                                background: "var(--surface)",
+                                borderColor: "var(--border-2)",
                                 borderRadius: 8,
                                 fontSize: 12,
-                                boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                                color: "var(--text)",
+                                boxShadow: "var(--shadow)",
                               }}
+                              itemStyle={{ color: "var(--text)" }}
+                              labelStyle={{ color: "var(--text)", fontWeight: 700 }}
                               formatter={(v: any) => [v.toFixed(3), selectedMetric.toUpperCase()]}
                             />
                             <Bar dataKey="val" radius={[5, 5, 0, 0]} barSize={32}>
@@ -1034,11 +1038,15 @@ export default function ModelValidationPage() {
                         />
                         <Tooltip
                           contentStyle={{
-                            background: "var(--surface, #0f172a)",
-                            borderColor: "var(--border, #334155)",
+                            background: "var(--surface)",
+                            borderColor: "var(--border-2)",
                             borderRadius: 8,
                             fontSize: 12,
+                            color: "var(--text)",
+                            boxShadow: "var(--shadow)",
                           }}
+                          itemStyle={{ color: "var(--text)" }}
+                          labelStyle={{ color: "var(--text)", fontWeight: 700 }}
                           formatter={(val: any, name: any) => [
                             `${(Number(val) * 100).toFixed(1)}%`,
                             name === "tpr" ? "Sensitivity (TPR)" : "Fallout (FPR)",
@@ -1309,12 +1317,15 @@ export default function ModelValidationPage() {
                         />
                         <Tooltip
                           contentStyle={{
-                            background: "var(--surface, #0f172a)",
-                            borderColor: "var(--border, #334155)",
+                            background: "var(--surface)",
+                            borderColor: "var(--border-2)",
                             borderRadius: 8,
                             fontSize: 12,
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                            color: "var(--text)",
+                            boxShadow: "var(--shadow)",
                           }}
+                          itemStyle={{ color: "var(--text)" }}
+                          labelStyle={{ color: "var(--text)", fontWeight: 700 }}
                           formatter={(val: any, name: any, item: any) => [
                             `${val}% Weight (Rank #${item.payload.rank})`,
                             item.payload.fullName,

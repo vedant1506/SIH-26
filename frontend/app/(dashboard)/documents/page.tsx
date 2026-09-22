@@ -152,7 +152,7 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--background, #080c14)", color: "var(--text, #f8fafc)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text)" }}>
       <TopBar
         title="Project Document Management & Intelligence Center"
         subtitle="Canonical project documents • Automated text extraction • Grounded AI intelligence • Audit trails"
@@ -191,7 +191,7 @@ export default function DocumentsPage() {
             style={{
               padding: "16px 18px",
               borderLeft: "3px solid #38bdf8",
-              background: "linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)",
+              background: "linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, var(--surface) 100%)",
             }}
           >
             <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.05em" }}>
@@ -211,7 +211,7 @@ export default function DocumentsPage() {
             style={{
               padding: "16px 18px",
               borderLeft: "3px solid #10b981",
-              background: "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)",
+              background: "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--surface) 100%)",
             }}
           >
             <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.05em" }}>
@@ -231,7 +231,7 @@ export default function DocumentsPage() {
             style={{
               padding: "16px 18px",
               borderLeft: "3px solid #f59e0b",
-              background: "linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)",
+              background: "linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, var(--surface) 100%)",
             }}
           >
             <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.05em" }}>
@@ -251,7 +251,7 @@ export default function DocumentsPage() {
             style={{
               padding: "16px 18px",
               borderLeft: "3px solid #f43f5e",
-              background: "linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)",
+              background: "linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, var(--surface) 100%)",
             }}
           >
             <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.05em" }}>

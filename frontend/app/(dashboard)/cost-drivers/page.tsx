@@ -296,10 +296,10 @@ export default function CostDriversPage() {
               style={{
                 padding: "24px",
                 marginBottom: 24,
-                background: "linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(10,16,32,0.95) 100%)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--surface)",
+                border: "1px solid var(--border-2)",
                 borderRadius: 14,
-                boxShadow: "0 12px 36px rgba(0,0,0,0.35)",
+                boxShadow: "var(--shadow)",
               }}
             >
               {/* Header with Title and Mode Switcher */}
@@ -310,7 +310,7 @@ export default function CostDriversPage() {
                   alignItems: "center",
                   flexWrap: "wrap",
                   gap: 14,
-                  borderBottom: "1px solid rgba(255,255,255,0.07)",
+                  borderBottom: "1px solid var(--border)",
                   paddingBottom: 16,
                   marginBottom: 22,
                 }}
@@ -322,15 +322,15 @@ export default function CostDriversPage() {
                       Variance Attribution Intelligence
                     </span>
                   </div>
-                  <h2 style={{ fontSize: 19, fontWeight: 800, color: "#f8fafc", margin: "4px 0 0" }}>
+                  <h2 style={{ fontSize: 19, fontWeight: 800, color: "var(--text)", margin: "4px 0 0" }}>
                     Risk Factor Distribution & Empirical Impact
                   </h2>
-                  <p style={{ margin: "4px 0 0", fontSize: 12, color: "#94a3b8" }}>
+                  <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-sub)" }}>
                     Hover or click any dimension to inspect real-time variance contribution, asset exposure, and ministerial SOP remedies.
                   </p>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.04)", padding: 4, borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--surface-2)", padding: 4, borderRadius: 8, border: "1px solid var(--border)" }}>
                   <button
                     onClick={() => setActiveTab("donut")}
                     style={{
@@ -342,7 +342,7 @@ export default function CostDriversPage() {
                       border: "none",
                       transition: "all 0.15s ease",
                       background: activeTab === "donut" ? "#0284c7" : "transparent",
-                      color: activeTab === "donut" ? "#ffffff" : "#94a3b8",
+                      color: activeTab === "donut" ? "#ffffff" : "var(--text-sub)",
                       display: "flex",
                       alignItems: "center",
                       gap: 6,
@@ -362,7 +362,7 @@ export default function CostDriversPage() {
                       border: "none",
                       transition: "all 0.15s ease",
                       background: activeTab === "bars" ? "#0284c7" : "transparent",
-                      color: activeTab === "bars" ? "#ffffff" : "#94a3b8",
+                      color: activeTab === "bars" ? "#ffffff" : "var(--text-sub)",
                       display: "flex",
                       alignItems: "center",
                       gap: 6,
@@ -422,7 +422,7 @@ export default function CostDriversPage() {
                                 <Cell
                                   key={`donut-slice-${entry.fullName}`}
                                   fill={entry.color}
-                                  stroke="#0f172a"
+                                  stroke="var(--surface)"
                                   strokeWidth={isHighlighted ? 3 : 1.5}
                                   opacity={isHighlighted ? 1 : 0.6}
                                   style={{
@@ -459,7 +459,7 @@ export default function CostDriversPage() {
                             fontWeight: 800,
                             letterSpacing: "0.08em",
                             textTransform: "uppercase",
-                            color: activeDisplayObj ? activeDisplayObj.color : "#38bdf8",
+                            color: activeDisplayObj ? activeDisplayObj.color : "var(--accent)",
                             marginBottom: 2,
                           }}
                         >
@@ -469,7 +469,7 @@ export default function CostDriversPage() {
                           style={{
                             fontSize: 32,
                             fontWeight: 900,
-                            color: activeDisplayObj ? activeDisplayObj.color : "#f8fafc",
+                            color: activeDisplayObj ? activeDisplayObj.color : "var(--text)",
                             lineHeight: 1,
                             letterSpacing: "-0.03em",
                             textShadow: activeDisplayObj ? `0 0 20px ${activeDisplayObj.color}60` : "none",
@@ -482,7 +482,7 @@ export default function CostDriversPage() {
                           style={{
                             fontSize: 10,
                             fontWeight: 600,
-                            color: "#cbd5e1",
+                            color: "var(--text)",
                             marginTop: 4,
                             lineHeight: 1.2,
                             textAlign: "center",
@@ -496,7 +496,7 @@ export default function CostDriversPage() {
                         >
                           {activeDisplayObj ? activeDisplayObj.fullName : "Top 3 Cumulative"}
                         </span>
-                        <span style={{ fontSize: 9, color: "#64748b", marginTop: 2 }}>
+                        <span style={{ fontSize: 9, color: "var(--text-muted)", marginTop: 2 }}>
                           {activeDisplayObj ? `${activeDisplayObj.affected} Assets` : "65.5% Total Share"}
                         </span>
                       </div>
@@ -511,7 +511,7 @@ export default function CostDriversPage() {
                         background: "rgba(56, 189, 248, 0.08)",
                         border: "1px solid rgba(56, 189, 248, 0.2)",
                         fontSize: 11,
-                        color: "#38bdf8",
+                        color: "var(--accent)",
                         fontWeight: 600,
                         display: "flex",
                         alignItems: "center",
@@ -542,15 +542,15 @@ export default function CostDriversPage() {
                             padding: "10px 14px",
                             borderRadius: 10,
                             background: isSelected
-                              ? `linear-gradient(135deg, ${item.color}18 0%, rgba(15,23,42,0.8) 100%)`
+                              ? `linear-gradient(135deg, ${item.color}22 0%, var(--surface-2) 100%)`
                               : isHovered
-                              ? "rgba(255,255,255,0.04)"
-                              : "rgba(255,255,255,0.02)",
+                              ? "var(--surface-3)"
+                              : "var(--surface-2)",
                             border: isSelected
-                              ? `1.5px solid ${item.color}80`
+                              ? `1.5px solid ${item.color}`
                               : isHovered
-                              ? "1.5px solid rgba(255,255,255,0.15)"
-                              : "1px solid rgba(255,255,255,0.06)",
+                              ? "1.5px solid var(--border-3)"
+                              : "1px solid var(--border)",
                             cursor: "pointer",
                             transition: "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
                             position: "relative",
@@ -576,7 +576,7 @@ export default function CostDriversPage() {
                               >
                                 #{item.rank}
                               </span>
-                              <span style={{ fontSize: 10, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                              <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                                 {item.category}
                               </span>
                             </div>
@@ -602,7 +602,7 @@ export default function CostDriversPage() {
                             style={{
                               fontSize: 13,
                               fontWeight: isHighlighted ? 700 : 600,
-                              color: isHighlighted ? "#f8fafc" : "#cbd5e1",
+                              color: "var(--text)",
                               lineHeight: 1.35,
                               marginBottom: 8,
                             }}
@@ -612,11 +612,11 @@ export default function CostDriversPage() {
 
                           {/* Bottom row: Proportional Progress bar & Assets */}
                           <div>
-                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748b", marginBottom: 4 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>
                               <span>Vulnerable assets</span>
-                              <span style={{ color: "#94a3b8", fontWeight: 600 }}>{item.affected.toLocaleString()} projects</span>
+                              <span style={{ color: "var(--text-sub)", fontWeight: 600 }}>{item.affected.toLocaleString()} projects</span>
                             </div>
-                            <div style={{ width: "100%", height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 999, overflow: "hidden" }}>
+                            <div style={{ width: "100%", height: 5, background: "var(--border-2)", borderRadius: 999, overflow: "hidden" }}>
                               <div
                                 style={{
                                   width: `${(item.contribution / 30) * 100}%`,
@@ -661,12 +661,15 @@ export default function CostDriversPage() {
                       />
                       <Tooltip
                         contentStyle={{
-                          background: "#0f172a",
-                          borderColor: "rgba(255,255,255,0.12)",
+                          background: "var(--surface)",
+                          borderColor: "var(--border-2)",
                           borderRadius: 8,
                           fontSize: 12,
-                          boxShadow: "0 10px 30px rgba(0,0,0,0.6)",
+                          boxShadow: "var(--shadow)",
+                          color: "var(--text)",
                         }}
+                        itemStyle={{ color: "var(--text)" }}
+                        labelStyle={{ color: "var(--text)", fontWeight: 700 }}
                         formatter={(val: any) => [`${val}% attribution`, "Factor Weight"]}
                       />
                       <Bar dataKey="contribution" radius={[0, 6, 6, 0]} barSize={20}>
@@ -706,11 +709,11 @@ export default function CostDriversPage() {
                 className="card"
                 style={{
                   marginBottom: 24,
-                  background: "linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(20,29,48,0.95) 100%)",
+                  background: "var(--surface)",
                   border: `1.5px solid ${activeDisplayObj.color}40`,
                   borderRadius: 14,
                   padding: "24px",
-                  boxShadow: `0 12px 36px rgba(0,0,0,0.4), 0 0 24px ${activeDisplayObj.color}15`,
+                  boxShadow: `var(--shadow), 0 0 24px ${activeDisplayObj.color}15`,
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16, marginBottom: 20 }}>
@@ -731,18 +734,18 @@ export default function CostDriversPage() {
                       >
                         Target Factor #{activeDisplayObj.rank}
                       </span>
-                      <span style={{ fontSize: 12, color: "#94a3b8" }}>
-                        Category: <strong style={{ color: "#f8fafc" }}>{activeDisplayObj.category}</strong>
+                      <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                        Category: <strong style={{ color: "var(--text)" }}>{activeDisplayObj.category}</strong>
                       </span>
-                      <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                      <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
                         Exposure: <strong style={{ color: activeDisplayObj.color }}>{activeDisplayObj.affected.toLocaleString()} Projects</strong>
                       </span>
                     </div>
 
-                    <h3 style={{ margin: "8px 0 4px", fontSize: 20, fontWeight: 800, color: "#f8fafc" }}>
+                    <h3 style={{ margin: "8px 0 4px", fontSize: 20, fontWeight: 800, color: "var(--text)" }}>
                       {activeDisplayObj.fullName}
                     </h3>
-                    <p style={{ margin: 0, fontSize: 13, color: "#94a3b8", maxWidth: 840, lineHeight: 1.5 }}>
+                    <p style={{ margin: 0, fontSize: 13, color: "var(--text-sub)", maxWidth: 840, lineHeight: 1.5 }}>
                       {activeDriverSop.summary}
                     </p>
                   </div>
@@ -782,8 +785,8 @@ export default function CostDriversPage() {
                 >
                   <div
                     style={{
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "var(--surface-2)",
+                      border: "1px solid var(--border)",
                       borderRadius: 10,
                       padding: 16,
                     }}
@@ -796,15 +799,15 @@ export default function CostDriversPage() {
                         Phase 1: Immediate Directive
                       </span>
                     </div>
-                    <p style={{ margin: 0, fontSize: 12.5, color: "#cbd5e1", lineHeight: 1.55 }}>
+                    <p style={{ margin: 0, fontSize: 12.5, color: "var(--text)", lineHeight: 1.55 }}>
                       {activeDriverSop.step1}
                     </p>
                   </div>
 
                   <div
                     style={{
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "var(--surface-2)",
+                      border: "1px solid var(--border)",
                       borderRadius: 10,
                       padding: 16,
                     }}
@@ -817,15 +820,15 @@ export default function CostDriversPage() {
                         Phase 2: Milestone & Fiscal Audit
                       </span>
                     </div>
-                    <p style={{ margin: 0, fontSize: 12.5, color: "#cbd5e1", lineHeight: 1.55 }}>
+                    <p style={{ margin: 0, fontSize: 12.5, color: "var(--text)", lineHeight: 1.55 }}>
                       {activeDriverSop.step2}
                     </p>
                   </div>
 
                   <div
                     style={{
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "var(--surface-2)",
+                      border: "1px solid var(--border)",
                       borderRadius: 10,
                       padding: 16,
                     }}
@@ -838,7 +841,7 @@ export default function CostDriversPage() {
                         Phase 3: Statutory Escalation
                       </span>
                     </div>
-                    <p style={{ margin: 0, fontSize: 12.5, color: "#cbd5e1", lineHeight: 1.55 }}>
+                    <p style={{ margin: 0, fontSize: 12.5, color: "var(--text)", lineHeight: 1.55 }}>
                       {activeDriverSop.step3}
                     </p>
                   </div>
@@ -847,15 +850,15 @@ export default function CostDriversPage() {
             )}
 
             {/* Sector Susceptibility Matrix Table */}
-            <div className="card" style={{ padding: 0, overflow: "hidden", borderRadius: 14, border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="card" style={{ padding: 0, overflow: "hidden", borderRadius: 14, border: "1px solid var(--border)" }}>
               <div
                 style={{
                   padding: "18px 24px",
-                  borderBottom: "1px solid rgba(255,255,255,0.08)",
+                  borderBottom: "1px solid var(--border)",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  background: "rgba(255,255,255,0.02)",
+                  background: "var(--surface-2)",
                 }}
               >
                 <div>

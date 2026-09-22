@@ -53,6 +53,9 @@
   --topbar-btn-border: rgba(255,255,255,0.07);
   --topbar-shadow: none;
   --sidebar-shadow: 4px 0 24px rgba(0,0,0,0.4);
+  --background: var(--bg);
+  --text-primary: var(--text);
+  --surface-raised: var(--surface-2);
 }
 
 :root[data-theme="light"],
@@ -102,6 +105,9 @@ body[data-theme="light"],
   --topbar-btn-border: rgba(15, 23, 42, 0.09);
   --topbar-shadow:   0 1px 3px rgba(15, 23, 42, 0.05);
   --sidebar-shadow:  4px 0 20px rgba(15, 23, 42, 0.04);
+  --background:      var(--bg);
+  --text-primary:    var(--text);
+  --surface-raised:  var(--surface-2);
 }
 
 html, body {
@@ -1938,5 +1944,62 @@ path.leaflet-interactive:hover {
   animation: radarPulse 1.8s infinite;
 }
 
+/* ==========================================================================
+   Universal Recharts Tooltip Styling (Light Mode & Dark Mode High Contrast)
+   ========================================================================== */
+.recharts-default-tooltip {
+  background: var(--surface) !important;
+  border: 1px solid var(--border-2) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow) !important;
+  color: var(--text) !important;
+  padding: 8px 12px !important;
+  backdrop-filter: blur(8px) !important;
+}
 
+.recharts-tooltip-label {
+  color: var(--text) !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  margin-bottom: 5px !important;
+  letter-spacing: 0.01em;
+}
 
+.recharts-tooltip-item-list {
+  padding: 0 !important;
+  margin: 0 !important;
+  list-style: none !important;
+}
+
+.recharts-tooltip-item {
+  color: var(--text) !important;
+  font-size: 12px !important;
+  padding: 2px 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.recharts-tooltip-item * {
+  color: var(--text) !important;
+}
+
+.recharts-tooltip-item-name {
+  color: var(--text-sub) !important;
+  font-weight: 500 !important;
+}
+
+.recharts-tooltip-item-separator {
+  color: var(--text-muted) !important;
+  margin: 0 2px !important;
+}
+
+.recharts-tooltip-item-value {
+  color: var(--text) !important;
+  font-weight: 700 !important;
+  font-family: var(--font-mono, monospace) !important;
+}
+
+.recharts-tooltip-item-unit {
+  color: var(--text-muted) !important;
+}

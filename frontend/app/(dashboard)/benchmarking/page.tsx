@@ -383,12 +383,11 @@ export default function BenchmarkingPage() {
                 position: "relative",
                 overflow: "hidden",
                 borderRadius: "var(--radius-lg)",
-                background: "linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(6, 182, 212, 0.04) 50%, rgba(15, 23, 42, 0.7) 100%)",
+                background: "linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(6, 182, 212, 0.04) 50%, var(--surface) 100%)",
                 border: "1px solid rgba(56, 189, 248, 0.2)",
                 padding: "20px 24px",
                 marginBottom: 24,
-                boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-                backdropFilter: "blur(12px)",
+                boxShadow: "var(--shadow-sm)",
               }}
             >
               <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
@@ -472,8 +471,8 @@ export default function BenchmarkingPage() {
                     style={{
                       padding: "20px",
                       borderRadius: "var(--radius)",
-                      background: "linear-gradient(180deg, rgba(244, 63, 94, 0.05) 0%, rgba(15, 23, 42, 0.7) 100%)",
-                      border: "1px solid rgba(244, 63, 94, 0.2)",
+                      background: "linear-gradient(180deg, rgba(244, 63, 94, 0.08) 0%, var(--surface) 100%)",
+                      border: "1px solid rgba(244, 63, 94, 0.25)",
                       position: "relative",
                       overflow: "hidden",
                     }}
@@ -508,7 +507,7 @@ export default function BenchmarkingPage() {
                         ({(maxDelay?.avg_delay_months - nationalStats.avgDelay).toFixed(1)} mo above avg)
                       </span>
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--text-sub)", marginTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 8 }}>
+                    <div style={{ fontSize: 11, color: "var(--text-sub)", marginTop: 8, borderTop: "1px solid var(--border)", paddingTop: 8 }}>
                       {maxDelay?.project_count} monitored assets • {maxDelay?.delayed_pct}% delayed
                     </div>
                   </div>
@@ -524,8 +523,8 @@ export default function BenchmarkingPage() {
                     style={{
                       padding: "20px",
                       borderRadius: "var(--radius)",
-                      background: "linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(15, 23, 42, 0.7) 100%)",
-                      border: "1px solid rgba(245, 158, 11, 0.2)",
+                      background: "linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, var(--surface) 100%)",
+                      border: "1px solid rgba(245, 158, 11, 0.25)",
                       position: "relative",
                       overflow: "hidden",
                     }}
@@ -560,7 +559,7 @@ export default function BenchmarkingPage() {
                         avg cost revision
                       </span>
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--text-sub)", marginTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 8 }}>
+                    <div style={{ fontSize: 11, color: "var(--text-sub)", marginTop: 8, borderTop: "1px solid var(--border)", paddingTop: 8 }}>
                       {maxCost?.project_count} projects • Avg +{maxCost?.avg_delay_months} mo delay
                     </div>
                   </div>
@@ -578,8 +577,8 @@ export default function BenchmarkingPage() {
                     style={{
                       padding: "20px",
                       borderRadius: "var(--radius)",
-                      background: "linear-gradient(180deg, rgba(56, 189, 248, 0.05) 0%, rgba(15, 23, 42, 0.7) 100%)",
-                      border: "1px solid rgba(56, 189, 248, 0.2)",
+                      background: "linear-gradient(180deg, rgba(56, 189, 248, 0.08) 0%, var(--surface) 100%)",
+                      border: "1px solid rgba(56, 189, 248, 0.25)",
                       position: "relative",
                       overflow: "hidden",
                     }}
@@ -614,7 +613,7 @@ export default function BenchmarkingPage() {
                         + {topState?.high_count || 0} High Risk
                       </span>
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--text-sub)", marginTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 8 }}>
+                    <div style={{ fontSize: 11, color: "var(--text-sub)", marginTop: 8, borderTop: "1px solid var(--border)", paddingTop: 8 }}>
                       {topState?.project_count} total infrastructure assets in state
                     </div>
                   </div>
@@ -627,8 +626,8 @@ export default function BenchmarkingPage() {
                 style={{
                   padding: "20px",
                   borderRadius: "var(--radius)",
-                  background: "linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, rgba(15, 23, 42, 0.7) 100%)",
-                  border: "1px solid rgba(16, 185, 129, 0.2)",
+                  background: "linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, var(--surface) 100%)",
+                  border: "1px solid rgba(16, 185, 129, 0.25)",
                   position: "relative",
                   overflow: "hidden",
                 }}
@@ -662,20 +661,20 @@ export default function BenchmarkingPage() {
                     </span>
                     <span style={{ fontSize: 10, color: "var(--text-muted)", display: "block" }}>Avg Delay</span>
                   </div>
-                  <div style={{ borderLeft: "1px solid rgba(255,255,255,0.1)", paddingLeft: 10 }}>
+                  <div style={{ borderLeft: "1px solid var(--border)", paddingLeft: 10 }}>
                     <span style={{ fontSize: 18, fontWeight: 800, color: "#38bdf8", fontFamily: "var(--font-display)" }}>
                       +{nationalStats.avgOverrun}%
                     </span>
                     <span style={{ fontSize: 10, color: "var(--text-muted)", display: "block" }}>Avg Overrun</span>
                   </div>
-                  <div style={{ borderLeft: "1px solid rgba(255,255,255,0.1)", paddingLeft: 10 }}>
+                  <div style={{ borderLeft: "1px solid var(--border)", paddingLeft: 10 }}>
                     <span style={{ fontSize: 18, fontWeight: 800, color: "#f59e0b", fontFamily: "var(--font-display)" }}>
                       {nationalStats.avgRisk}%
                     </span>
                     <span style={{ fontSize: 10, color: "var(--text-muted)", display: "block" }}>Avg Risk Index</span>
                   </div>
                 </div>
-                <div style={{ fontSize: 11, color: "var(--text-sub)", marginTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 8 }}>
+                <div style={{ fontSize: 11, color: "var(--text-sub)", marginTop: 8, borderTop: "1px solid var(--border)", paddingTop: 8 }}>
                   Covering 30 States & UT jurisdictions
                 </div>
               </div>
@@ -689,8 +688,7 @@ export default function BenchmarkingPage() {
                 padding: "24px",
                 marginBottom: 28,
                 border: "1px solid var(--border)",
-                background: "rgba(10, 16, 32, 0.7)",
-                backdropFilter: "blur(12px)",
+                background: "var(--surface)",
               }}
             >
               {/* Studio Header Toolbar */}
@@ -893,12 +891,15 @@ export default function BenchmarkingPage() {
                       <YAxis stroke="var(--text-muted)" fontSize={11} />
                       <Tooltip
                         contentStyle={{
-                          background: "rgba(15, 23, 42, 0.95)",
-                          borderColor: "rgba(255, 255, 255, 0.12)",
+                          background: "var(--surface)",
+                          borderColor: "var(--border-2)",
                           borderRadius: 8,
-                          boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                          boxShadow: "var(--shadow)",
                           fontSize: 12,
+                          color: "var(--text)",
                         }}
+                        itemStyle={{ color: "var(--text)" }}
+                        labelStyle={{ color: "var(--text)", fontWeight: 700 }}
                         labelFormatter={(label, payload) => {
                           if (payload && payload[0]?.payload?.fullName) {
                             return payload[0].payload.fullName;
@@ -964,15 +965,15 @@ export default function BenchmarkingPage() {
                             return (
                               <div
                                 style={{
-                                  background: "rgba(15, 23, 42, 0.95)",
-                                  border: "1px solid rgba(255,255,255,0.15)",
+                                  background: "var(--surface)",
+                                  border: "1px solid var(--border-2)",
                                   borderRadius: 8,
                                   padding: "10px 14px",
                                   fontSize: 12,
-                                  boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                                  boxShadow: "var(--shadow)",
                                 }}
                               >
-                                <div style={{ fontWeight: 700, color: "#38bdf8", marginBottom: 4 }}>
+                                <div style={{ fontWeight: 700, color: "var(--accent)", marginBottom: 4 }}>
                                   {d.name}
                                 </div>
                                 <div style={{ color: "var(--text-sub)" }}>
@@ -985,15 +986,15 @@ export default function BenchmarkingPage() {
                                   Avg Cost Escalation: <strong style={{ color: "var(--high)" }}>+{d.costOverrun}%</strong>
                                 </div>
                                 <div style={{ color: "var(--text-sub)" }}>
-                                  Risk Score: <strong style={{ color: "#38bdf8" }}>{d.risk}%</strong>
+                                  Risk Score: <strong style={{ color: "var(--accent)" }}>{d.risk}%</strong>
                                 </div>
                               </div>
                             );
                           }}
                         />
                         {/* Reference lines dividing 4 quadrants */}
-                        <ReferenceLine x={20} stroke="rgba(255,255,255,0.15)" strokeDasharray="3 3" />
-                        <ReferenceLine y={15} stroke="rgba(255,255,255,0.15)" strokeDasharray="3 3" />
+                        <ReferenceLine x={20} stroke="var(--border-2)" strokeDasharray="3 3" />
+                        <ReferenceLine y={15} stroke="var(--border-2)" strokeDasharray="3 3" />
                         <Scatter name="Sectors" data={quadrantData} fill="#38bdf8">
                           {quadrantData.map((entry, index) => {
                             const isCritical = entry.delay > 20 && entry.costOverrun > 15;
@@ -1036,16 +1037,20 @@ export default function BenchmarkingPage() {
                       layout="vertical"
                       margin={{ top: 10, right: 30, left: 10, bottom: 10 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
                       <XAxis type="number" stroke="var(--text-muted)" fontSize={11} unit="%" />
                       <YAxis type="category" dataKey="name" stroke="var(--text-muted)" fontSize={11} width={180} />
                       <Tooltip
                         contentStyle={{
-                          background: "rgba(15, 23, 42, 0.95)",
-                          borderColor: "rgba(255, 255, 255, 0.12)",
+                          background: "var(--surface)",
+                          borderColor: "var(--border-2)",
                           borderRadius: 8,
                           fontSize: 12,
+                          boxShadow: "var(--shadow)",
+                          color: "var(--text)",
                         }}
+                        itemStyle={{ color: "var(--text)" }}
+                        labelStyle={{ color: "var(--text)", fontWeight: 700 }}
                         formatter={(value: any, name: any, item: any) => [
                           `+${value}% (Avg Delay: +${item?.payload?.delayMonths} mo)`,
                           "Cost Escalation",

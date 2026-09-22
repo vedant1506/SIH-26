@@ -1816,13 +1816,13 @@ function MapPageContent() {
               left: 16,
               right: 16,
               maxWidth: 320,
-              background: "rgba(15, 23, 42, 0.97)",
+              background: "var(--surface)",
               backdropFilter: "blur(20px)",
               border: "1px solid var(--border-2)",
               borderRadius: 12,
               padding: 14,
               zIndex: 35,
-              boxShadow: "0 12px 36px rgba(0,0,0,0.6)",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, paddingBottom: 6, borderBottom: "1px solid var(--border)" }}>
