@@ -47,7 +47,6 @@
 [![PRISM Official Video Walkthrough - Smart India Hackathon 2026](https://i.ytimg.com/vi/gY_Ikc_Gb4Q/maxresdefault.jpg)](https://youtu.be/gY_Ikc_Gb4Q)
 
 ### 🎬 **[▶ Click Here to Watch the Full HD System Walkthrough on YouTube](https://youtu.be/gY_Ikc_Gb4Q)**
-**Team**: Segmentation Fault &nbsp;•&nbsp; **Problem Statement**: SIH26103 &nbsp;•&nbsp; **Presenter**: Shahad Pathan &nbsp;•&nbsp; **Nodal Ministry**: MoSPI
 
 <br />
 
@@ -549,9 +548,7 @@ python run_phase6_acceptance_suite.py
 * **Developed for**: Smart India Hackathon (SIH) 2026
 * **Problem Statement**: Web-Based Integrated Project-Monitoring Platform (SIH26103)
 * **Ministry / Partner**: Ministry of Statistics and Programme Implementation (MoSPI)
-* **Team**: **Segmentation Fault** (Presenter / Lead: Shahad Pathan)
 * **Official Video Walkthrough**: [▶ YouTube Demonstration (1080p HD)](https://youtu.be/gY_Ikc_Gb4Q)
-* **Interactive Live Platform**: [🚀 Hugging Face Spaces Live Space](https://huggingface.co/spaces/shahadpathan/prism-platform)
 * **Repository**: [vedant1506/SIH-26](https://github.com/vedant1506/SIH-26)
 * **Authoritative Technical Design Document**: [ARCHITECTURE.md](ARCHITECTURE.md)
 * **Open Source Standards & Community Guidelines**:
