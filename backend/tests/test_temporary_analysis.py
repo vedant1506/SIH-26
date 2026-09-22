@@ -243,7 +243,8 @@ def test_mitigation_plan_parameter_isolation_and_divergence():
                 ]
             }
 
-    with patch("app.services.qwen_service.generate_json_from_qwen", side_effect=mock_qwen):
+    with patch("app.services.temp_analysis_service._get_active_llm_providers", return_value={}), \
+         patch("app.services.qwen_service.generate_json_from_qwen", side_effect=mock_qwen):
         # Generate mitigation plans
         plan_a = generate_temporary_project_mitigation(session, proj_a["project_id"], proj_a)
         plan_b = generate_temporary_project_mitigation(session, proj_b["project_id"], proj_b)

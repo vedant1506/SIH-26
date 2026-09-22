@@ -4,6 +4,12 @@
 ### *Next-Generation AI Intelligence, Statutory Procurement Auditing & Geospatial Analytics Platform for National Infrastructure*
 #### **Smart India Hackathon 2026 (SIH26103) · Ministry of Statistics and Programme Implementation (MoSPI)**
 
+[![Watch Video Demo](https://img.shields.io/badge/YouTube-Watch%20System%20Walkthrough-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/gY_Ikc_Gb4Q)
+[![Live Platform](https://img.shields.io/badge/HuggingFace-Live%20Platform-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/spaces/shahadpathan/prism-platform)
+[![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/ci.yml)
+[![Docker Multi-Container](https://img.shields.io/badge/Docker-Production%20Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](docker-compose.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+
 [![Next.js 16](https://img.shields.io/badge/Next.js-16.3.3%20(Turbopack)-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React 19](https://img.shields.io/badge/React-19.2.8-blue?style=for-the-badge&logo=react)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
@@ -20,9 +26,34 @@
 
 **PRISM** is an enterprise-grade infrastructure intelligence and project governance platform engineered for central ministries, state project monitoring units, and project authorities across India. Ingesting official **MoSPI PAIMANA** datasets and monthly **Flash Reports**, it transforms fragmented oversight into **explainable predictive risk forecasts**, **dynamic S-curve early warnings**, **TreeSHAP root-cause attributions**, **ISRO Bhuvan satellite geospatial mapping**, **GFR Rule 175 statutory procurement compliance screening**, **ephemeral document intelligence with zero database contamination**, and **automated executive mitigation roadmaps** across **1,981 projects** totaling **₹42.78+ Lakh Crore** of capital assets.
 
-[🏛️ Executive Summary](#-executive-summary) • [📐 System Architecture](#-system-architecture) • [🗺️ Authoritative Geolocation & Bhuvan GIS](#-authoritative-geolocation--isro-bhuvan-gis) • [🚀 Core Platform Modules](#-core-platform-modules) • [📈 Authoritative Portfolio (April 2026)](#-authoritative-portfolio-april-2026-baseline) • [⚖️ GFR Rule 175 Screening](#-gfr-rule-175-statutory-compliance-screening) • [⚡ Ephemeral File Analysis Hub](#-ephemeral-file-analysis-hub) • [🏁 Quick Start](#-quick-start) • [🔌 API Directory](#-api-directory) • [📑 Architecture Specification](ARCHITECTURE.md)
+[🎬 Video Walkthrough](#-official-video-demonstration--hackathon-pitch) • [🏛️ Executive Summary](#-executive-summary) • [📐 System Architecture](#-system-architecture) • [🗺️ Authoritative Geolocation & Bhuvan GIS](#-authoritative-geolocation--isro-bhuvan-gis) • [🚀 Core Platform Modules](#-core-platform-modules) • [📈 Authoritative Portfolio (April 2026)](#-authoritative-portfolio-april-2026-baseline) • [⚖️ GFR Rule 175 Screening](#-gfr-rule-175-statutory-compliance-screening) • [⚡ Ephemeral File Analysis Hub](#-ephemeral-file-analysis-hub) • [🏁 Quick Start](#-quick-start) • [🔌 API Directory](#-api-directory) • [📑 Architecture Specification](ARCHITECTURE.md)
 
 </div>
+
+---
+
+## 🎥 Official Video Demonstration & Hackathon Pitch
+
+[![Segmentation Fault - PRISM Video Walkthrough](https://i.ytimg.com/vi/gY_Ikc_Gb4Q/maxresdefault.jpg)](https://youtu.be/gY_Ikc_Gb4Q)
+
+<div align="center">
+
+### 🎬 **[▶ Click Here to Watch Full HD Video Presentation on YouTube](https://youtu.be/gY_Ikc_Gb4Q)**
+**Team**: Segmentation Fault &nbsp;•&nbsp; **Problem Statement**: SIH26103 &nbsp;•&nbsp; **Presenter**: Shahad Pathan &nbsp;•&nbsp; **Nodal Ministry**: MoSPI
+
+| 🌐 Live Interactive Platform | 📺 Video Demonstration | 📐 System Architecture | ⚖️ GFR-175 Compliance Engine |
+| :---: | :---: | :---: | :---: |
+| [**Open Hugging Face Space**](https://huggingface.co/spaces/shahadpathan/prism-platform) | [**Watch on YouTube (1080p)**](https://youtu.be/gY_Ikc_Gb4Q) | [**Read ARCHITECTURE.md**](ARCHITECTURE.md) | [**Inspect Procurement Rules**](backend/app/services/gfr175_service.py) |
+
+</div>
+
+> [!TIP]
+> **Video Walkthrough Highlights**:
+> - **End-to-End Executive Command Center**: Real-time evaluation of all 1,981 central sector projects totaling ₹42.78L Cr.
+> - **Dual-Engine Predictive AI & TreeSHAP**: Live feature attribution explaining delay severity and cost escalations.
+> - **ISRO Bhuvan Satellite GIS**: Official NRSC WMS satellite layers with 100% Survey of India boundary containment.
+> - **GFR Rule 175 Procurement Auditing**: Detecting phantom outflows, front-loaded billing, and contractor concentration risks.
+> - **Ephemeral File Analysis Hub**: 160+ page Table 6 Flash Report parsing with instant risk scoring and 0 database contamination.
 
 ---
 
@@ -327,14 +358,29 @@ git clone https://github.com/vedant1506/SIH-26.git
 cd SIH-26
 ```
 
-### 2. Single-Command Launch (Recommended)
-Launch both the FastAPI backend and Next.js frontend concurrently using the unified launcher:
+### 2. Multi-Container Docker Deployment (Fastest & Production Ready)
+
+Deploy the entire PRISM stack (FastAPI Backend + Next.js Frontend) in isolated containers with one command:
+
+```bash
+docker compose up --build
+```
+- **Next.js Executive Web Portal**: `http://localhost:3000`
+- **FastAPI Interactive Swagger Specs**: `http://localhost:8000/docs`
+
+---
+
+### 3. Local Single-Command Launch
+
+Alternatively, launch both the FastAPI backend and Next.js frontend natively on your host machine:
 ```bash
 python start_all.py
 ```
 This automatically initializes the FastAPI backend on port `8000`, starts the Next.js dev server on port `3000`, performs health checks, and displays the unified console log.
 
-### 3. Manual Step-by-Step Setup
+---
+
+### 4. Step-by-Step Manual Setup
 
 #### Backend Setup
 ```bash
@@ -359,7 +405,9 @@ npm run dev
 ```
 > PRISM Web Application accessible at: `http://localhost:3000`
 
-### 4. Deterministic Cross-Machine Data Synchronization
+---
+
+### 5. Deterministic Cross-Machine Data Synchronization
 
 To ensure 100% data parity across every developer machine, laptop, and evaluation PC:
 - **Pre-Seeded Authoritative Database**: The pre-inferred SQLite database (`backend/sql_app.db`) is committed and tracked in git. When cloning the repository on another PC, all 1,981 projects with their authoritative April 2026 risk predictions are available immediately without running manual seeds.
@@ -438,11 +486,19 @@ python run_phase6_acceptance_suite.py
 * **Developed for**: Smart India Hackathon (SIH) 2026
 * **Problem Statement**: Web-Based Integrated Project-Monitoring Platform (SIH26103)
 * **Ministry / Partner**: Ministry of Statistics and Programme Implementation (MoSPI)
+* **Team**: **Segmentation Fault** (Presenter / Lead: Shahad Pathan)
+* **Official Video Walkthrough**: [YouTube Demonstration (1080p)](https://youtu.be/gY_Ikc_Gb4Q)
+* **Interactive Live Platform**: [Hugging Face Spaces](https://huggingface.co/spaces/shahadpathan/prism-platform)
 * **Repository**: [vedant1506/SIH-26](https://github.com/vedant1506/SIH-26)
 * **Authoritative Technical Design Document**: [ARCHITECTURE.md](ARCHITECTURE.md)
+* **Open Source Governance & Guidelines**:
+  - [Contribution Guidelines (CONTRIBUTING.md)](CONTRIBUTING.md)
+  - [Code of Conduct (CODE_OF_CONDUCT.md)](CODE_OF_CONDUCT.md)
+  - [Security & Vulnerability Disclosure Policy (SECURITY.md)](SECURITY.md)
+  - [MIT Open Source License (LICENSE)](LICENSE)
 
 ---
 
 <div align="center">
-  <sub>Engineered with precision for National Infrastructure Intelligence · Smart India Hackathon 2026</sub>
+  <sub>Engineered with precision for National Infrastructure Intelligence · Smart India Hackathon 2026 · Ministry of Statistics and Programme Implementation (MoSPI)</sub>
 </div>

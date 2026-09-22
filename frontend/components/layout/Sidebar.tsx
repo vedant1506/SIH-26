@@ -540,6 +540,48 @@ export default function Sidebar({
         ))}
       </nav>
 
+      {/* ── SIH-26 Presentation Video Link ── */}
+      {!collapsed && (
+        <div
+          style={{
+            margin: "0 10px 8px",
+            padding: "8px 10px",
+            background: "rgba(225, 29, 72, 0.08)",
+            border: "1px solid rgba(225, 29, 72, 0.25)",
+            borderRadius: 8,
+            display: "flex",
+            flexDirection: "column",
+            gap: 5,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 9, fontWeight: 700, color: "#f43f5e", textTransform: "uppercase", letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: 5 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+              </svg>
+              SIH 2026 Pitch Video
+            </span>
+            <span style={{ fontSize: 8.5, color: "var(--text-muted)", fontWeight: 600 }}>SIH26103</span>
+          </div>
+          <a
+            href="https://youtu.be/gY_Ikc_Gb4Q"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              color: "#fb7185",
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            ▶ Watch System Walkthrough ↗
+          </a>
+        </div>
+      )}
+
       {/* ── MoSPI Badge ── */}
       {!collapsed && (
         <div
