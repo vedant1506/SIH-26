@@ -388,36 +388,6 @@ export default function TopBar({
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, marginLeft: "auto" }}>
         {action && <div className="tablet-hide">{action}</div>}
 
-        {/* Watch SIH Video Walkthrough Quick Link */}
-        <a
-          href="https://youtu.be/gY_Ikc_Gb4Q"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="phone-hide"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "5px 11px",
-            borderRadius: 8,
-            fontSize: 11,
-            fontWeight: 700,
-            textDecoration: "none",
-            color: "#ffffff",
-            background: "linear-gradient(135deg, #e11d48, #be123c)",
-            boxShadow: "0 2px 8px rgba(225, 29, 72, 0.35)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            transition: "all 0.15s ease",
-            whiteSpace: "nowrap",
-            flexShrink: 0,
-          }}
-          title="Watch SIH26103 Official System Demonstration Video (YouTube)"
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
-          </svg>
-          <span>Watch Demo Video</span>
-        </a>
 
         {/* Public Citizen Portal Quick Link */}
         <Link
