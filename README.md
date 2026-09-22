@@ -9,7 +9,6 @@
 <br />
 
 [![Watch Video Walkthrough](https://img.shields.io/badge/YouTube-Watch%20Video%20Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/gY_Ikc_Gb4Q)
-[![Live Platform on Hugging Face](https://img.shields.io/badge/HuggingFace-Live%20Platform%20Demo-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/spaces/shahadpathan/prism-platform)
 [![CI/CD Pipelines](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/ci.yml)
 [![Docker Multi-Container](https://img.shields.io/badge/Docker-Production%20Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](docker-compose.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
@@ -73,7 +72,6 @@ Experience PRISM live in production directly from your browser without local set
 
 | Platform | Direct Access Link | Environment | Status |
 |---|---|---|:---:|
-| **Hugging Face Spaces** | [**huggingface.co/spaces/shahadpathan/prism-platform**](https://huggingface.co/spaces/shahadpathan/prism-platform) | Full Containerized App | 🟢 Live |
 | **YouTube Video Demo** | [**youtu.be/gY_Ikc_Gb4Q**](https://youtu.be/gY_Ikc_Gb4Q) | 1080p HD Walkthrough | 🟢 Active |
 | **Interactive OpenAPI Docs** | `http://localhost:8000/docs` *(when run locally)* | Swagger UI / ReDoc | 🟢 Active |
 
