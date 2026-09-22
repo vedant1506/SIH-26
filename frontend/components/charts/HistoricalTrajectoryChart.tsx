@@ -31,15 +31,15 @@ function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: "rgba(15,23,42,0.96)",
-      border: "1px solid rgba(148,163,184,0.18)",
+      background: "var(--surface)",
+      border: "1px solid var(--border-2)",
       borderRadius: 10,
       padding: "10px 14px",
       fontSize: 12,
-      boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+      boxShadow: "var(--shadow-lg)",
       minWidth: 170,
     }}>
-      <div style={{ color: "#94a3b8", marginBottom: 6, fontSize: 11, fontWeight: 600 }}>
+      <div style={{ color: "var(--text-muted)", marginBottom: 6, fontSize: 11, fontWeight: 600 }}>
         Timeline: {Number(label).toFixed(1)}% elapsed
       </div>
       {payload.map((p: any) => {
@@ -187,14 +187,14 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
         display: "flex", justifyContent: "space-between", alignItems: "center",
         flexWrap: "wrap", gap: 8, marginBottom: 12,
       }}>
-        <div style={{ fontSize: 11, color: "#64748b", letterSpacing: "0.02em" }}>
+        <div style={{ fontSize: 11, color: "var(--text-muted)", letterSpacing: "0.02em" }}>
           Scheduled Benchmark vs Actual Execution Trajectory
         </div>
-        <div style={{ display: "flex", gap: 16, fontSize: 11, color: "#94a3b8" }}>
+        <div style={{ display: "flex", gap: 16, fontSize: 11, color: "var(--text-muted)" }}>
           {[
-            { color: "#64748b", dash: true, label: "Scheduled" },
-            { color: "#60a5fa", dash: false, label: "Physical Progress" },
-            { color: "#fbbf24", dash: false, label: "Expenditure Burn" },
+            { color: "var(--text-muted)", dash: true, label: "Scheduled" },
+            { color: "#3b82f6", dash: false, label: "Physical Progress" },
+            { color: "#f59e0b", dash: false, label: "Expenditure Burn" },
           ].map(({ color, dash, label }) => (
             <span key={label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <svg width="20" height="10" style={{ flexShrink: 0 }}>
@@ -203,7 +203,7 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
                   : <line x1="0" y1="5" x2="20" y2="5" stroke={color} strokeWidth="2.5" />
                 }
               </svg>
-              <span style={{ color: "#cbd5e1", fontWeight: 500 }}>{label}</span>
+              <span style={{ color: "var(--text-sub)", fontWeight: 500 }}>{label}</span>
             </span>
           ))}
         </div>
@@ -226,7 +226,7 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
 
             <CartesianGrid
               strokeDasharray="1 4"
-              stroke="rgba(148,163,184,0.10)"
+              stroke="var(--border)"
               vertical={false}
             />
 
@@ -236,9 +236,9 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
               domain={[0, Math.ceil(xMax)]}
               ticks={ticks}
               tickFormatter={xLabel}
-              tick={{ fill: "#64748b", fontSize: 10, fontWeight: 500 }}
-              axisLine={{ stroke: "rgba(148,163,184,0.15)" }}
-              tickLine={{ stroke: "rgba(148,163,184,0.15)" }}
+              tick={{ fill: "var(--text-muted)", fontSize: 10, fontWeight: 500 }}
+              axisLine={{ stroke: "var(--border)" }}
+              tickLine={{ stroke: "var(--border)" }}
               interval={0}
               height={36}
             />
@@ -246,7 +246,7 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
               tickFormatter={(v) => `${v}%`}
               domain={[0, 110]}
               ticks={[0, 25, 50, 75, 100]}
-              tick={{ fill: "#64748b", fontSize: 10, fontWeight: 500 }}
+              tick={{ fill: "var(--text-muted)", fontSize: 10, fontWeight: 500 }}
               axisLine={false}
               tickLine={false}
               width={38}
@@ -257,12 +257,12 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
             {/* Scheduled End vertical */}
             <ReferenceLine
               x={100}
-              stroke="rgba(100,116,139,0.22)"
+              stroke="var(--border-2)"
               strokeDasharray="4 3"
               label={{
                 value: "End",
                 position: "insideTopRight",
-                fill: "#475569",
+                fill: "var(--text-muted)",
                 fontSize: 10,
                 fontWeight: 600,
                 dy: -4,
@@ -272,12 +272,12 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
             {/* NOW vertical */}
             <ReferenceLine
               x={Math.round(timeElapsedPct * 10) / 10}
-              stroke="rgba(148,163,184,0.25)"
+              stroke="var(--border-2)"
               strokeDasharray="3 3"
               label={{
                 value: `▼ ${Math.round(timeElapsedPct)}%`,
                 position: "insideTopLeft",
-                fill: "#94a3b8",
+                fill: "var(--text-muted)",
                 fontSize: 9,
                 fontWeight: 700,
                 dy: -4,
@@ -333,7 +333,7 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
                 y={q1Progress}
                 r={4}
                 fill="#60a5fa"
-                stroke="rgba(15,23,42,0.9)"
+                stroke="var(--surface)"
                 strokeWidth={2}
               />
             )}
@@ -345,7 +345,7 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
                 y={midProgress}
                 r={4}
                 fill="#60a5fa"
-                stroke="rgba(15,23,42,0.9)"
+                stroke="var(--surface)"
                 strokeWidth={2}
               />
             )}
@@ -356,7 +356,7 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
               y={Math.round(currentProgress * 10) / 10}
               r={6}
               fill="#3b82f6"
-              stroke="rgba(15,23,42,0.9)"
+              stroke="var(--surface)"
               strokeWidth={2.5}
             />
 
@@ -366,7 +366,7 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
               y={Math.round(burnRate * 10) / 10}
               r={6}
               fill="#f59e0b"
-              stroke="rgba(15,23,42,0.9)"
+              stroke="var(--surface)"
               strokeWidth={2.5}
             />
           </ComposedChart>
@@ -378,15 +378,15 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
         display: "grid",
         gridTemplateColumns: "repeat(3, 1fr)",
         gap: 1,
-        background: "rgba(148,163,184,0.08)",
+        background: "var(--border)",
         borderRadius: 10,
-        border: "1px solid rgba(148,163,184,0.10)",
+        border: "1px solid var(--border)",
         overflow: "hidden",
         marginTop: 10,
       }}>
         {/* Schedule Divergence */}
-        <div style={{ padding: "12px 16px", background: "rgba(15,23,42,0.6)" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#475569", marginBottom: 4 }}>
+        <div style={{ padding: "12px 16px", background: "var(--surface-2)" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 4 }}>
             Schedule Divergence
           </div>
           <div style={{ fontSize: 15, fontWeight: 700, color: scheduleDivergence > 10 ? "#f43f5e" : scheduleDivergence > 0 ? "#f59e0b" : "#10b981", marginBottom: 3 }}>
@@ -396,7 +396,7 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
               ? `+${Math.abs(scheduleDivergence).toFixed(1)}% ahead`
               : "On schedule"}
           </div>
-          <div style={{ fontSize: 10, color: "#475569", display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ fontSize: 10, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
             <span>SPI</span>
             <span style={{
               background: spiColor + "22",
@@ -413,32 +413,32 @@ export default function HistoricalTrajectoryChart({ project, prediction }: Props
         </div>
 
         {/* Expenditure vs Progress */}
-        <div style={{ padding: "12px 16px", background: "rgba(15,23,42,0.6)", borderLeft: "1px solid rgba(148,163,184,0.08)", borderRight: "1px solid rgba(148,163,184,0.08)" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#475569", marginBottom: 4 }}>
+        <div style={{ padding: "12px 16px", background: "var(--surface-2)", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 4 }}>
             Expenditure vs Progress
           </div>
           <div style={{ fontSize: 15, fontWeight: 700, color: burnGap > 15 ? "#f59e0b" : burnGap < -15 ? "#f43f5e" : "#10b981", marginBottom: 3 }}>
             {burnGap > 15 ? `+${burnGap.toFixed(1)}% overspend` : burnGap < -15 ? "Low burn · stagnation" : "Optimal burn"}
           </div>
-          <div style={{ fontSize: 10, color: "#475569" }}>
-            Burn <span style={{ color: "#fbbf24", fontWeight: 600 }}>{burnRate.toFixed(1)}%</span>
+          <div style={{ fontSize: 10, color: "var(--text-sub)" }}>
+            Burn <span style={{ color: "#f59e0b", fontWeight: 600 }}>{burnRate.toFixed(1)}%</span>
             &nbsp;·&nbsp;
-            Progress <span style={{ color: "#60a5fa", fontWeight: 600 }}>{currentProgress.toFixed(1)}%</span>
+            Progress <span style={{ color: "#3b82f6", fontWeight: 600 }}>{currentProgress.toFixed(1)}%</span>
           </div>
         </div>
 
         {/* Projected Slippage */}
-        <div style={{ padding: "12px 16px", background: "rgba(15,23,42,0.6)" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#475569", marginBottom: 4 }}>
+        <div style={{ padding: "12px 16px", background: "var(--surface-2)" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 4 }}>
             Projected Slippage
           </div>
           <div style={{ fontSize: 15, fontWeight: 700, color: delayMonths > 12 ? "#f43f5e" : delayMonths > 0 ? "#f59e0b" : "#10b981", marginBottom: 3 }}>
             {delayMonths > 0 ? `+${delayMonths.toFixed(1)} Months` : "Zero delay"}
           </div>
-          <div style={{ fontSize: 10, color: "#475569" }}>
+          <div style={{ fontSize: 10, color: "var(--text-sub)" }}>
             {totalMonths > 0
-              ? <><span style={{ color: "#94a3b8", fontWeight: 600 }}>{Math.round(timeElapsedPct)}%</span> of <span style={{ color: "#94a3b8", fontWeight: 600 }}>{totalMonths}m</span> elapsed</>
-              : <><span style={{ color: "#94a3b8", fontWeight: 600 }}>{Math.round(timeElapsedPct)}%</span> timeline elapsed</>
+              ? <><span style={{ color: "var(--text)", fontWeight: 600 }}>{Math.round(timeElapsedPct)}%</span> of <span style={{ color: "var(--text)", fontWeight: 600 }}>{totalMonths}m</span> elapsed</>
+              : <><span style={{ color: "var(--text)", fontWeight: 600 }}>{Math.round(timeElapsedPct)}%</span> timeline elapsed</>
             }
           </div>
         </div>

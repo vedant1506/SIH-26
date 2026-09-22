@@ -492,11 +492,10 @@ export default function ProjectDetailPage() {
               style={{
                 fontSize: 13,
                 lineHeight: "1.75",
-                color: "var(--text)",
-                background: "rgba(0,0,0,0.25)",
+                background: "var(--surface-2)",
                 padding: "14px 18px",
                 borderRadius: 8,
-                border: "1px solid rgba(255,255,255,0.06)",
+                border: "1px solid var(--border)",
                 whiteSpace: "pre-line",
                 fontFamily: "var(--font-mono, monospace)",
               }}
@@ -554,7 +553,7 @@ export default function ProjectDetailPage() {
                   alignItems: "center",
                   gap: 8,
                   fontSize: 11,
-                  background: "rgba(255,255,255,0.03)",
+                  background: "var(--surface-2)",
                   border: "1px solid var(--border-2)",
                   padding: "5px 12px",
                   borderRadius: 20,

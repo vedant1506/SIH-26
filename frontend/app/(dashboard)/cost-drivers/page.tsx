@@ -213,7 +213,7 @@ export default function CostDriversPage() {
                 className="card"
                 style={{
                   padding: "18px 20px",
-                  background: "linear-gradient(145deg, rgba(244,63,94,0.06) 0%, rgba(10,16,32,0.8) 100%)",
+                  background: "linear-gradient(145deg, rgba(244,63,94,0.06) 0%, var(--surface) 100%)",
                   borderLeft: "3px solid #f43f5e",
                   borderRadius: 12,
                 }}
@@ -233,7 +233,7 @@ export default function CostDriversPage() {
                 className="card"
                 style={{
                   padding: "18px 20px",
-                  background: "linear-gradient(145deg, rgba(245,158,11,0.06) 0%, rgba(10,16,32,0.8) 100%)",
+                  background: "linear-gradient(145deg, rgba(245,158,11,0.06) 0%, var(--surface) 100%)",
                   borderLeft: "3px solid #f59e0b",
                   borderRadius: 12,
                 }}
@@ -253,7 +253,7 @@ export default function CostDriversPage() {
                 className="card"
                 style={{
                   padding: "18px 20px",
-                  background: "linear-gradient(145deg, rgba(56,189,248,0.06) 0%, rgba(10,16,32,0.8) 100%)",
+                  background: "linear-gradient(145deg, rgba(56,189,248,0.06) 0%, var(--surface) 100%)",
                   borderLeft: "3px solid #38bdf8",
                   borderRadius: 12,
                 }}
@@ -273,7 +273,7 @@ export default function CostDriversPage() {
                 className="card"
                 style={{
                   padding: "18px 20px",
-                  background: "linear-gradient(145deg, rgba(168,85,247,0.06) 0%, rgba(10,16,32,0.8) 100%)",
+                  background: "linear-gradient(145deg, rgba(168,85,247,0.06) 0%, var(--surface) 100%)",
                   borderLeft: "3px solid #a855f7",
                   borderRadius: 12,
                 }}

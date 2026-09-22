@@ -535,7 +535,7 @@ export default function ShapWaterfallChart({
             </svg>
           </div>
           <div>
-            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.04em" }}>
               Risk Escalators
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 2 }}>
@@ -579,7 +579,7 @@ export default function ShapWaterfallChart({
             </svg>
           </div>
           <div>
-            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.04em" }}>
               Risk Dampeners
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 2 }}>
@@ -596,7 +596,7 @@ export default function ShapWaterfallChart({
         {/* Card 3: Top Risk Catalyst */}
         <div
           style={{
-            background: "rgba(255,255,255,0.02)",
+            background: "var(--surface)",
             border: "1px solid var(--border-2)",
             borderRadius: 10,
             padding: "12px 14px",
@@ -618,21 +618,21 @@ export default function ShapWaterfallChart({
               flexShrink: 0,
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
               <line x1="12" y1="9" x2="12" y2="13" />
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
           </div>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.04em" }}>
               Primary Risk Driver
             </div>
             <div
               style={{
                 fontSize: 12,
                 fontWeight: 600,
-                color: "#f8fafc",
+                color: "var(--text)",
                 marginTop: 2,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
@@ -682,7 +682,7 @@ export default function ShapWaterfallChart({
             </svg>
           </div>
           <div>
-            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.04em" }}>
               Net Attribution Bias
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 2 }}>
@@ -709,7 +709,7 @@ export default function ShapWaterfallChart({
           alignItems: "center",
           flexWrap: "wrap",
           gap: 12,
-          background: "rgba(255,255,255,0.02)",
+          background: "var(--surface-2)",
           padding: "8px 12px",
           borderRadius: 8,
           border: "1px solid var(--border)",
@@ -717,7 +717,7 @@ export default function ShapWaterfallChart({
       >
         {/* Left: Filter Pills */}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 12, color: "#94a3b8", marginRight: 4, fontWeight: 500 }}>
+          <span style={{ fontSize: 12, color: "var(--text-muted)", marginRight: 4, fontWeight: 500 }}>
             Filter:
           </span>
           <button
@@ -789,7 +789,7 @@ export default function ShapWaterfallChart({
                 type="button"
                 onClick={expandAll}
                 style={{
-                  background: allExpanded && Object.keys(expandedMap).length === 0 ? "rgba(255,255,255,0.08)" : "transparent",
+                  background: allExpanded && Object.keys(expandedMap).length === 0 ? "var(--surface-3)" : "transparent",
                   border: "1px solid var(--border-2)",
                   borderRadius: 5,
                   color: allExpanded && Object.keys(expandedMap).length === 0 ? "var(--text)" : "var(--text-sub)",
@@ -812,7 +812,7 @@ export default function ShapWaterfallChart({
                 type="button"
                 onClick={collapseAll}
                 style={{
-                  background: !allExpanded && Object.keys(expandedMap).length === 0 ? "rgba(255,255,255,0.08)" : "transparent",
+                  background: !allExpanded && Object.keys(expandedMap).length === 0 ? "var(--surface-3)" : "transparent",
                   border: "1px solid var(--border-2)",
                   borderRadius: 5,
                   color: !allExpanded && Object.keys(expandedMap).length === 0 ? "var(--text)" : "var(--text-sub)",
@@ -838,7 +838,7 @@ export default function ShapWaterfallChart({
           <div
             style={{
               display: "flex",
-              background: "rgba(0,0,0,0.3)",
+              background: "var(--surface-2)",
               padding: 3,
               borderRadius: 6,
               border: "1px solid var(--border)",
@@ -928,7 +928,7 @@ export default function ShapWaterfallChart({
                     display: "flex",
                     flexDirection: "column",
                     gap: 10,
-                    background: "rgba(255,255,255,0.015)",
+                    background: "var(--surface)",
                     cursor: "pointer",
                   }}
                 >
@@ -948,7 +948,7 @@ export default function ShapWaterfallChart({
                           fontSize: 10,
                           fontWeight: 700,
                           fontFamily: "var(--font-mono, monospace)",
-                          background: "rgba(255,255,255,0.06)",
+                          background: "var(--surface-3)",
                           color: "var(--text-muted)",
                           padding: "2px 7px",
                           borderRadius: 4,
@@ -992,7 +992,7 @@ export default function ShapWaterfallChart({
                             {item.meta.category}
                           </span>
                         </div>
-                        <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>
+                        <div style={{ fontSize: 12, color: "var(--text-sub)", marginTop: 2 }}>
                           Current measurement:{" "}
                           <strong style={{ color: item.metricInfo.statusColor }}>
                             {item.metricInfo.valueText}
@@ -1017,7 +1017,7 @@ export default function ShapWaterfallChart({
                         <span style={{ fontSize: 12, fontWeight: 700, color: isEscalator ? "#f43f5e" : "#10b981" }}>
                           {isEscalator ? "▲" : "▼"} {isEscalator ? "+" : "-"}{item.impactPct}%
                         </span>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: isEscalator ? "#fda4af" : "#a7f3d0" }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: isEscalator ? "var(--critical)" : "var(--low)" }}>
                           {isEscalator ? "Risk Escalator" : "Risk Dampener"}
                         </span>
                       </div>
@@ -1045,7 +1045,7 @@ export default function ShapWaterfallChart({
                           toggleExpand(item.feature);
                         }}
                         style={{
-                          background: "rgba(255,255,255,0.04)",
+                          background: "var(--surface-3)",
                           border: "1px solid var(--border-2)",
                           borderRadius: 6,
                           color: "var(--text)",
@@ -1106,10 +1106,10 @@ export default function ShapWaterfallChart({
                         position: "relative",
                         width: "100%",
                         height: 14,
-                        background: "rgba(0,0,0,0.35)",
+                        background: "var(--surface-3)",
                         borderRadius: 7,
                         overflow: "hidden",
-                        border: "1px solid rgba(255,255,255,0.06)",
+                        border: "1px solid var(--border)",
                       }}
                     >
                       {/* Grid tick marks */}
@@ -1120,7 +1120,7 @@ export default function ShapWaterfallChart({
                           top: 0,
                           bottom: 0,
                           width: 1,
-                          background: "rgba(255,255,255,0.08)",
+                          background: "var(--border-2)",
                           zIndex: 1,
                         }}
                       />
@@ -1131,7 +1131,7 @@ export default function ShapWaterfallChart({
                           top: 0,
                           bottom: 0,
                           width: 1,
-                          background: "rgba(255,255,255,0.08)",
+                          background: "var(--border-2)",
                           zIndex: 1,
                         }}
                       />
@@ -1142,7 +1142,7 @@ export default function ShapWaterfallChart({
                           top: 0,
                           bottom: 0,
                           width: 1,
-                          background: "rgba(255,255,255,0.08)",
+                          background: "var(--border-2)",
                           zIndex: 1,
                         }}
                       />
@@ -1170,7 +1170,7 @@ export default function ShapWaterfallChart({
                         display: "flex",
                         justifyContent: "space-between",
                         fontSize: 10,
-                        color: "#475569",
+                        color: "var(--text-muted)",
                         marginTop: 3,
                         padding: "0 2px",
                       }}
@@ -1188,7 +1188,7 @@ export default function ShapWaterfallChart({
                   <div
                     style={{
                       padding: "14px 16px",
-                      background: "rgba(0,0,0,0.22)",
+                      background: "var(--surface-2)",
                       borderTop: "1px solid var(--border)",
                       display: "flex",
                       flexDirection: "column",
@@ -1203,7 +1203,7 @@ export default function ShapWaterfallChart({
                         <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-sub)", display: "flex", alignItems: "center", gap: 6 }}>
                           <span style={{ color: "#38bdf8" }}>ℹ️</span> What this line means in reality:
                         </div>
-                        <div style={{ color: "#cbd5e1" }}>
+                        <div style={{ color: "var(--text-sub)" }}>
                           {item.explanation.whatHappened}
                         </div>
                       </div>
@@ -1216,7 +1216,7 @@ export default function ShapWaterfallChart({
                           </span>{" "}
                           Why the AI model weighted this ({isEscalator ? "+" : "-"}{item.impactPct}%):
                         </div>
-                        <div style={{ color: "#cbd5e1" }}>
+                        <div style={{ color: "var(--text-sub)" }}>
                           {item.explanation.riskImpact}
                         </div>
                       </div>
@@ -1239,15 +1239,15 @@ export default function ShapWaterfallChart({
                         🎯
                       </span>
                       <div style={{ fontSize: 12 }}>
-                        <strong style={{ color: isEscalator ? "#fda4af" : "#a7f3d0" }}>
+                        <strong style={{ color: isEscalator ? "var(--critical)" : "var(--low)" }}>
                           Recommended Officer Action:
                         </strong>{" "}
-                        <span style={{ color: "#e2e8f0" }}>{item.explanation.actionAdvice}</span>
+                        <span style={{ color: "var(--text)" }}>{item.explanation.actionAdvice}</span>
                       </div>
                     </div>
 
                     {/* Official Flash Report Evidentiary Ground */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginTop: 4, paddingTop: 8, borderTop: "1px dashed rgba(255,255,255,0.08)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginTop: 4, paddingTop: 8, borderTop: "1px dashed var(--border)" }}>
                       <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
                         Evidentiary Basis:
                       </span>
@@ -1297,7 +1297,7 @@ export default function ShapWaterfallChart({
                     alignItems: "center",
                     gap: 14,
                     padding: "8px 0",
-                    borderBottom: i < parsedData.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                    borderBottom: i < parsedData.length - 1 ? "1px solid var(--border)" : "none",
                   }}
                 >
                   {/* Label */}
@@ -1331,7 +1331,7 @@ export default function ShapWaterfallChart({
                     style={{
                       position: "relative",
                       height: 22,
-                      background: "rgba(0,0,0,0.3)",
+                      background: "var(--surface-3)",
                       borderRadius: 4,
                       overflow: "hidden",
                       display: "flex",
@@ -1399,7 +1399,7 @@ export default function ShapWaterfallChart({
       {/* ── 5. Executive Takeaway Box ──────────────────────────────────── */}
       <div
         style={{
-          background: "rgba(255, 255, 255, 0.02)",
+          background: "var(--surface-2)",
           border: "1px solid var(--border-2)",
           borderRadius: 10,
           padding: "12px 16px",
@@ -1420,7 +1420,7 @@ export default function ShapWaterfallChart({
           </span>
           <span>Executive Attribution Takeaway:</span>
         </div>
-        <div style={{ lineHeight: 1.6, fontSize: 13, color: "#cbd5e1" }}>
+        <div style={{ lineHeight: 1.6, fontSize: 13, color: "var(--text-sub)" }}>
           {topRiskDriver ? (
             <span>
               The dominant factor driving project vulnerability is{" "}

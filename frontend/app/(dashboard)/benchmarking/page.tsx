@@ -1072,7 +1072,7 @@ export default function BenchmarkingPage() {
                 padding: 0,
                 overflow: "hidden",
                 border: "1px solid var(--border)",
-                background: "rgba(10, 16, 32, 0.7)",
+                background: "var(--surface)",
                 backdropFilter: "blur(12px)",
               }}
             >
@@ -1086,7 +1086,7 @@ export default function BenchmarkingPage() {
                   alignItems: "center",
                   flexWrap: "wrap",
                   gap: 12,
-                  background: "rgba(255,255,255,0.02)",
+                  background: "var(--surface-2)",
                 }}
               >
                 {/* Tabs */}
@@ -1169,7 +1169,7 @@ export default function BenchmarkingPage() {
                           borderRadius: 6,
                           fontSize: 11,
                           border: "1px solid var(--border)",
-                          background: quickFilter === "all" ? "rgba(255,255,255,0.08)" : "transparent",
+                          background: quickFilter === "all" ? "var(--surface-3)" : "transparent",
                           color: quickFilter === "all" ? "var(--text)" : "var(--text-muted)",
                           cursor: "pointer",
                         }}
@@ -1275,7 +1275,7 @@ export default function BenchmarkingPage() {
                     <thead>
                       <tr
                         style={{
-                          background: "rgba(255,255,255,0.03)",
+                          background: "var(--surface-2)",
                           borderBottom: "1px solid var(--border)",
                           textAlign: "left",
                           color: "var(--text-muted)",
@@ -1353,7 +1353,7 @@ export default function BenchmarkingPage() {
                                 borderBottom: "1px solid var(--border)",
                                 transition: "background 0.15s ease",
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-hover)")}
                               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                             >
                               <td style={{ padding: "14px 18px", color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: 12 }}>
@@ -1430,7 +1430,7 @@ export default function BenchmarkingPage() {
                                     style={{
                                       width: 70,
                                       height: 6,
-                                      background: "rgba(255,255,255,0.08)",
+                                      background: "var(--border)",
                                       borderRadius: 3,
                                       overflow: "hidden",
                                     }}
@@ -1478,8 +1478,8 @@ export default function BenchmarkingPage() {
                                     fontWeight: 600,
                                     borderRadius: 6,
                                     textDecoration: "none",
-                                    background: "rgba(255,255,255,0.05)",
-                                    border: "1px solid rgba(255,255,255,0.1)",
+                                    background: "var(--surface-3)",
+                                    border: "1px solid var(--border)",
                                   }}
                                 >
                                   <span>Inspect</span>
@@ -1499,7 +1499,7 @@ export default function BenchmarkingPage() {
                     <thead>
                       <tr
                         style={{
-                          background: "rgba(255,255,255,0.03)",
+                          background: "var(--surface-2)",
                           borderBottom: "1px solid var(--border)",
                           textAlign: "left",
                           color: "var(--text-muted)",
@@ -1569,7 +1569,7 @@ export default function BenchmarkingPage() {
                                 borderBottom: "1px solid var(--border)",
                                 transition: "background 0.15s ease",
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-hover)")}
                               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                             >
                               <td style={{ padding: "14px 18px", color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: 12 }}>
@@ -1640,8 +1640,8 @@ export default function BenchmarkingPage() {
                                     fontWeight: 600,
                                     borderRadius: 6,
                                     textDecoration: "none",
-                                    background: "rgba(255,255,255,0.05)",
-                                    border: "1px solid rgba(255,255,255,0.1)",
+                                    background: "var(--surface-3)",
+                                    border: "1px solid var(--border)",
                                   }}
                                 >
                                   <span>View</span>
@@ -1661,7 +1661,7 @@ export default function BenchmarkingPage() {
                     <thead>
                       <tr
                         style={{
-                          background: "rgba(255,255,255,0.03)",
+                          background: "var(--surface-2)",
                           borderBottom: "1px solid var(--border)",
                           textAlign: "left",
                           color: "var(--text-muted)",
@@ -1731,7 +1731,7 @@ export default function BenchmarkingPage() {
                                 borderBottom: "1px solid var(--border)",
                                 transition: "background 0.15s ease",
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-hover)")}
                               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                             >
                               <td style={{ padding: "14px 18px", color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: 12 }}>
@@ -1823,8 +1823,8 @@ export default function BenchmarkingPage() {
                                     fontWeight: 600,
                                     borderRadius: 6,
                                     textDecoration: "none",
-                                    background: "rgba(255,255,255,0.05)",
-                                    border: "1px solid rgba(255,255,255,0.1)",
+                                    background: "var(--surface-3)",
+                                    border: "1px solid var(--border)",
                                   }}
                                 >
                                   <span>Geo Map</span>
@@ -1850,7 +1850,7 @@ export default function BenchmarkingPage() {
                   alignItems: "center",
                   fontSize: 12,
                   color: "var(--text-muted)",
-                  background: "rgba(255,255,255,0.01)",
+                  background: "var(--surface-2)",
                 }}
               >
                 <span>
