@@ -351,25 +351,48 @@ export default function Sidebar({
         width: collapsed ? 68 : 236,
       }}
     >
-      {/* ── Logo ── */}
+      {/* ── Logo + Brand ── */}
       <div
         style={{
           height: 72,
           display: "flex",
           alignItems: "center",
           justifyContent: collapsed ? "center" : "space-between",
-          padding: collapsed ? "0" : "0 16px 0 14px",
+          padding: collapsed ? "0" : "0 14px 0 14px",
           borderBottom: "1px solid var(--border)",
           flexShrink: 0,
           position: "relative",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <Link
+          href={user ? "/dashboard" : "/login"}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            textDecoration: "none",
+            cursor: "pointer",
+          }}
+          title={user ? "PRISM - Click to open Command Center" : "PRISM - Login"}
+        >
           <div
             style={{
-              width: 40, height: 40, borderRadius: 10, overflow: "hidden", flexShrink: 0,
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              overflow: "hidden",
+              flexShrink: 0,
               boxShadow: "0 0 16px rgba(6,182,212,0.35), 0 0 32px rgba(6,182,212,0.15)",
               border: "1px solid rgba(6,182,212,0.25)",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.06)";
+              e.currentTarget.style.boxShadow = "0 0 20px rgba(6,182,212,0.55), 0 0 36px rgba(6,182,212,0.25)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = "0 0 16px rgba(6,182,212,0.35), 0 0 32px rgba(6,182,212,0.15)";
             }}
           >
             <img
@@ -382,8 +405,11 @@ export default function Sidebar({
             <div>
               <div
                 style={{
-                  fontSize: 17, fontWeight: 800, color: "var(--text)",
-                  letterSpacing: "0.10em", lineHeight: 1.1,
+                  fontSize: 17,
+                  fontWeight: 800,
+                  color: "var(--text)",
+                  letterSpacing: "0.10em",
+                  lineHeight: 1.1,
                   fontFamily: "'Space Grotesk', sans-serif",
                 }}
               >
@@ -391,15 +417,19 @@ export default function Sidebar({
               </div>
               <div
                 style={{
-                  fontSize: 8.5, fontWeight: 600, color: "var(--accent)",
-                  textTransform: "uppercase", letterSpacing: "0.12em", marginTop: 1,
+                  fontSize: 8.5,
+                  fontWeight: 600,
+                  color: "var(--accent)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.12em",
+                  marginTop: 2,
                 }}
               >
                 Risk Intelligence
               </div>
             </div>
           )}
-        </div>
+        </Link>
 
         {/* Mobile Close Button */}
         {onCloseMobile && (
@@ -426,6 +456,7 @@ export default function Sidebar({
           </button>
         )}
 
+        {/* Collapse Button (Expanded State) */}
         {!collapsed && setCollapsed && (
           <button
             onClick={() => setCollapsed(true)}
@@ -438,14 +469,72 @@ export default function Sidebar({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              width: 26, height: 26,
+              width: 28,
+              height: 28,
+              transition: "all 0.15s ease",
             }}
-            title="Collapse sidebar"
+            title="Collapse sidebar (<)"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(6,182,212,0.15)";
+              e.currentTarget.style.borderColor = "var(--accent)";
+              e.currentTarget.style.color = "var(--accent)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--surface-2)";
+              e.currentTarget.style.borderColor = "var(--border)";
+              e.currentTarget.style.color = "var(--text-sub)";
+            }}
           >
             {Icons.chevronLeft}
           </button>
         )}
       </div>
+
+      {/* Expand Toggle Button (Collapsed State) - Cleanly positioned right below header */}
+      {collapsed && setCollapsed && (
+        <div
+          style={{
+            padding: "8px 0",
+            display: "flex",
+            justifyContent: "center",
+            borderBottom: "1px solid var(--border)",
+            background: "rgba(255,255,255,0.015)",
+          }}
+        >
+          <button
+            onClick={() => setCollapsed(false)}
+            style={{
+              background: "var(--surface-2)",
+              border: "1px solid var(--border)",
+              borderRadius: 6,
+              color: "var(--accent)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 36,
+              height: 28,
+              transition: "all 0.18s ease",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+            }}
+            title="Expand sidebar (>)"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(6,182,212,0.18)";
+              e.currentTarget.style.borderColor = "var(--accent)";
+              e.currentTarget.style.boxShadow = "0 0 12px rgba(6,182,212,0.35)";
+              e.currentTarget.style.transform = "scale(1.05)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--surface-2)";
+              e.currentTarget.style.borderColor = "var(--border)";
+              e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.25)";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
+          >
+            {Icons.chevronRight}
+          </button>
+        </div>
+      )}
 
       {/* ── Section Label ── */}
       {!collapsed && (
@@ -461,10 +550,10 @@ export default function Sidebar({
       )}
 
       {/* ── Nav ── */}
-      <nav style={{ flex: 1, padding: "6px 10px", overflowY: "auto" }}>
-        {navGroups.map(({ section, items }) => (
+      <nav style={{ flex: 1, padding: collapsed ? "8px 6px" : "6px 10px", overflowY: "auto", overflowX: "hidden" }}>
+        {navGroups.map(({ section, items }, groupIdx) => (
           <div key={section}>
-            {!collapsed && (
+            {!collapsed ? (
               <div
                 style={{
                   padding: "10px 4px 4px",
@@ -474,7 +563,16 @@ export default function Sidebar({
               >
                 {section}
               </div>
-            )}
+            ) : groupIdx > 0 ? (
+              <div
+                style={{
+                  height: 1,
+                  background: "var(--border)",
+                  opacity: 0.5,
+                  margin: "8px 8px",
+                }}
+              />
+            ) : null}
             {items.map(({ href, icon, label }) => {
               const active =
                 pathname === href ||
@@ -486,35 +584,61 @@ export default function Sidebar({
                   onClick={() => {
                     if (onCloseMobile) onCloseMobile();
                   }}
-                  title={collapsed ? label : undefined}
+                  title={label}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: collapsed ? "center" : "flex-start",
                     gap: 10,
-                    padding: collapsed ? "10px 0" : "8px 12px",
-                    borderRadius: 9,
-                    marginBottom: 1,
+                    padding: collapsed ? 0 : "8px 12px",
+                    margin: collapsed ? "4px auto" : "1px 0",
+                    width: collapsed ? 44 : "100%",
+                    height: collapsed ? 44 : "auto",
+                    borderRadius: 10,
                     color: active ? "var(--accent)" : "var(--text-sub)",
                     background: active
-                      ? "linear-gradient(90deg, rgba(6,182,212,0.12), rgba(6,182,212,0.04))"
+                      ? collapsed
+                        ? "rgba(6,182,212,0.15)"
+                        : "linear-gradient(90deg, rgba(6,182,212,0.12), rgba(6,182,212,0.04))"
                       : "transparent",
+                    border: active && collapsed
+                      ? "1px solid rgba(6,182,212,0.35)"
+                      : "1px solid transparent",
+                    boxShadow: active && collapsed
+                      ? "0 0 14px rgba(6,182,212,0.22)"
+                      : "none",
                     textDecoration: "none",
                     fontSize: 13,
                     fontWeight: active ? 600 : 400,
-                    transition: "all 0.18s ease",
+                    transition: "all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1)",
                     borderLeft: active && !collapsed
                       ? "2px solid var(--accent)"
-                      : "2px solid transparent",
+                      : active && collapsed
+                        ? "1px solid rgba(6,182,212,0.35)"
+                        : "2px solid transparent",
                     position: "relative",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                      e.currentTarget.style.color = "var(--text)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "var(--text-sub)";
+                    }
                   }}
                 >
                   <span
                     style={{
-                      opacity: active ? 1 : 0.55,
+                      opacity: active ? 1 : 0.65,
                       transition: "opacity 0.15s",
                       flexShrink: 0,
                       display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
                     {icon}
@@ -526,9 +650,14 @@ export default function Sidebar({
                     <span
                       style={{
                         position: "absolute",
-                        right: 0, top: "50%", transform: "translateY(-50%)",
-                        width: 3, height: 20, borderRadius: "2px 0 0 2px",
+                        right: -5,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        width: 3,
+                        height: 18,
+                        borderRadius: "2px 0 0 2px",
                         background: "var(--accent)",
+                        boxShadow: "0 0 8px var(--accent)",
                       }}
                     />
                   )}
@@ -540,9 +669,8 @@ export default function Sidebar({
         ))}
       </nav>
 
-
       {/* ── MoSPI Badge ── */}
-      {!collapsed && (
+      {!collapsed ? (
         <div
           style={{
             margin: "0 10px 10px",
@@ -570,43 +698,95 @@ export default function Sidebar({
             </div>
           </div>
         </div>
+      ) : (
+        <div
+          style={{
+            margin: "0 auto 10px",
+            width: 36, height: 36, borderRadius: 8, overflow: "hidden",
+            border: "1px solid var(--accent-glow)",
+            boxShadow: "0 0 8px rgba(6,182,212,0.2)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+          title="MoSPI · PAIMANA — April 2026 (1,981 Projects)"
+        >
+          <img src="/logo.jpg" alt="MoSPI" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        </div>
       )}
 
       {/* ── User + Role Badge + Logout ── */}
       <div
         style={{
-          padding: collapsed ? "12px 0" : "12px 10px",
+          padding: collapsed ? "12px 0 24px" : "12px 10px 16px",
           borderTop: "1px solid var(--border)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 8,
+          gap: 10,
           position: "relative",
+          background: "var(--surface)",
         }}
       >
-        {collapsed && setCollapsed && (
-          <button
-            onClick={() => setCollapsed(false)}
-            style={{
-              background: "var(--surface-2)",
-              border: "1px solid var(--border)",
-              borderRadius: 6, color: "var(--text-sub)", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              width: 30, height: 30, marginBottom: 6,
-            }}
-            title="Expand sidebar"
-          >
-            {Icons.chevronRight}
-          </button>
-        )}
-
         {/* Role Switcher Popover */}
-        {roleSwitcherOpen && !collapsed && (
-          <RoleSwitcherPopover
-            currentRole={role}
-            onSwitch={(r) => switchRole(r)}
-            onClose={() => setRoleSwitcherOpen(false)}
-          />
+        {roleSwitcherOpen && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: "100%",
+              left: collapsed ? 12 : 0,
+              right: collapsed ? undefined : 0,
+              width: collapsed ? 210 : undefined,
+              marginBottom: 8,
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              boxShadow: "0 -8px 32px rgba(0,0,0,0.5)",
+              padding: 8,
+              zIndex: 100,
+            }}
+          >
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", padding: "4px 8px 8px" }}>
+              Quick Role Switch
+            </div>
+            {ROLE_PRESETS.map(({ role: r, label }) => {
+              const meta = ROLE_META[r];
+              const isActive = (role || "monitoring_officer") === r;
+              return (
+                <button
+                  key={r}
+                  id={`role-switch-${r}`}
+                  onClick={() => { switchRole(r); setRoleSwitcherOpen(false); }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    width: "100%",
+                    padding: "6px 8px",
+                    borderRadius: 6,
+                    background: isActive ? `${meta.color}20` : "transparent",
+                    border: isActive ? `1px solid ${meta.color}40` : "1px solid transparent",
+                    color: isActive ? meta.color : "var(--text-sub)",
+                    cursor: "pointer",
+                    fontSize: 12,
+                    fontWeight: isActive ? 700 : 400,
+                    textAlign: "left",
+                    transition: "all 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                  }}
+                >
+                  <span style={{ display: "inline-flex", alignItems: "center" }}>{RoleIcons[r]}</span>
+                  <span>{label}</span>
+                  {isActive && (
+                    <span style={{ marginLeft: "auto", width: 6, height: 6, borderRadius: "50%", background: meta.color, flexShrink: 0 }} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         )}
 
         {/* User Identity Block */}
@@ -619,15 +799,38 @@ export default function Sidebar({
         >
           {/* Avatar */}
           <div
+            onClick={() => {
+              if (collapsed) setRoleSwitcherOpen(v => !v);
+            }}
+            title={`${user?.full_name || "User"} • ${roleMeta?.label || "Monitoring Officer"}${collapsed ? " (Click to switch role)" : ""}`}
             style={{
-              width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
+              width: collapsed ? 36 : 32,
+              height: collapsed ? 36 : 32,
+              borderRadius: "50%",
+              flexShrink: 0,
               background: roleMeta
                 ? `linear-gradient(135deg, ${roleMeta.color}99, ${roleMeta.color}44)`
                 : "linear-gradient(135deg, #06b6d4, #3b82f6)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 11, fontWeight: 800, color: "#fff",
-              boxShadow: roleMeta ? `0 0 10px ${roleMeta.color}44` : "0 0 10px rgba(6,182,212,0.3)",
-              border: roleMeta ? `1px solid ${roleMeta.color}55` : "1px solid rgba(6,182,212,0.3)",
+              fontSize: collapsed ? 12 : 11,
+              fontWeight: 800,
+              color: "#fff",
+              boxShadow: roleMeta ? `0 0 12px ${roleMeta.color}55` : "0 0 10px rgba(6,182,212,0.3)",
+              border: roleMeta ? `1.5px solid ${roleMeta.color}` : "1.5px solid rgba(6,182,212,0.5)",
+              cursor: collapsed ? "pointer" : "default",
+              transition: "all 0.18s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (collapsed) {
+                e.currentTarget.style.transform = "scale(1.08)";
+                e.currentTarget.style.boxShadow = "0 0 16px var(--accent)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (collapsed) {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = roleMeta ? `0 0 12px ${roleMeta.color}55` : "0 0 10px rgba(6,182,212,0.3)";
+              }
             }}
           >
             {initials}
@@ -686,20 +889,24 @@ export default function Sidebar({
           onClick={handleLogout}
           style={{
             display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            width: collapsed ? 30 : "100%", height: collapsed ? 30 : undefined,
+            width: collapsed ? 36 : "100%", height: collapsed ? 36 : undefined,
             padding: collapsed ? 0 : "7px 10px",
-            background: "rgba(244,63,94,0.07)",
-            border: "1px solid rgba(244,63,94,0.15)",
-            borderRadius: 7, color: "var(--critical)", cursor: "pointer",
+            background: "rgba(244,63,94,0.08)",
+            border: "1px solid rgba(244,63,94,0.18)",
+            borderRadius: 8, color: "var(--critical)", cursor: "pointer",
             fontSize: 11, fontWeight: 600,
-            transition: "all 0.15s ease",
+            transition: "all 0.18s ease",
           }}
-          title={collapsed ? "Sign Out" : undefined}
+          title={collapsed ? `Sign Out (${user?.full_name || "User"})` : undefined}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "rgba(244,63,94,0.14)";
+            (e.currentTarget as HTMLButtonElement).style.background = "rgba(244,63,94,0.18)";
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(244,63,94,0.38)";
+            if (collapsed) (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.06)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "rgba(244,63,94,0.07)";
+            (e.currentTarget as HTMLButtonElement).style.background = "rgba(244,63,94,0.08)";
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(244,63,94,0.18)";
+            if (collapsed) (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
           }}
         >
           {Icons.logout}

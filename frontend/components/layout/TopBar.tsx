@@ -13,6 +13,7 @@ import { toggleTheme, getStoredTheme, type Theme } from "@/lib/theme";
 import type { Notification } from "@/lib/types";
 import { useNav } from "@/lib/nav-context";
 import { useDataMode, setDataMode } from "@/lib/fallback-state";
+import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 
 interface TopBarProps {
@@ -75,6 +76,7 @@ export default function TopBar({
   const [theme, setTheme] = useState<Theme>("dark");
   const { toggleMobile } = useNav();
   const { isFallback } = useDataMode();
+  const { user } = useAuth();
 
   const handleToggleDataMode = () => {
     if (isFallback) {
@@ -196,18 +198,26 @@ export default function TopBar({
           </svg>
         </button>
 
-        <div
-          className="phone-hide"
-          style={{
-            width: 34, height: 34, borderRadius: 8, overflow: "hidden", flexShrink: 0,
-            boxShadow: "0 2px 8px var(--accent-glow)",
-            border: "1px solid var(--border)",
-            background: "var(--surface)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}
+        <Link
+          href={user ? "/dashboard" : "/login"}
+          title="PRISM - Click to open Command Center"
+          style={{ textDecoration: "none" }}
         >
-          <img src="/logo.jpg" alt="PRISM" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-        </div>
+          <div
+            className="phone-hide"
+            style={{
+              width: 34, height: 34, borderRadius: 8, overflow: "hidden", flexShrink: 0,
+              boxShadow: "0 2px 8px var(--accent-glow)",
+              border: "1px solid var(--border)",
+              background: "var(--surface)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer",
+              transition: "transform 0.18s ease, box-shadow 0.18s ease",
+            }}
+          >
+            <img src="/logo.jpg" alt="PRISM" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+        </Link>
         <div style={{ minWidth: 100, flexShrink: 1, overflow: "hidden" }}>
           <h1
             style={{
