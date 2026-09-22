@@ -50,9 +50,9 @@
 
 <br />
 
-| 📺 Video Walkthrough | 🌐 Live Platform Space | 📐 Architecture Specification | ⚖️ GFR-175 Engine Code |
-| :---: | :---: | :---: | :---: |
-| [**Watch on YouTube (1080p)**](https://youtu.be/gY_Ikc_Gb4Q) | [**Open Hugging Face Space**](https://huggingface.co/spaces/shahadpathan/prism-platform) | [**Read ARCHITECTURE.md**](ARCHITECTURE.md) | [**Inspect Procurement Rules**](backend/app/services/gfr175_service.py) |
+| 📺 Video Walkthrough | 📐 Architecture Specification | ⚖️ GFR-175 Engine Code |
+| :---: | :---: | :---: |
+| [**Watch on YouTube (1080p)**](https://youtu.be/gY_Ikc_Gb4Q) | [**Read ARCHITECTURE.md**](ARCHITECTURE.md) | [**Inspect Procurement Rules**](backend/app/services/gfr175_service.py) |
 
 </div>
 
