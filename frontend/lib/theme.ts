@@ -14,27 +14,32 @@ export function getStoredTheme(): Theme {
 }
 
 export function applyTheme(theme: Theme) {
+  if (typeof document === "undefined") return;
   const root = document.documentElement;
   if (theme === "light") {
     root.setAttribute("data-theme", "light");
     root.classList.add("light-mode");
     root.classList.remove("dark-mode");
+    root.style.colorScheme = "light";
   } else {
     root.removeAttribute("data-theme");
     root.classList.remove("light-mode");
     root.classList.add("dark-mode");
+    root.style.colorScheme = "dark";
   }
 }
 
 export function toggleTheme(): Theme {
   const current = getStoredTheme();
   const next: Theme = current === "dark" ? "light" : "dark";
-  localStorage.setItem(STORAGE_KEY, next);
+  if (typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, next);
+  }
   applyTheme(next);
   return next;
 }
 
-export function initTheme() {
+export function initTheme(): Theme {
   const theme = getStoredTheme();
   applyTheme(theme);
   return theme;

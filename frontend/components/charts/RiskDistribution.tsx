@@ -2,6 +2,7 @@
 import { BarChart, Bar, Cell, Tooltip, ResponsiveContainer, XAxis, YAxis, LabelList, CartesianGrid } from "recharts";
 import type { PortfolioSummary } from "@/lib/types";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const TIERS = [
   { key: "critical_count", tier: "critical", label: "Critical", color: "#f43f5e", bg: "rgba(244,63,94,0.08)", border: "rgba(244,63,94,0.25)", action: "Immediate Escalation" },
@@ -11,6 +12,7 @@ const TIERS = [
 ];
 
 export default function RiskDistribution({ summary }: { summary: PortfolioSummary }) {
+  const router = useRouter();
   const total = summary.total_projects || (summary.critical_count + summary.high_count + summary.medium_count + summary.low_count) || 1;
 
   const data = TIERS.map(t => {
@@ -44,7 +46,7 @@ export default function RiskDistribution({ summary }: { summary: PortfolioSummar
       <text
         x={x + width / 2}
         y={y - 8}
-        fill="#f8fafc"
+        fill="var(--text)"
         textAnchor="middle"
         fontSize={12}
         fontWeight={700}
@@ -63,37 +65,37 @@ export default function RiskDistribution({ summary }: { summary: PortfolioSummar
       <div style={{ flex: 1, minHeight: 280, width: "100%", position: "relative" }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 28, right: 16, left: 16, bottom: 8 }}>
-            <CartesianGrid stroke="rgba(255, 255, 255, 0.05)" strokeDasharray="3 3" vertical={false} />
+            <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="name"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 600 }}
+              tick={{ fill: "var(--text-sub)", fontSize: 12, fontWeight: 600 }}
               dy={8}
             />
             <YAxis hide domain={[0, "dataMax + 140"]} />
             <Tooltip
-              cursor={{ fill: "rgba(255, 255, 255, 0.04)" }}
+              cursor={{ fill: "var(--accent-glow-2)" }}
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const d = payload[0].payload;
                   return (
                     <div style={{
-                      background: "rgba(15, 23, 42, 0.95)",
+                      background: "var(--surface)",
                       backdropFilter: "blur(12px)",
                       border: `1px solid ${d.border}`,
                       borderRadius: 8,
                       padding: "8px 12px",
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                      boxShadow: "var(--shadow)",
                     }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                         <span style={{ width: 8, height: 8, borderRadius: "50%", background: d.color }} />
-                        <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{d.name} Risk</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>{d.name} Risk</span>
                       </div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: d.color }}>
                         {d.value.toLocaleString()} Projects ({d.pct})
                       </div>
-                      <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{d.action}</div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{d.action}</div>
                     </div>
                   );
                 }
@@ -108,8 +110,9 @@ export default function RiskDistribution({ summary }: { summary: PortfolioSummar
                   fill={d.color}
                   style={{
                     filter: `drop-shadow(0 0 16px ${d.color}66)`,
-                    transition: "all 0.3s ease",
+                    cursor: "pointer",
                   }}
+                  onClick={() => router.push(`/projects?risk_tier=${d.tier}`)}
                 />
               ))}
             </Bar>
@@ -136,7 +139,7 @@ export default function RiskDistribution({ summary }: { summary: PortfolioSummar
       {/* Structured Tier Cards Grid filling the bottom formation */}
       <div style={{
         display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
+        gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
         gap: 10,
         paddingTop: 12,
         borderTop: "1px solid var(--border)",

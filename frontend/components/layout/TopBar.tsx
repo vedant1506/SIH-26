@@ -9,7 +9,7 @@ import {
   markNotificationRead,
   markAllNotificationsRead,
 } from "@/lib/api";
-import { toggleTheme, getStoredTheme, type Theme } from "@/lib/theme";
+import { toggleTheme, getStoredTheme, applyTheme, type Theme } from "@/lib/theme";
 import type { Notification } from "@/lib/types";
 import { useNav } from "@/lib/nav-context";
 import { useDataMode, setDataMode } from "@/lib/fallback-state";
@@ -109,7 +109,9 @@ export default function TopBar({
     if (!hideGlobalProjectCount) {
       getPortfolioSummary().then((s) => setTotalProjects(s?.total_projects ?? null)).catch(() => {});
     }
-    setTheme(getStoredTheme());
+    const storedTheme = getStoredTheme();
+    setTheme(storedTheme);
+    applyTheme(storedTheme);
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, [hideGlobalProjectCount]);
@@ -707,15 +709,18 @@ export default function TopBar({
         {/* Theme Toggle */}
         <button
           onClick={handleToggleTheme}
+          id="theme-toggle-btn"
           style={{
             width: 34, height: 34, borderRadius: 8,
             background: "var(--topbar-btn-bg)",
             border: "1px solid var(--topbar-btn-border)",
-            color: "var(--text-sub)", cursor: "pointer",
+            color: "var(--accent)", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "all 0.15s ease",
+            transition: "all 0.18s ease",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
           }}
           title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          aria-label={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
           {theme === "dark" ? <SunIcon /> : <MoonIcon />}
         </button>

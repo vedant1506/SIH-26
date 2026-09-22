@@ -17,7 +17,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", position: "relative" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", position: "relative", overflowX: "hidden", maxWidth: "100vw" }}>
       {/* Mobile Drawer Backdrop */}
       {mobileOpen && (
         <div
