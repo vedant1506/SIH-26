@@ -458,8 +458,8 @@ export default function SourceCitation({
         textDecoration: "none",
         padding: compact ? "2px 6px" : "3px 8px",
         borderRadius: 5,
-        background: "rgba(255, 255, 255, 0.04)",
-        border: "1px solid rgba(255, 255, 255, 0.12)",
+        background: "var(--surface-2)",
+        border: "1px solid var(--border-2)",
         transition: "all 0.15s ease",
         cursor: "pointer",
         lineHeight: 1.3,
@@ -471,9 +471,9 @@ export default function SourceCitation({
         e.currentTarget.style.color = "var(--accent, #38bdf8)";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
-        e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.12)";
-        e.currentTarget.style.color = "var(--text, #f8fafc)";
+        e.currentTarget.style.background = "var(--surface-2)";
+        e.currentTarget.style.borderColor = "var(--border-2)";
+        e.currentTarget.style.color = "var(--text)";
       }}
     >
       {showIcon && (
@@ -481,7 +481,7 @@ export default function SourceCitation({
           {pdfIcon}
         </span>
       )}
-      <span style={{ color: "var(--text-sub, #cbd5e1)" }}>
+      <span style={{ color: "var(--text-sub)" }}>
         {typeLabel}
       </span>
       {slNoVal != null && (
@@ -491,9 +491,9 @@ export default function SourceCitation({
             fontWeight: 700,
             padding: "1px 5px",
             borderRadius: 3,
-            background: "rgba(168, 85, 247, 0.16)",
-            color: "#c084fc",
-            border: "1px solid rgba(168, 85, 247, 0.28)",
+            background: "var(--purple-bg)",
+            color: "var(--purple-text)",
+            border: "1px solid var(--purple-border)",
             fontFamily: "var(--font-mono, monospace)",
           }}
         >
@@ -507,9 +507,9 @@ export default function SourceCitation({
             fontWeight: 700,
             padding: "1px 5px",
             borderRadius: 3,
-            background: "rgba(6, 182, 212, 0.16)",
-            color: "var(--accent, #38bdf8)",
-            border: "1px solid rgba(6, 182, 212, 0.25)",
+            background: "var(--accent-glow-2)",
+            color: "var(--accent)",
+            border: "1px solid var(--accent-glow)",
             fontFamily: "var(--font-mono, monospace)",
           }}
         >
