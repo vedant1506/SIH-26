@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/layout/TopBar";
@@ -296,7 +296,7 @@ export default function EarlyWarningPage() {
                         fontWeight: 700,
                         padding: "1px 5px",
                         borderRadius: 10,
-                        background: isActive ? "rgba(0,0,0,0.3)" : "rgba(255,255,255,0.06)",
+                        background: isActive ? "rgba(0,0,0,0.3)" : "var(--surface-3)",
                         opacity: isActive ? 1 : 0.7,
                       }}
                     >
@@ -405,7 +405,7 @@ export default function EarlyWarningPage() {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                background: "rgba(255,255,255,0.02)",
+                background: "var(--surface-2)",
                 flexWrap: "wrap",
                 gap: 10,
               }}
@@ -453,7 +453,7 @@ export default function EarlyWarningPage() {
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
-                  <tr style={{ background: "rgba(255,255,255,0.02)", borderBottom: "1px solid var(--border)", textAlign: "left", color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <tr style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--border)", textAlign: "left", color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     <th style={{ padding: "12px 16px" }}>Project & Location</th>
                     <th style={{ padding: "12px 16px" }}>Progress vs Scheduled</th>
                     <th style={{ padding: "12px 16px" }}>Financial Burn</th>
@@ -480,7 +480,7 @@ export default function EarlyWarningPage() {
                           borderBottom: "1px solid var(--border)",
                           transition: "background 0.15s ease",
                         }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.02)")}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-2)")}
                         onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                       >
                         {/* Project & Location */}
@@ -682,7 +682,7 @@ export default function EarlyWarningPage() {
                                   key={idx}
                                   style={{
                                     fontSize: 11,
-                                    background: "rgba(255,255,255,0.03)",
+                                    background: "var(--surface-2)",
                                     padding: "3px 7px",
                                     borderRadius: 4,
                                     color: "var(--text)",

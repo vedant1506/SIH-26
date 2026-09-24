@@ -55,6 +55,9 @@
   --sidebar-shadow: 4px 0 24px rgba(0,0,0,0.4);
   --background: var(--bg);
   --text-primary: var(--text);
+  --purple-text:     #c084fc;
+  --purple-bg:       rgba(168,85,247,0.14);
+  --purple-border:   rgba(168,85,247,0.32);
   --surface-raised: var(--surface-2);
 }
 
@@ -95,6 +98,9 @@ body[data-theme="light"],
   --gradient-warn:   linear-gradient(135deg, #d97706, #f59e0b);
   --gradient-safe:   linear-gradient(135deg, #059669, #10b981);
   --gradient-purple: linear-gradient(135deg, #9333ea, #a855f7);
+  --purple-text:     #7e22ce;
+  --purple-bg:       rgba(147, 51, 234, 0.09);
+  --purple-border:   rgba(147, 51, 234, 0.28);
   --shadow-sm:       0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
   --shadow:          0 4px 16px -2px rgba(15, 23, 42, 0.07), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
   --shadow-lg:       0 12px 30px -4px rgba(15, 23, 42, 0.10), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
@@ -171,7 +177,7 @@ code, pre, .mono {
 /* High-Visibility Custom Scrollbar for Wide Data Tables */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #3b82f6 rgba(30, 41, 59, 0.6);
+  scrollbar-color: #3b82f6 var(--surface-3);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -180,14 +186,14 @@ code, pre, .mono {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--surface-2);
   border-radius: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #3b82f6;
+  background: var(--medium);
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -201,10 +207,10 @@ code, pre, .mono {
   overflow-y: auto;
   max-height: 580px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
   background: var(--surface);
   position: relative;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.12);
 }
 
 .table-scroll-wrapper thead th {
@@ -2002,4 +2008,98 @@ path.leaflet-interactive:hover {
 
 .recharts-tooltip-item-unit {
   color: var(--text-muted) !important;
+}
+
+/* ═══════════════════════════════════════════
+   LIGHT MODE — RECHARTS & CHART FIXES
+   Fix dark-only rgba(255,255,255,...) patterns
+   that become invisible on light backgrounds
+═══════════════════════════════════════════ */
+
+/* CartesianGrid lines: dark mode uses white-rgba, light mode needs dark-rgba */
+[data-theme="light"] .recharts-cartesian-grid-horizontal line,
+[data-theme="light"] .recharts-cartesian-grid-vertical line,
+.light-mode .recharts-cartesian-grid-horizontal line,
+.light-mode .recharts-cartesian-grid-vertical line {
+  stroke: rgba(15, 23, 42, 0.10) !important;
+}
+
+/* Recharts axis lines and ticks in light mode */
+[data-theme="light"] .recharts-cartesian-axis-line,
+[data-theme="light"] .recharts-cartesian-axis-tick-line,
+.light-mode .recharts-cartesian-axis-line,
+.light-mode .recharts-cartesian-axis-tick-line {
+  stroke: rgba(15, 23, 42, 0.15) !important;
+}
+
+/* Recharts tick text (handles cases where tick fill is set inline as rgba white) */
+[data-theme="light"] .recharts-cartesian-axis-tick text,
+.light-mode .recharts-cartesian-axis-tick text {
+  fill: #64748b !important;
+}
+
+/* Recharts polar grid (radar/pie charts) */
+[data-theme="light"] .recharts-polar-grid-concentric-polygon,
+[data-theme="light"] .recharts-polar-grid-angle-line,
+.light-mode .recharts-polar-grid-concentric-polygon,
+.light-mode .recharts-polar-grid-angle-line {
+  stroke: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Recharts default tooltip wrapper in light mode */
+[data-theme="light"] .recharts-default-tooltip,
+.light-mode .recharts-default-tooltip {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.10) !important;
+}
+
+/* ── Light mode table row alternating fix ── */
+/* Tables using rgba(255,255,255,0.02) alternating rows are invisible in light mode */
+[data-theme="light"] tr[style*="rgba(255,255,255"],
+.light-mode tr[style*="rgba(255,255,255"] {
+  background: rgba(15, 23, 42, 0.02) !important;
+}
+
+/* ── Progress bar track fix ── */
+/* Elements with rgba(255,255,255,0.06) or 0.08 background used as progress tracks */
+[data-theme="light"] .progress-track-dark,
+.light-mode .progress-track-dark {
+  background: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* ── Card and surface badge overrides in light mode ── */
+[data-theme="light"] .badge,
+.light-mode .badge {
+  border-color: var(--border) !important;
+}
+
+/* ── Ensure map page floating elements stay readable in light mode ── */
+[data-theme="light"] .map-floating-dossier-btn,
+.light-mode .map-floating-dossier-btn {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #0f172a !important;
+  border-color: rgba(2, 132, 199, 0.4) !important;
+}
+
+/* ── Light mode: recharts label text ── */
+[data-theme="light"] .recharts-label,
+[data-theme="light"] .recharts-text,
+.light-mode .recharts-label,
+.light-mode .recharts-text {
+  fill: #334155 !important;
+}
+
+/* ── Sidebar in light mode ── */
+[data-theme="light"] .sidebar-aside,
+.light-mode .sidebar-aside {
+  background: #ffffff !important;
+  border-right-color: var(--border) !important;
+}
+
+/* ── Actions / Cost-drivers progress track fix ── */
+/* These pages use rgba(255,255,255,0.06) as a progress bar track inline */
+[data-theme="light"] [style*="rgba(255,255,255,0.06)"],
+.light-mode [style*="rgba(255,255,255,0.06)"] {
+  --forced-surface: rgba(15, 23, 42, 0.06);
 }

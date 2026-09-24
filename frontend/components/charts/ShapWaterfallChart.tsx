@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect } from "react";
 import type { SHAPValue } from "@/lib/types";
 import SourceCitation from "@/components/ui/SourceCitation";
@@ -376,7 +376,7 @@ export default function ShapWaterfallChart({
           alignItems: "center",
           justifyContent: "center",
           height: 240,
-          background: "rgba(255,255,255,0.02)",
+          background: "var(--surface-2)",
           borderRadius: 12,
           border: "1px dashed var(--border)",
           color: "var(--text-muted)",

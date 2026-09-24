@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -262,7 +262,7 @@ export default function PdfPreviewModal({
           {/* Quick PDF Action Buttons */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {/* Zoom Controls */}
-            <div style={{ display: "flex", alignItems: "center", background: "rgba(255,255,255,0.05)", borderRadius: 6, padding: "2px 6px", border: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", alignItems: "center", background: "var(--surface-3)", borderRadius: 6, padding: "2px 6px", border: "1px solid var(--border)" }}>
               <button
                 onClick={() => setZoom((prev) => Math.max(50, prev - 15))}
                 style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", padding: "4px" }}
@@ -318,7 +318,7 @@ export default function PdfPreviewModal({
             <button
               onClick={onClose}
               style={{
-                background: "rgba(255,255,255,0.05)",
+                background: "var(--surface-3)",
                 border: "1px solid var(--border)",
                 borderRadius: 6,
                 padding: "6px 8px",
@@ -412,19 +412,19 @@ export default function PdfPreviewModal({
               {activeTab === "overview" && doc && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                    <div style={{ background: "rgba(255,255,255,0.02)", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)" }}>
+                    <div style={{ background: "var(--surface-2)", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)" }}>
                       <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>Document Type</div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginTop: 2 }}>{doc.doc_type.replace(/_/g, " ").toUpperCase()}</div>
                     </div>
-                    <div style={{ background: "rgba(255,255,255,0.02)", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)" }}>
+                    <div style={{ background: "var(--surface-2)", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)" }}>
                       <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>Report Month</div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: "#38bdf8", marginTop: 2 }}>{doc.report_month || "Not Specified"}</div>
                     </div>
-                    <div style={{ background: "rgba(255,255,255,0.02)", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)" }}>
+                    <div style={{ background: "var(--surface-2)", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)" }}>
                       <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>Canonical Project ID</div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginTop: 2 }}>{doc.project_code || doc.project_id.slice(0, 8)}</div>
                     </div>
-                    <div style={{ background: "rgba(255,255,255,0.02)", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)" }}>
+                    <div style={{ background: "var(--surface-2)", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)" }}>
                       <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>File Size</div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginTop: 2 }}>
                         {doc.file_size_bytes ? `${(doc.file_size_bytes / (1024 * 1024)).toFixed(2)} MB` : "N/A"}
@@ -466,7 +466,7 @@ export default function PdfPreviewModal({
 
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                     <thead>
-                      <tr style={{ background: "rgba(255,255,255,0.04)", borderBottom: "1px solid var(--border)", textAlign: "left", color: "var(--text-muted)" }}>
+                      <tr style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--border)", textAlign: "left", color: "var(--text-muted)" }}>
                         <th style={{ padding: "8px 10px" }}>Metric</th>
                         <th style={{ padding: "8px 10px" }}>Document Reported</th>
                         <th style={{ padding: "8px 10px" }}>Authoritative Baseline</th>
@@ -559,7 +559,7 @@ export default function PdfPreviewModal({
                           <div style={{ background: "rgba(56, 189, 248, 0.1)", border: "1px solid rgba(56, 189, 248, 0.25)", padding: "8px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, color: "var(--text)" }}>
                             Q: {qa.q}
                           </div>
-                          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", padding: "10px 12px", borderRadius: 8, fontSize: 12, color: "var(--text-sub)", lineHeight: 1.5 }}>
+                          <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", padding: "10px 12px", borderRadius: 8, fontSize: 12, color: "var(--text-sub)", lineHeight: 1.5 }}>
                             <div>{qa.a}</div>
                             {qa.page && (
                               <div style={{ fontSize: 10, color: "#38bdf8", marginTop: 4, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
@@ -608,7 +608,7 @@ export default function PdfPreviewModal({
                     <div style={{ color: "var(--text-muted)", fontSize: 12 }}>No audit events recorded yet.</div>
                   ) : (
                     auditLogs.map((log) => (
-                      <div key={log.id} style={{ padding: "8px 12px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 11 }}>
+                      <div key={log.id} style={{ padding: "8px 12px", background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 11 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ fontWeight: 700, color: "#38bdf8" }}>{log.action}</span>
                           <span style={{ color: "var(--text-muted)" }}>{log.created_at ? new Date(log.created_at).toLocaleString("en-IN") : ""}</span>

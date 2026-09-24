@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
@@ -333,10 +333,10 @@ export default function GFR175ComplianceCard({
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
             gap: 12,
-            background: "var(--surface-raised, rgba(255,255,255,0.02))",
+            background: "var(--surface-2)",
             padding: "14px 16px",
             borderRadius: 8,
-            border: "1px solid rgba(255,255,255,0.06)",
+            border: "1px solid var(--border)",
           }}
         >
           {/* Tile 1: Contractor / Project Risk (Kept Strictly Separate) */}
@@ -638,7 +638,7 @@ export default function GFR175ComplianceCard({
               <pre
                 style={{
                   background: "rgba(0,0,0,0.5)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  border: "1px solid var(--border)",
                   borderRadius: 8,
                   padding: 14,
                   fontSize: 11.5,

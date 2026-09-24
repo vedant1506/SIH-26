@@ -60,7 +60,7 @@ function CustomTooltip({ active, payload, label }: any) {
               <span style={{ width: 8, height: 8, borderRadius: "50%", background: colors[p.dataKey], display: "inline-block" }} />
               {labels[p.dataKey] ?? p.dataKey}
             </span>
-            <span style={{ color: "#f1f5f9", fontWeight: 700 }}>{Number(p.value).toFixed(1)}%</span>
+            <span style={{ color: "var(--text)", fontWeight: 700 }}>{Number(p.value).toFixed(1)}%</span>
           </div>
         );
       })}

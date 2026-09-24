@@ -294,7 +294,7 @@ export default function IntegrationsPage() {
                         sms: { bg: "rgba(34, 197, 94, 0.15)", color: "#4ade80" },
                         email: { bg: "rgba(245, 158, 11, 0.15)", color: "#f59e0b" },
                       };
-                      const conf = badgeColors[log.service.toLowerCase()] || { bg: "rgba(255,255,255,0.1)", color: "#fff" };
+                      const conf = badgeColors[log.service.toLowerCase()] || { bg: "var(--surface-3)", color: "var(--text-muted)" };
 
                       return (
                         <tr key={log.id} style={{ borderBottom: "1px solid var(--border)" }}>

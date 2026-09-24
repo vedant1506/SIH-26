@@ -439,8 +439,8 @@ export default function BenchmarkingPage() {
                       fontSize: 12,
                       fontWeight: 600,
                       borderRadius: 8,
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid var(--border-2)",
+                      background: "var(--surface-2)",
                       color: "var(--text)",
                       cursor: "pointer",
                       transition: "all 0.2s ease",
@@ -799,7 +799,7 @@ export default function BenchmarkingPage() {
                           fontWeight: metricFocus === "all" ? 700 : 500,
                           cursor: "pointer",
                           border: "none",
-                          background: metricFocus === "all" ? "rgba(255,255,255,0.1)" : "transparent",
+                          background: metricFocus === "all" ? "var(--border-2)" : "transparent",
                           color: metricFocus === "all" ? "var(--text)" : "var(--text-muted)",
                         }}
                       >
@@ -877,7 +877,7 @@ export default function BenchmarkingPage() {
                           <stop offset="100%" stopColor="#0284c7" stopOpacity={0.6} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-3)" vertical={false} />
                       <XAxis
                         dataKey="name"
                         stroke="var(--text-muted)"
@@ -939,7 +939,7 @@ export default function BenchmarkingPage() {
                   <div style={{ width: "100%", height: 380 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 10 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-3)" />
                         <XAxis
                           type="number"
                           dataKey="delay"

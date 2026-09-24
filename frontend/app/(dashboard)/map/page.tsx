@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useRef, useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { listProjects } from "@/lib/api";
@@ -1709,7 +1709,7 @@ function MapPageContent() {
                           <div style={{ width: 9, height: 9, borderRadius: "50%", background: color, boxShadow: `0 0 6px ${color}` }} />
                           <span style={{ fontSize: 12, color: "var(--text)", textTransform: "capitalize", fontWeight: 500 }}>{tier}</span>
                         </div>
-                        <span className="tabular" style={{ fontSize: 11, color: "var(--text)", fontWeight: 700, background: "rgba(255,255,255,0.08)", padding: "1px 7px", borderRadius: 9999 }}>
+                        <span className="tabular" style={{ fontSize: 11, color: "var(--text)", fontWeight: 700, background: "var(--surface-3)", padding: "1px 7px", borderRadius: 9999 }}>
                           {riskCounts[tier as keyof typeof riskCounts]}
                         </span>
                       </div>
@@ -1720,7 +1720,7 @@ function MapPageContent() {
                           <div style={{ width: 9, height: 9, borderRadius: "50%", background: color, boxShadow: `0 0 6px ${color}`, flexShrink: 0 }} />
                           <span style={{ fontSize: 11, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sector}</span>
                         </div>
-                        <span className="tabular" style={{ fontSize: 11, color: "var(--text)", fontWeight: 700, background: "rgba(255,255,255,0.08)", padding: "1px 6px", borderRadius: 9999, flexShrink: 0, marginLeft: 6 }}>
+                        <span className="tabular" style={{ fontSize: 11, color: "var(--text)", fontWeight: 700, background: "var(--surface-3)", padding: "1px 6px", borderRadius: 9999, flexShrink: 0, marginLeft: 6 }}>
                           {sectorCounts[sector] || 0}
                         </span>
                       </div>
@@ -1876,7 +1876,7 @@ function MapPageContent() {
           >
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--accent)", boxShadow: "0 0 8px var(--accent)" }} />
             <span>Project Dossier</span>
-            <span style={{ background: "rgba(255,255,255,0.18)", padding: "1px 6px", borderRadius: 9999, fontSize: 10 }}>
+            <span style={{ background: "var(--surface-3)", padding: "1px 6px", borderRadius: 9999, fontSize: 10 }}>
               {filteredProjects.length}
             </span>
           </button>
@@ -2087,7 +2087,7 @@ function MapPageContent() {
                             </div>
 
                             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                              <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 9999, overflow: "hidden" }}>
+                              <div style={{ flex: 1, height: 4, background: "var(--surface-3)", borderRadius: 9999, overflow: "hidden" }}>
                                 <div
                                   style={{
                                     width: `${Math.min(100, Math.max(0, p.physical_progress_pct || 0))}%`,
@@ -2151,7 +2151,7 @@ function MapPageContent() {
                                 <span style={{ fontSize: 13, fontWeight: 700, color: isSelected ? "var(--accent)" : "var(--text)" }}>
                                   {d.district}
                                 </span>
-                                <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(255,255,255,0.08)", padding: "2px 8px", borderRadius: 9999, color: "var(--text)" }}>
+                                <span style={{ fontSize: 11, fontWeight: 700, background: "var(--surface-3)", padding: "2px 8px", borderRadius: 9999, color: "var(--text)" }}>
                                   {d.projectCount} {d.projectCount === 1 ? "project" : "projects"}
                                 </span>
                               </div>

@@ -93,17 +93,35 @@ export default function AnalyticsPage() {
     return cleaned.length > 18 ? cleaned.slice(0, 16) + "…" : cleaned;
   };
 
+  // Sector short name dictionary for clean chart formatting
+  const getSectorShortName = (s: string) => {
+    if (!s) return "Other";
+    if (s.includes("Tourism")) return "Tourism & Wellness";
+    if (s.includes("Aviation")) return "Civil Aviation";
+    if (s.includes("Electricity") || s.includes("Generation")) return "Power Generation";
+    if (s.includes("Transmission")) return "Transmission & Dist.";
+    if (s.includes("Public Transport")) return "Urban Transport";
+    if (s.includes("Logistics")) return "Logistics Infra";
+    if (s.includes("Water Resources")) return "Water Resources";
+    if (s.includes("Waste & Water")) return "Water & Waste";
+    if (s.includes("Metals") || s.includes("Mining")) return "Metals & Mining";
+    if (s.includes("Telecommunication")) return "Telecom";
+    if (s.length > 20) return s.slice(0, 18) + "…";
+    return s;
+  };
+
   // Sector breakdown
   const sectorMap: Record<string, { count: number; risk: number; cost: number }> = {};
   const ministryMap: Record<string, { count: number; cost: number }> = {};
   const stateMap: Record<string, { count: number; highRiskCount: number }> = {};
 
   projects.forEach((p) => {
+    const sName = p.sector?.trim() || "Other";
     // Sector
-    if (!sectorMap[p.sector]) sectorMap[p.sector] = { count: 0, risk: 0, cost: 0 };
-    sectorMap[p.sector].count++;
-    if (p.composite_risk_score != null) sectorMap[p.sector].risk += p.composite_risk_score;
-    sectorMap[p.sector].cost += p.revised_cost_cr || p.original_cost_cr || 0;
+    if (!sectorMap[sName]) sectorMap[sName] = { count: 0, risk: 0, cost: 0 };
+    sectorMap[sName].count++;
+    if (p.composite_risk_score != null) sectorMap[sName].risk += p.composite_risk_score;
+    sectorMap[sName].cost += p.revised_cost_cr || p.original_cost_cr || 0;
 
     // Ministry
     if (!ministryMap[p.ministry]) ministryMap[p.ministry] = { count: 0, cost: 0 };
@@ -117,8 +135,10 @@ export default function AnalyticsPage() {
   });
 
   const sectorData = Object.entries(sectorMap)
+    .filter(([s]) => s && s !== "Other")
     .map(([s, d]) => ({
       sector: s,
+      displaySector: getSectorShortName(s),
       count: d.count,
       avgRisk: d.count > 0 ? Math.round((d.risk / d.count) * 100) : 0,
       totalCost: Math.round(d.cost),
@@ -161,28 +181,93 @@ export default function AnalyticsPage() {
           <div className="responsive-grid-2" style={{ marginBottom: 24 }}>
             {/* Sector Risk Breakdown */}
             <div className="card">
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 16, textAlign: "center" }}>
-                Average Risk Score by Infrastructure Sector (PAIMANA Portfolio)
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>
+                    Average Risk Score by Infrastructure Sector
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+                    Top 10 sectors ranked by PAIMANA composite risk
+                  </div>
+                </div>
+                <span className="badge" style={{ background: "rgba(6, 182, 212, 0.12)", color: "#06b6d4", fontSize: 10, padding: "2px 8px" }}>
+                  Top 10 Sectors
+                </span>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={sectorData} layout="vertical" margin={{ left: 8, right: 20 }}>
-                  <defs>
-                    <linearGradient id="grad-sector-bar" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#0891b2" stopOpacity={0.85} />
-                      <stop offset="100%" stopColor="#06b6d4" stopOpacity={1} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke="var(--border-2)" strokeDasharray="3 3" horizontal={false} />
-                  <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(v) => v + "%"} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{ background: "var(--surface)", border: "1px solid var(--border-2)", borderRadius: 8, fontSize: 12, color: "var(--text)" }}
-                    itemStyle={{ color: "var(--text)" }}
-                    labelStyle={{ color: "var(--text)", fontWeight: 700 }}
-                    formatter={(v) => [v + "%", "Avg Risk Score"]}
-                  />
-                  <Bar dataKey="avgRisk" fill="url(#grad-sector-bar)" radius={[0, 4, 4, 0]} maxBarSize={18} />
-                </BarChart>
-              </ResponsiveContainer>
+
+              {loading ? (
+                <div style={{ height: 320, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: 12 }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 22, height: 22, border: "2px solid #06b6d4", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+                    <span>Loading sector intelligence...</span>
+                  </div>
+                </div>
+              ) : sectorData.length === 0 ? (
+                <div style={{ height: 320, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: 12 }}>
+                  No sector risk data available
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={320}>
+                  <BarChart data={sectorData} layout="vertical" margin={{ left: 12, right: 24, top: 4, bottom: 4 }}>
+                    <defs>
+                      <linearGradient id="grad-sector-bar" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#0891b2" stopOpacity={0.85} />
+                        <stop offset="100%" stopColor="#06b6d4" stopOpacity={1} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke="var(--border-2)" strokeDasharray="3 3" horizontal={false} />
+                    <XAxis
+                      type="number"
+                      domain={[0, 100]}
+                      tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+                      tickFormatter={(v) => v + "%"}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="displaySector"
+                      tick={{ fill: "var(--text-sub)", fontSize: 11, fontWeight: 500 }}
+                      width={150}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const item = payload[0].payload;
+                          return (
+                            <div
+                              style={{
+                                background: "var(--surface)",
+                                border: "1px solid var(--border-2)",
+                                borderRadius: 8,
+                                padding: "10px 14px",
+                                boxShadow: "var(--shadow)",
+                                fontSize: 12,
+                                color: "var(--text)",
+                              }}
+                            >
+                              <div style={{ fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>{item.sector}</div>
+                              <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                                <span style={{ fontSize: 14, fontWeight: 800, color: "#06b6d4" }}>
+                                  {item.avgRisk}%
+                                </span>
+                                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Avg Risk Score</span>
+                              </div>
+                              <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>
+                                {item.count} Tracked Projects • ₹{Math.round(item.totalCost).toLocaleString("en-IN")} Cr Sanctioned
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="avgRisk" fill="url(#grad-sector-bar)" radius={[0, 4, 4, 0]} maxBarSize={16} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
 
             {/* Risk Distribution Donut */}
@@ -412,7 +497,7 @@ export default function AnalyticsPage() {
                             </span>
                             <span style={{ fontSize: 10, color: "var(--text-muted)" }}>assets</span>
                           </div>
-                          <div style={{ width: "100%", height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
+                          <div style={{ width: "100%", height: 3, background: "var(--surface-3)", borderRadius: 2, overflow: "hidden" }}>
                             <div style={{ width: `${pct}%`, height: "100%", background: meta.dot, borderRadius: 2 }} />
                           </div>
                         </div>
@@ -517,67 +602,80 @@ export default function AnalyticsPage() {
             <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16 }}>
               Top spending ministries and their cumulative capital expenditure
             </div>
-            <ResponsiveContainer width="100%" height={290}>
-              <BarChart data={ministryData} margin={{ left: 16, right: 20, top: 10, bottom: 40 }}>
-                <defs>
-                  <linearGradient id="grad-ministry-bar" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.8} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="var(--border-2)" strokeDasharray="3 3" vertical={false} />
-                <XAxis
-                  dataKey="ministry"
-                  interval={0}
-                  tick={{ fill: "#94a3b8", fontSize: 11 }}
-                  angle={-22}
-                  textAnchor="end"
-                  axisLine={false}
-                  tickLine={false}
-                  height={50}
-                />
-                <YAxis
-                  tick={{ fill: "#64748b", fontSize: 11 }}
-                  tickFormatter={(v) => v >= 100000 ? `₹${(v / 100000).toFixed(1)}L Cr` : v > 0 ? `₹${(v / 1000).toFixed(0)}k Cr` : "₹0"}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const item = payload[0].payload;
-                      const costCr = Number(item.totalCost) || 0;
-                      const lakhCr = (costCr / 100000).toFixed(2);
-                      return (
-                        <div
-                          style={{
-                            background: "var(--surface)",
-                            border: "1px solid var(--border)",
-                            borderRadius: 8,
-                            padding: "10px 14px",
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
-                            fontSize: 12,
-                          }}
-                        >
-                          <div style={{ fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>{item.ministry}</div>
-                          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                            <span style={{ fontSize: 14, fontWeight: 800, color: "#38bdf8" }}>
-                              ₹{costCr.toLocaleString("en-IN")} Cr
-                            </span>
-                            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>({lakhCr} Lakh Cr)</span>
+            {loading ? (
+              <div style={{ height: 290, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: 12 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 22, height: 22, border: "2px solid #3b82f6", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+                  <span>Loading financial expenditure analytics...</span>
+                </div>
+              </div>
+            ) : ministryData.length === 0 ? (
+              <div style={{ height: 290, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: 12 }}>
+                No ministry expenditure data available
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={290}>
+                <BarChart data={ministryData} margin={{ left: 16, right: 20, top: 10, bottom: 40 }}>
+                  <defs>
+                    <linearGradient id="grad-ministry-bar" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.8} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="var(--border-2)" strokeDasharray="3 3" vertical={false} />
+                  <XAxis
+                    dataKey="ministry"
+                    interval={0}
+                    tick={{ fill: "var(--text-sub)", fontSize: 11 }}
+                    angle={-22}
+                    textAnchor="end"
+                    axisLine={false}
+                    tickLine={false}
+                    height={50}
+                  />
+                  <YAxis
+                    tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+                    tickFormatter={(v) => v >= 100000 ? `₹${(v / 100000).toFixed(1)}L Cr` : v > 0 ? `₹${(v / 1000).toFixed(0)}k Cr` : "₹0"}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const item = payload[0].payload;
+                        const costCr = Number(item.totalCost) || 0;
+                        const lakhCr = (costCr / 100000).toFixed(2);
+                        return (
+                          <div
+                            style={{
+                              background: "var(--surface)",
+                              border: "1px solid var(--border-2)",
+                              borderRadius: 8,
+                              padding: "10px 14px",
+                              boxShadow: "var(--shadow)",
+                              fontSize: 12,
+                            }}
+                          >
+                            <div style={{ fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>{item.ministry}</div>
+                            <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                              <span style={{ fontSize: 14, fontWeight: 800, color: "#38bdf8" }}>
+                                ₹{costCr.toLocaleString("en-IN")} Cr
+                              </span>
+                              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>({lakhCr} Lakh Cr)</span>
+                            </div>
+                            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+                              {item.count} Tracked Infrastructure Projects
+                            </div>
                           </div>
-                          <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
-                            {item.count} Tracked Infrastructure Projects
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Bar dataKey="totalCost" fill="url(#grad-ministry-bar)" radius={[5, 5, 0, 0]} maxBarSize={36} />
-              </BarChart>
-            </ResponsiveContainer>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="totalCost" fill="url(#grad-ministry-bar)" radius={[5, 5, 0, 0]} maxBarSize={36} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           {/* Highest Cost Escalation Projects — Official MoSPI April 2026 Dataset */}

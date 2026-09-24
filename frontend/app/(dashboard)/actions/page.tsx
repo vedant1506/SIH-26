@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -1023,7 +1023,7 @@ function ActionWorkflowContent() {
                                     {item.completion_percentage ?? (item.status === "completed" || item.status === "verified" ? 100 : 0)}%
                                   </span>
                                 </div>
-                                <div style={{ width: "100%", height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
+                                <div style={{ width: "100%", height: 4, background: "var(--surface-3)", borderRadius: 2, overflow: "hidden" }}>
                                   <div
                                     style={{
                                       width: `${item.completion_percentage ?? (item.status === "completed" || item.status === "verified" ? 100 : 0)}%`,
@@ -1171,7 +1171,7 @@ function ActionWorkflowContent() {
                 <thead>
                   <tr
                     style={{
-                      background: "rgba(255,255,255,0.02)",
+                      background: "var(--surface-2)",
                       borderBottom: "1px solid var(--border)",
                       textAlign: "left",
                       color: "var(--text-muted)",
@@ -1204,7 +1204,7 @@ function ActionWorkflowContent() {
                           transition: "background 0.15s ease",
                           background: selectedActionId === item.id ? "rgba(56, 189, 248, 0.05)" : "transparent",
                         }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.02)")}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-2)")}
                         onMouseLeave={(e) =>
                           (e.currentTarget.style.background = selectedActionId === item.id ? "rgba(56, 189, 248, 0.05)" : "transparent")
                         }
@@ -1380,7 +1380,7 @@ function ActionWorkflowContent() {
                           textTransform: "capitalize",
                           padding: "2px 8px",
                           borderRadius: 4,
-                          background: "rgba(255,255,255,0.06)",
+                          background: "var(--surface-3)",
                           color: "var(--text)",
                         }}
                       >
@@ -1618,7 +1618,7 @@ function ActionWorkflowContent() {
                       </div>
                     ) : (
                       comments.map((c) => (
-                        <div key={c.id} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px" }}>
+                        <div key={c.id} style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
                             <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text)" }}>{c.user_name || "Official"}</span>
                             <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{c.created_at ? c.created_at.split("T")[0] : ""}</span>
@@ -1974,7 +1974,7 @@ function ActionWorkflowContent() {
                   style={{
                     padding: "9px 16px",
                     borderRadius: 8,
-                    background: "rgba(255,255,255,0.06)",
+                    background: "var(--surface-3)",
                     border: "1px solid var(--border)",
                     color: "var(--text-muted)",
                     fontSize: 13,
@@ -2089,7 +2089,7 @@ function ActionWorkflowContent() {
                   style={{
                     padding: "8px 14px",
                     borderRadius: 8,
-                    background: "rgba(255,255,255,0.06)",
+                    background: "var(--surface-3)",
                     border: "1px solid var(--border)",
                     color: "var(--text-muted)",
                     fontSize: 13,
@@ -2221,7 +2221,7 @@ function ActionWorkflowContent() {
                   style={{
                     padding: "8px 14px",
                     borderRadius: 8,
-                    background: "rgba(255,255,255,0.06)",
+                    background: "var(--surface-3)",
                     border: "1px solid var(--border)",
                     color: "var(--text-muted)",
                     fontSize: 13,
@@ -2361,7 +2361,7 @@ function ActionWorkflowContent() {
                   style={{
                     padding: "8px 14px",
                     borderRadius: 8,
-                    background: "rgba(255,255,255,0.06)",
+                    background: "var(--surface-3)",
                     border: "1px solid var(--border)",
                     color: "var(--text-muted)",
                     fontSize: 13,

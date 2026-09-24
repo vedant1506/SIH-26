@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/layout/TopBar";
@@ -648,7 +648,7 @@ export default function CostDriversPage() {
                         }
                       }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-2)" />
                       <XAxis type="number" stroke="#64748b" fontSize={11} unit="%" domain={[0, "dataMax + 4"]} />
                       <YAxis
                         type="category"
@@ -657,7 +657,7 @@ export default function CostDriversPage() {
                         fontSize={12}
                         width={240}
                         tickLine={false}
-                        axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                        axisLine={{ stroke: "var(--border-2)" }}
                       />
                       <Tooltip
                         contentStyle={{
@@ -865,11 +865,11 @@ export default function CostDriversPage() {
                   <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.06em" }}>
                     Cross-Sector Susceptibility Matrix
                   </div>
-                  <h3 style={{ margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "#f8fafc" }}>
+                  <h3 style={{ margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "var(--text)" }}>
                     Sector-Wise Vulnerability Ratios & Spend Divergence
                   </h3>
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 6, background: "rgba(255,255,255,0.05)", color: "#94a3b8" }}>
+                <span style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 6, background: "var(--surface-3)", color: "var(--text-sub)", border: "1px solid var(--border)" }}>
                   {data.sector_profile.length} Evaluated Sectors
                 </span>
               </div>
@@ -877,7 +877,7 @@ export default function CostDriversPage() {
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                   <thead>
-                    <tr style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.08)", textAlign: "left", color: "#94a3b8", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    <tr style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--border-2)", textAlign: "left", color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                       <th style={{ padding: "14px 20px" }}>Infrastructure Sector</th>
                       <th style={{ padding: "14px 20px" }}>Total Monitored</th>
                       <th style={{ padding: "14px 20px" }}>High/Critical Risk Assets</th>
@@ -891,20 +891,20 @@ export default function CostDriversPage() {
                       <tr
                         key={sec.sector}
                         style={{
-                          borderBottom: "1px solid rgba(255,255,255,0.04)",
-                          background: idx % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)",
+                          borderBottom: "1px solid var(--border)",
+                          background: idx % 2 === 0 ? "transparent" : "var(--surface-2)",
                           transition: "background 0.15s ease",
                         }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(56, 189, 248, 0.05)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = idx % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)")}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "var(--accent-glow-2)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = idx % 2 === 0 ? "transparent" : "var(--surface-2)")}
                       >
-                        <td style={{ padding: "14px 20px", fontWeight: 700, color: "#f8fafc" }}>
+                        <td style={{ padding: "14px 20px", fontWeight: 700, color: "var(--text)" }}>
                           {sec.sector}
                         </td>
-                        <td style={{ padding: "14px 20px", color: "#cbd5e1" }}>
+                        <td style={{ padding: "14px 20px", color: "var(--text-sub)" }}>
                           {sec.total_projects}
                         </td>
-                        <td style={{ padding: "14px 20px", color: sec.high_risk_projects > 0 ? "#f87171" : "#cbd5e1", fontWeight: sec.high_risk_projects > 0 ? 700 : 400 }}>
+                        <td style={{ padding: "14px 20px", color: sec.high_risk_projects > 0 ? "var(--critical)" : "var(--text-sub)", fontWeight: sec.high_risk_projects > 0 ? 700 : 400 }}>
                           {sec.high_risk_projects}
                         </td>
                         <td style={{ padding: "14px 20px" }}>
@@ -931,12 +931,12 @@ export default function CostDriversPage() {
                             style={{
                               fontSize: 12,
                               fontWeight: 600,
-                              color: "#38bdf8",
+                              color: "var(--accent)",
                               textDecoration: "none",
                               padding: "4px 10px",
                               borderRadius: 6,
-                              background: "rgba(56, 189, 248, 0.1)",
-                              border: "1px solid rgba(56, 189, 248, 0.2)",
+                              background: "var(--accent-glow-2)",
+                              border: "1px solid var(--accent-glow)",
                             }}
                           >
                             View Assets →

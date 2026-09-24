@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import type { Project, RiskPrediction, StructuredMitigationPlan, MitigationPlanResponse, ModelMetadata } from "@/lib/types";
 import { generateMitigationPlan, downloadMitigationPdf } from "@/lib/api";
@@ -194,7 +194,7 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
           <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 14 }}>
             Step {progressStep + 1} of {PROGRESS_STEPS.length} · Processing live SHAP vectors and multi-LLM risk synthesis
           </div>
-          <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden", maxWidth: 420, margin: "0 auto" }}>
+          <div style={{ height: 4, background: "var(--surface-3)", borderRadius: 2, overflow: "hidden", maxWidth: 420, margin: "0 auto" }}>
             <div
               style={{
                 height: "100%",
@@ -392,7 +392,7 @@ export default function StructuredMitigationSection({ project, prediction }: Pro
                         <td style={{ fontWeight: 600, color: "var(--text)" }}>{m.indicator}</td>
                         <td style={{ color: "var(--text-sub)" }}>{m.current_value}</td>
                         <td style={{ color: "#10b981", fontWeight: 700 }}>{m.target}</td>
-                        <td><span style={{ background: "rgba(255,255,255,0.06)", padding: "2px 8px", borderRadius: 4 }}>{m.frequency}</span></td>
+                        <td><span style={{ background: "var(--surface-3)", padding: "2px 8px", borderRadius: 4 }}>{m.frequency}</span></td>
                         <td style={{ color: "var(--accent)" }}>{m.responsible_role}</td>
                       </tr>
                     ))}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect, useCallback } from "react";
 import {
   FileText,
@@ -308,7 +308,7 @@ export default function ProjectDocumentsSection({
             borderRadius: 12,
             padding: "36px 20px",
             textAlign: "center",
-            background: "rgba(255,255,255,0.01)",
+            background: "var(--surface-2)",
           }}
         >
           <div
@@ -429,7 +429,7 @@ export default function ProjectDocumentsSection({
                           style={{
                             fontSize: 11,
                             fontWeight: 600,
-                            background: "rgba(255,255,255,0.06)",
+                            background: "var(--surface-3)",
                             color: "var(--text-sub)",
                             padding: "2px 8px",
                             borderRadius: 4,

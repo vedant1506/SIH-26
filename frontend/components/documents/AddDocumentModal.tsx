@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { listProjects } from "@/lib/api";
@@ -828,7 +828,7 @@ export default function AddDocumentModal({
 
           {/* Progress Bar */}
           {submitting && (
-            <div style={{ width: "100%", background: "rgba(255,255,255,0.08)", borderRadius: 6, overflow: "hidden", height: 8 }}>
+            <div style={{ width: "100%", background: "var(--surface-3)", borderRadius: 6, overflow: "hidden", height: 8 }}>
               <div
                 style={{
                   width: `${uploadProgress}%`,

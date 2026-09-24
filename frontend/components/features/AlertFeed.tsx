@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState, useMemo } from "react";
 import { listAlerts, acknowledgeAlert, acknowledgeAllAlerts, updateAlertStatus } from "@/lib/api";
 import type { Alert } from "@/lib/types";
@@ -213,7 +213,7 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
       {!compact && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 20 }}>
           {/* Lifecycle Status Pipeline Tabs */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", padding: "10px 14px", background: "rgba(255,255,255,0.02)", borderRadius: 10, border: "1px solid var(--border)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", padding: "10px 14px", background: "var(--surface-2)", borderRadius: 10, border: "1px solid var(--border)" }}>
             <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.05em", marginRight: 4 }}>
               Status Pipeline:
             </span>
@@ -251,7 +251,7 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
                     style={{
                       fontSize: 10,
                       fontWeight: 700,
-                      background: active ? `${tab.color}40` : "rgba(255,255,255,0.06)",
+                      background: active ? `${tab.color}40` : "var(--surface-3)",
                       padding: "1px 5px",
                       borderRadius: 4,
                     }}
@@ -534,23 +534,23 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
               style={{
                 padding: compact ? "11px 13px" : "14px 16px",
                 background: isAcked
-                  ? "var(--surface-2)"
+                  ? "var(--surface)"
                   : a.new_tier === "critical"
-                  ? "rgba(244, 63, 94, 0.07)"
+                  ? "var(--critical-bg)"
                   : a.new_tier === "high"
-                  ? "rgba(245, 158, 11, 0.07)"
-                  : "rgba(255, 255, 255, 0.02)",
+                  ? "var(--high-bg)"
+                  : "var(--surface)",
                 border: `1px solid ${
                   isAcked
-                    ? "var(--border)"
+                    ? "var(--border-2)"
                     : a.new_tier === "critical"
-                    ? "rgba(244, 63, 94, 0.28)"
+                    ? "var(--critical-border)"
                     : a.new_tier === "high"
-                    ? "rgba(245, 158, 11, 0.28)"
-                    : "var(--border)"
+                    ? "var(--high-border)"
+                    : "var(--border-2)"
                 }`,
+                borderLeft: isAcked ? "3px solid var(--border-3)" : `3px solid ${tierColor}`,
                 borderRadius: 10,
-                opacity: isAcked ? 0.6 : 1,
                 display: "flex",
                 alignItems: "flex-start",
                 gap: 12,
@@ -591,9 +591,9 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
                   <div
                     style={{
                       fontSize: 11,
-                      color: "var(--text-muted)",
+                      color: "var(--text-sub)",
                       marginTop: 3,
-                      lineHeight: 1.4,
+                      lineHeight: 1.45,
                       whiteSpace: compact ? "nowrap" : "normal",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -609,7 +609,7 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 5,
-                      background: "rgba(255, 255, 255, 0.05)",
+                      background: "var(--surface-3)",
                       padding: "2px 6px",
                       borderRadius: 4,
                       border: "1px solid var(--border-2)",
@@ -635,7 +635,8 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
                       fontSize: 10,
                       fontWeight: 600,
                       color: "var(--accent)",
-                      background: "rgba(6, 182, 212, 0.1)",
+                      background: "var(--accent-glow-2)",
+                      border: "1px solid var(--accent-glow)",
                       padding: "2px 6px",
                       borderRadius: 4,
                       display: "inline-flex",
@@ -660,18 +661,28 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
                   {(() => {
                     const st = (a.status || (a.is_acknowledged ? "ACKNOWLEDGED" : "NEW")).toUpperCase();
                     const stColor =
-                      st === "NEW" ? "#38bdf8" :
-                      st === "ACKNOWLEDGED" ? "#10b981" :
-                      st === "UNDER_REVIEW" ? "#f59e0b" :
-                      st === "ACTION_ASSIGNED" ? "#a855f7" : "#64748b";
+                      st === "NEW" ? "var(--accent)" :
+                      st === "ACKNOWLEDGED" ? "var(--low)" :
+                      st === "UNDER_REVIEW" ? "var(--high)" :
+                      st === "ACTION_ASSIGNED" ? "var(--purple-text)" : "var(--text-muted)";
+                    const stBg =
+                      st === "NEW" ? "var(--accent-glow-2)" :
+                      st === "ACKNOWLEDGED" ? "var(--low-bg)" :
+                      st === "UNDER_REVIEW" ? "var(--high-bg)" :
+                      st === "ACTION_ASSIGNED" ? "var(--purple-bg)" : "var(--surface-2)";
+                    const stBorder =
+                      st === "NEW" ? "var(--accent-glow)" :
+                      st === "ACKNOWLEDGED" ? "var(--low-border)" :
+                      st === "UNDER_REVIEW" ? "var(--high-border)" :
+                      st === "ACTION_ASSIGNED" ? "var(--purple-border)" : "var(--border-2)";
                     return (
                       <span
                         style={{
                           fontSize: 10,
                           fontWeight: 700,
                           color: stColor,
-                          background: `${stColor}15`,
-                          border: `1px solid ${stColor}35`,
+                          background: stBg,
+                          border: `1px solid ${stBorder}`,
                           padding: "2px 6px",
                           borderRadius: 4,
                           textTransform: "uppercase",
@@ -707,9 +718,9 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 4,
-                      background: "rgba(6, 182, 212, 0.12)",
-                      color: "#38bdf8",
-                      borderColor: "rgba(56, 189, 248, 0.3)",
+                      background: "var(--accent-glow-2)",
+                      color: "var(--accent)",
+                      borderColor: "var(--accent-glow)",
                     }}
                     title="Locate project on ISRO Bhuvan satellite GIS map"
                   >
@@ -757,7 +768,7 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
                   {a.status !== "UNDER_REVIEW" && a.status !== "RESOLVED" && (
                     <button
                       className="btn btn-secondary btn-sm"
-                      style={{ padding: "4px 8px", fontSize: 11 }}
+                      style={{ padding: "4px 8px", fontSize: 11, color: "var(--text-sub)", borderColor: "var(--border-2)" }}
                       onClick={() => handleStatusChange(a.id, "UNDER_REVIEW")}
                       disabled={statusUpdating === a.id}
                       title="Mark alert as under review"
@@ -769,7 +780,7 @@ export default function AlertFeed({ maxItems, compact = false }: Props) {
                   {a.status !== "RESOLVED" && (
                     <button
                       className="btn btn-secondary btn-sm"
-                      style={{ padding: "4px 8px", fontSize: 11, color: "#10b981", borderColor: "rgba(16,185,129,0.3)" }}
+                      style={{ padding: "4px 8px", fontSize: 11, color: "var(--low)", background: "var(--low-bg)", borderColor: "var(--low-border)" }}
                       onClick={() => handleStatusChange(a.id, "RESOLVED")}
                       disabled={statusUpdating === a.id}
                       title="Mark alert as resolved"

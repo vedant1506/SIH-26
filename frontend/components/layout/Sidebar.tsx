@@ -286,7 +286,7 @@ function RoleSwitcherPopover({
               transition: "all 0.15s ease",
             }}
             onMouseEnter={(e) => {
-              if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)";
+              if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "var(--surface-3)";
             }}
             onMouseLeave={(e) => {
               if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "transparent";
@@ -440,7 +440,7 @@ export default function Sidebar({
             onClick={onCloseMobile}
             className="mobile-only"
             style={{
-              background: "rgba(255,255,255,0.06)",
+              background: "var(--surface-2)",
               border: "1px solid var(--border-2)",
               borderRadius: 6,
               color: "var(--text-sub)",
@@ -501,7 +501,7 @@ export default function Sidebar({
             display: "flex",
             justifyContent: "center",
             borderBottom: "1px solid var(--border)",
-            background: "rgba(255,255,255,0.015)",
+            background: "var(--surface-2)",
           }}
         >
           <button

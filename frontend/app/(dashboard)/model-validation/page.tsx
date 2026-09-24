@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useEffect, useState, useMemo } from "react";
 import TopBar from "@/components/layout/TopBar";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -581,7 +581,7 @@ export default function ModelValidationPage() {
                         fontWeight: 700,
                         padding: "1px 6px",
                         borderRadius: 4,
-                        background: isActive ? "rgba(56, 189, 248, 0.25)" : "rgba(255,255,255,0.06)",
+                        background: isActive ? "rgba(56, 189, 248, 0.25)" : "var(--surface-3)",
                         color: isActive ? "#38bdf8" : "var(--text-muted)",
                       }}
                     >
@@ -809,7 +809,7 @@ export default function ModelValidationPage() {
                           Offline Model Bake-Off Results
                         </h3>
                       </div>
-                      <span style={{ fontSize: 11, color: "var(--text-muted)", background: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: 4 }}>
+                      <span style={{ fontSize: 11, color: "var(--text-muted)", background: "var(--border-2)", padding: "2px 8px", borderRadius: 4 }}>
                         5-Fold Stratified CV
                       </span>
                     </div>
@@ -819,7 +819,7 @@ export default function ModelValidationPage() {
                         <thead>
                           <tr
                             style={{
-                              background: "rgba(255,255,255,0.02)",
+                              background: "var(--surface-2)",
                               borderBottom: "1px solid var(--border)",
                               textAlign: "left",
                               color: "var(--text-muted)",
@@ -926,7 +926,7 @@ export default function ModelValidationPage() {
                             }))}
                             margin={{ top: 20, right: 15, left: 10, bottom: 35 }}
                           >
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-2)" />
                             <XAxis
                               dataKey="name"
                               stroke="var(--text-muted)"
@@ -1017,7 +1017,7 @@ export default function ModelValidationPage() {
                         ]}
                         margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-2)" />
                         <XAxis
                           dataKey="fpr"
                           type="number"
@@ -1062,7 +1062,7 @@ export default function ModelValidationPage() {
                         <Line
                           type="linear"
                           dataKey="fpr"
-                          stroke="rgba(255,255,255,0.2)"
+                          stroke="var(--border-3)"
                           strokeDasharray="4 4"
                           dot={false}
                         />
@@ -1190,7 +1190,7 @@ export default function ModelValidationPage() {
                     <div
                       style={{
                         padding: "12px 14px",
-                        background: "rgba(255,255,255,0.03)",
+                        background: "var(--surface-2)",
                         border: "1px solid var(--border)",
                         borderRadius: 8,
                         fontSize: 12,
@@ -1297,7 +1297,7 @@ export default function ModelValidationPage() {
                         }}
                         onMouseLeave={() => setHoveredFeature(null)}
                       >
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-2)" horizontal={false} />
                         <XAxis
                           type="number"
                           stroke="var(--text-muted)"
@@ -1313,7 +1313,7 @@ export default function ModelValidationPage() {
                           fontSize={11}
                           width={165}
                           tickLine={false}
-                          axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                          axisLine={{ stroke: "var(--border-2)" }}
                         />
                         <Tooltip
                           contentStyle={{
@@ -1465,7 +1465,7 @@ export default function ModelValidationPage() {
                               justifyContent: "space-between",
                               alignItems: "center",
                               padding: "8px 12px",
-                              background: "rgba(255,255,255,0.02)",
+                              background: "var(--surface-2)",
                               border: "1px solid var(--border)",
                               borderRadius: 6,
                               fontSize: 12,
@@ -1577,7 +1577,7 @@ export default function ModelValidationPage() {
                       <thead>
                         <tr
                           style={{
-                            background: "rgba(255,255,255,0.02)",
+                            background: "var(--surface-2)",
                             borderBottom: "1px solid var(--border)",
                             textAlign: "left",
                             color: "var(--text-muted)",

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect, useCallback } from "react";
 import TopBar from "@/components/layout/TopBar";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -489,7 +489,7 @@ export default function DocumentsPage() {
                         {typeLabel}
                       </span>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontSize: 10, color: "var(--text-muted)", background: "rgba(255,255,255,0.05)", padding: "1px 5px", borderRadius: 4 }}>
+                        <span style={{ fontSize: 10, color: "var(--text-muted)", background: "var(--surface-2)", padding: "1px 5px", borderRadius: 4 }}>
                           v{doc.version_number || 1}
                         </span>
                         <span
@@ -513,7 +513,7 @@ export default function DocumentsPage() {
                     </div>
 
                     {/* Associated Project */}
-                    <div style={{ marginTop: 8, padding: "8px 10px", background: "rgba(255,255,255,0.02)", borderRadius: 6, border: "1px solid var(--border)" }}>
+                    <div style={{ marginTop: 8, padding: "8px 10px", background: "var(--surface-2)", borderRadius: 6, border: "1px solid var(--border)" }}>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-sub)", display: "flex", alignItems: "center", gap: 5 }}>
                         <Building size={12} style={{ color: "#38bdf8" }} />
                         <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -591,7 +591,7 @@ export default function DocumentsPage() {
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
-                  <tr style={{ background: "rgba(255,255,255,0.02)", borderBottom: "1px solid var(--border)", textAlign: "left", color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase" }}>
+                  <tr style={{ background: "var(--surface-2)", borderBottom: "1px solid var(--border)", textAlign: "left", color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase" }}>
                     <th style={{ padding: "12px 16px" }}>Title &amp; Type</th>
                     <th style={{ padding: "12px 16px" }}>Associated Project</th>
                     <th style={{ padding: "12px 16px" }}>Report Month</th>
